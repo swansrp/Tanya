@@ -31,13 +31,13 @@ public class TanyaExceptionHandler extends CommonExceptionHandler {
      */
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<CommonResponse.Resp> errorHandler(Exception ex) {
+    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(Exception ex) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
         String msg = sw.toString();
         Log.i(msg);
-        CommonResponse res = new CommonResponse(TanyaResponseConstant.SERVER_ERROR, ex.getMessage());
+        CommonResponse<String> res = new CommonResponse<String>(TanyaResponseConstant.SERVER_ERROR, ex.getMessage());
         return res.getEntity();
     }
     
@@ -49,8 +49,8 @@ public class TanyaExceptionHandler extends CommonExceptionHandler {
      * @return
      */
     @ResponseBody
-    public static ResponseEntity<CommonResponse.Resp> generateResponse(Object data) {
-        CommonResponse res = new CommonResponse(TanyaResponseConstant.SUCCESS, data);
+    public static <T> ResponseEntity<CommonResponse<T>.Resp> generateResponse(T data) {
+        CommonResponse<T> res = new CommonResponse<T>(TanyaResponseConstant.SUCCESS, data);
         return res.getEntity();
     }
 }
