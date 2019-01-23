@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: Sharp
-* @create: 2019/01/18
+* @create: 2019/01/23
  **/
 @Data
 public class UserInfoEntityVO {

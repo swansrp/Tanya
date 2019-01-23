@@ -4,7 +4,7 @@
 ##################
 
 username=`whoami`
-if [ "$username"x = "root"x ];then
+if [ "$username"x = "root1"x ];then
         echo "Can not start the service using user: ${username}!!!"
         exit 255
 fi
@@ -12,8 +12,8 @@ fi
 
 SERVER_NAME=Tanya
 SHUTDOWN_WAIT=5
-SERVER_TYPE=dev
-APP_PATH=/home/root/tanya
+SERVER_TYPE=prod
+APP_PATH=/root/tanya
 
 
 ARGUMENTS1=-Dspring.profiles.active=${SERVER_TYPE}
@@ -34,8 +34,8 @@ start(){
                 echo "${APP_PATH}"
                 echo "${ARGUMENTS1}"
                 echo "${JAR}"
-                echo "/usr/lib/java-1.8.0/bin/java -Xms512m -Xmx1024m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${APP_PATH}" "${ARGUMENTS1}" "${ARGUMENTS2}"  -jar "${JAR}" > $APP_PATH/spring.log &"
-                nohup /usr/lib/java-1.8.0/bin/java -Xms512m -Xmx1024m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${APP_PATH}" "${ARGUMENTS1}" "${ARGUMENTS2}"  -jar "${JAR}" >> $APP_PATH/spring.log &
+                echo "java -Xms512m -Xmx1024m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${APP_PATH}" "${ARGUMENTS1}" "${ARGUMENTS2}"  -jar "${JAR}" > $APP_PATH/spring.log &"
+                nohup java -Xms512m -Xmx1024m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${APP_PATH}" "${ARGUMENTS1}" "${ARGUMENTS2}"  -jar "${JAR}" >> $APP_PATH/spring.log &
                 echo "$SERVER_NAME started..."
         fi
         return 0
