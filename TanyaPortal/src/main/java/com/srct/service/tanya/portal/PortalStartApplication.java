@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal 
  * @author: Sharp   
- * @date: 2019/01/23
+ * @date: 2019/01/28
  */
 package com.srct.service.tanya.portal;
 
@@ -15,9 +15,10 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * @ClassName: PortalStartApplication
- * @Description: Start Application for Tanya - Portal
+ * @ClassName: PortalStartApplication 
+ * @Description: Start Application for Tanya - Portal 
  */
+
 @ComponentScan(basePackages = "com.srct.service")
 @SpringBootApplication
 @MapperScan("com.srct.service.**.mapper")
