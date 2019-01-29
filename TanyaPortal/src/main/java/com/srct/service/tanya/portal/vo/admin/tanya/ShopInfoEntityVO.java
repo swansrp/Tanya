@@ -10,8 +10,8 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: Sharp
-* @create: 2019/01/28
+* @author: srct
+* @create: 2019/01/29
  **/
 @Data
 public class ShopInfoEntityVO {
@@ -32,5 +32,5 @@ public class ShopInfoEntityVO {
     private Date updateAt;
  
     @ApiModelProperty(value = "有效性")
-    private Integer valid;
+    private Byte valid;
 }

@@ -1,15 +1,18 @@
+
+
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/18
+ * @author: srct   
+ * @date: 2019/01/29
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,8 +46,10 @@ public class UserInfoDao {
     public Integer updateUserInfo(UserInfo info) {
         Integer id = null;
         if (info.getId() == null) {
-            userInfoMapper.insert(info);
+            info.setCreateAt(new Date());
+            userInfoMapper.insertSelective(info);
         } else {
+            info.setUpdateAt(new Date());
             userInfoMapper.updateByPrimaryKeySelective(info);
         }
         id = info.getId();

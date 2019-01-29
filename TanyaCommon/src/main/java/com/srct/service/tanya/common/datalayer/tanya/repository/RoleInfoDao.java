@@ -1,10 +1,12 @@
+
+
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/28
+ * @author: srct   
+ * @date: 2019/01/29
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,7 +45,7 @@ public class RoleInfoDao {
     public Integer updateRoleInfo(RoleInfo info) {
         Integer id = null;
         if (info.getId() == null) {
-            roleInfoMapper.insert(info);
+            roleInfoMapper.insertSelective(info);
         } else {
             roleInfoMapper.updateByPrimaryKeySelective(info);
         }

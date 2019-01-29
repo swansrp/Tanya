@@ -1,15 +1,18 @@
+
+
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/28
+ * @author: srct   
+ * @date: 2019/01/29
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,8 +46,10 @@ public class TraderFactoryMerchantMapDao {
     public Integer updateTraderFactoryMerchantMap(TraderFactoryMerchantMap info) {
         Integer id = null;
         if (info.getId() == null) {
-            traderFactoryMerchantMapMapper.insert(info);
+            info.setCreateAt(new Date());
+            traderFactoryMerchantMapMapper.insertSelective(info);
         } else {
+            info.setUpdateAt(new Date());
             traderFactoryMerchantMapMapper.updateByPrimaryKeySelective(info);
         }
         id = info.getId();

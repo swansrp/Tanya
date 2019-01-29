@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: Sharp   
- * @date: 2019/01/28
+ * @author: srct   
+ * @date: 2019/01/29
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController("tanyaAdminInfoController")
 @RequestMapping(value = "/portal/admin/tanya/admininfo")
 @CrossOrigin(origins = "*")
+@Profile(value = {"dev", "test"})
 public class AdminInfoController {
 
     @Autowired
