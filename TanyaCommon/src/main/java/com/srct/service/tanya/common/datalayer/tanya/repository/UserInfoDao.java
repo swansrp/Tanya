@@ -1,11 +1,10 @@
 
-
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: srct
  * @date: 2019/01/29
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
@@ -27,10 +26,8 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.UserInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
-
 
 /**
  * @ClassName: UserInfoDao
@@ -46,16 +43,21 @@ public class UserInfoDao {
     public Integer updateUserInfo(UserInfo info) {
         Integer id = null;
         if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            userInfoMapper.insertSelective(info);
+            UserInfoExample example = getUserInfoExample(info);
+            int updateNum = userInfoMapper.updateByExampleSelective(info, example);
+            if (updateNum == 0) {
+                info.setCreateAt(new Date());
+                userInfoMapper.insertSelective(info);
+            }
         } else {
             info.setUpdateAt(new Date());
             userInfoMapper.updateByPrimaryKeySelective(info);
         }
+
         id = info.getId();
         return id;
     }
-	
+
     @Cacheable(value = "UserInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<UserInfo> getAllUserInfoList(Byte valid) {
@@ -67,16 +69,22 @@ public class UserInfoDao {
 
         return userInfoMapper.selectByExample(example);
     }
-	
+
     @Cacheable(value = "UserInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public UserInfo getUserInfobyId(Integer id) {
         return userInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "UserInfo", key = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "UserInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<UserInfo> getUserInfoSelective(UserInfo userInfo) {
+        UserInfoExample example = getUserInfoExample(userInfo);
+        List<UserInfo> res = userInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private UserInfoExample getUserInfoExample(UserInfo userInfo) {
         UserInfoExample example = new UserInfoExample();
         UserInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(userInfo);
@@ -101,7 +109,6 @@ public class UserInfoDao {
 
             }
         });
-        List<UserInfo> res = userInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

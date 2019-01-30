@@ -74,7 +74,7 @@ public class TraderInfoDao {
         return traderInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "TraderInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "TraderInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<TraderInfo> getTraderInfoSelective(TraderInfo traderInfo) {
         TraderInfoExample example = new TraderInfoExample();

@@ -8,7 +8,7 @@
 package com.srct.service.tanya.common.config.filter;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -24,7 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.service.TokenService;
+import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.log.Log;
 
 @Configuration
@@ -33,6 +35,9 @@ public class RoleFilter implements Filter {
 
     @Autowired
     TokenService tokenService;
+
+    @Autowired
+    UserService userService;
 
     @Override
     public void init(FilterConfig arg0) throws ServletException {
@@ -47,22 +52,31 @@ public class RoleFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse)response;
         String requestURI = req.getRequestURI();
         String queryString = req.getQueryString();
-        Map<String, String[]> parmMap = req.getParameterMap();
-        Log.i("...RoleFilter doFilter...");
-        Log.i("req:" + requestURI);
-        Log.i("query:" + queryString);
-        Log.ii(parmMap);
+        Log.d("...RoleFilter doFilter...");
+        Log.d("req:" + requestURI);
+        Log.d("query:" + queryString);
         if (requestURI != null && requestURI.contains("elb.check")) {
             return;
         }
-        if (parmMap != null && parmMap.containsKey("token")) {
-            String token = parmMap.get("token")[0];
-            String guid = tokenService.getGuidByToken(token);
-            RequestDispatcher rd = req.getRequestDispatcher("/admin" + requestURI);
-            req.setAttribute("requestURI", requestURI);
+        String guid = null;
+        Object token = req.getSession().getAttribute("AuthToken");
+        if (token != null) {
+            Log.i(token.toString());
+            guid = tokenService.getGuidByToken(token.toString());
+        }
+        if (guid == null || guid.length() == 0) {
+            Log.d("token invalid or expired, please re-login");
+        } else {
+            RequestDispatcher rd = req.getRequestDispatcher(requestURI);
+            UserInfo userInfo = new UserInfo();
+            userInfo.setGuid(guid);
+            List<String> roles = userService.getRole(userInfo);
+            req.setAttribute("role", roles);
+            req.setAttribute("guid", guid);
             rd.forward(req, resp);
             return;
         }
+
         chain.doFilter(req, resp);
     }
 

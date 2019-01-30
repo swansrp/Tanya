@@ -74,7 +74,7 @@ public class AdminInfoDao {
         return adminInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "AdminInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo) {
         AdminInfoExample example = new AdminInfoExample();

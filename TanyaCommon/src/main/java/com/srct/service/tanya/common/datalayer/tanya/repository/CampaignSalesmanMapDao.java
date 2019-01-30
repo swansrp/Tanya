@@ -74,7 +74,7 @@ public class CampaignSalesmanMapDao {
         return campaignSalesmanMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "CampaignSalesmanMap", key = "CacheKeyByParam")
+	@Cacheable(value = "CampaignSalesmanMap", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<CampaignSalesmanMap> getCampaignSalesmanMapSelective(CampaignSalesmanMap campaignSalesmanMap) {
         CampaignSalesmanMapExample example = new CampaignSalesmanMapExample();

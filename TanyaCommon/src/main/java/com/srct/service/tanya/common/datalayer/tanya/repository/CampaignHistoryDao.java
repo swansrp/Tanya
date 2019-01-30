@@ -74,7 +74,7 @@ public class CampaignHistoryDao {
         return campaignHistoryMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "CampaignHistory", key = "CacheKeyByParam")
+	@Cacheable(value = "CampaignHistory", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<CampaignHistory> getCampaignHistorySelective(CampaignHistory campaignHistory) {
         CampaignHistoryExample example = new CampaignHistoryExample();

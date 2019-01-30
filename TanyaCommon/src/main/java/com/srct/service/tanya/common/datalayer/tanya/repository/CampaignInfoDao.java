@@ -74,7 +74,7 @@ public class CampaignInfoDao {
         return campaignInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "CampaignInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "CampaignInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<CampaignInfo> getCampaignInfoSelective(CampaignInfo campaignInfo) {
         CampaignInfoExample example = new CampaignInfoExample();

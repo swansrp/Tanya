@@ -74,7 +74,7 @@ public class OrderInfoDao {
         return orderInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "OrderInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo) {
         OrderInfoExample example = new OrderInfoExample();

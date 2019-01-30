@@ -74,7 +74,7 @@ public class FactoryMerchantMapDao {
         return factoryMerchantMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "FactoryMerchantMap", key = "CacheKeyByParam")
+	@Cacheable(value = "FactoryMerchantMap", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<FactoryMerchantMap> getFactoryMerchantMapSelective(FactoryMerchantMap factoryMerchantMap) {
         FactoryMerchantMapExample example = new FactoryMerchantMapExample();

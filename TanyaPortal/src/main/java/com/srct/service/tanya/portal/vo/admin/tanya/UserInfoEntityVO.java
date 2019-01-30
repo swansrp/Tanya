@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: srct
-* @create: 2019/01/29
+* @create: 2019/01/30
  **/
 @Data
 public class UserInfoEntityVO {
@@ -22,8 +22,14 @@ public class UserInfoEntityVO {
     @ApiModelProperty(value = "用户姓名")
     private String name;
  
+    @ApiModelProperty(value = "用户唯一标识")
+    private String guid;
+ 
     @ApiModelProperty(value = "微信id")
     private String wechatId;
+ 
+    @ApiModelProperty(value = "备注")
+    private String comment;
  
     @ApiModelProperty(value = "登录密码")
     private String password;

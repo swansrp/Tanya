@@ -71,7 +71,7 @@ public class RoleInfoDao {
         return roleInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "RoleInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo) {
         RoleInfoExample example = new RoleInfoExample();

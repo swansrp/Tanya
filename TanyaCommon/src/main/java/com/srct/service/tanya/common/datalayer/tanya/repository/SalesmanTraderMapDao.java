@@ -74,7 +74,7 @@ public class SalesmanTraderMapDao {
         return salesmanTraderMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "SalesmanTraderMap", key = "CacheKeyByParam")
+	@Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap) {
         SalesmanTraderMapExample example = new SalesmanTraderMapExample();

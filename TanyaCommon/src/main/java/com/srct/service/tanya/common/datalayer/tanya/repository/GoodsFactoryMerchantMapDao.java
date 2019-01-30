@@ -74,7 +74,7 @@ public class GoodsFactoryMerchantMapDao {
         return goodsFactoryMerchantMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "GoodsFactoryMerchantMap", key = "CacheKeyByParam")
+	@Cacheable(value = "GoodsFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<GoodsFactoryMerchantMap> getGoodsFactoryMerchantMapSelective(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
         GoodsFactoryMerchantMapExample example = new GoodsFactoryMerchantMapExample();

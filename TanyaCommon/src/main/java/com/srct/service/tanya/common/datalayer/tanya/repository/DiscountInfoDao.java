@@ -74,7 +74,7 @@ public class DiscountInfoDao {
         return discountInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "DiscountInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo) {
         DiscountInfoExample example = new DiscountInfoExample();

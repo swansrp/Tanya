@@ -74,7 +74,7 @@ public class MerchantInfoDao {
         return merchantInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "MerchantInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo) {
         MerchantInfoExample example = new MerchantInfoExample();

@@ -68,7 +68,7 @@ public class NotificationInfoDao {
         return notificationInfoMapper.selectByExample(example);
     }
 	
-    @Cacheable(value = "NotificationInfo", key = "'id_' + #id")
+    @Cacheable(value = "NotificationInfo", keyGenerator = "'id_' + #id")
 	@CacheExpire(expire = 24 * 3600L)
     public NotificationInfo getNotificationInfobyId(Integer id) {
         return notificationInfoMapper.selectByPrimaryKey(id);

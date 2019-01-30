@@ -74,7 +74,7 @@ public class FactoryInfoDao {
         return factoryInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "FactoryInfo", key = "CacheKeyByParam")
+	@Cacheable(value = "FactoryInfo", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<FactoryInfo> getFactoryInfoSelective(FactoryInfo factoryInfo) {
         FactoryInfoExample example = new FactoryInfoExample();

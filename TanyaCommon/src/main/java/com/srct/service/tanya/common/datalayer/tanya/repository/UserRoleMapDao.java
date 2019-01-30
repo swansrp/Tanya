@@ -74,7 +74,7 @@ public class UserRoleMapDao {
         return userRoleMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "UserRoleMap", key = "CacheKeyByParam")
+	@Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
 	@CacheExpire(expire = 3600L)
     public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap) {
         UserRoleMapExample example = new UserRoleMapExample();

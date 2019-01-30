@@ -30,7 +30,7 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String genToken(String guid) {
         String token = RandomUtil.getUUID();
-        redisService.setex("AuthToken::" + token, 600, guid);
+        redisService.set("AuthToken::" + token, 600, guid);
         return token;
     }
 

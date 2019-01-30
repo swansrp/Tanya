@@ -9,6 +9,7 @@ package com.srct.service.tanya.role.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,7 +23,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 /**
- * @author srct
+ * @author Sharp
  *
  */
 
@@ -33,11 +34,14 @@ import io.swagger.annotations.ApiOperation;
 public class RoleController {
 
     @ApiOperation(value = "创建新角色", notes = "根据传入人员角色创建角色。")
-    @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<String>.Resp>
-        updateAdminInfo(@RequestParam(value = "token", required = true) String token, @RequestBody String role) {
-        String roleType = null;
-        return TanyaExceptionHandler.generateResponse(roleType);
+    @RequestMapping(value = "/{roleType}", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<String>.Resp> createRole(
+        @PathVariable(value = "roleType") String roleType,
+        @RequestParam(value = "guid", required = true) String token,
+        @RequestParam(value = "role", required = true) String role,
+        @RequestBody String roleInfo) {
+        String res = null;
+        return TanyaExceptionHandler.generateResponse(res);
     }
 
 }
