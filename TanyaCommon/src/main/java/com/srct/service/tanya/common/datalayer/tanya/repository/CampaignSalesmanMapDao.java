@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class CampaignSalesmanMapDao {
     CampaignSalesmanMapMapper campaignSalesmanMapMapper;
 
     @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
-    public Integer updateCampaignSalesmanMap(CampaignSalesmanMap info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            campaignSalesmanMapMapper.insertSelective(info);
+    public CampaignSalesmanMap updateCampaignSalesmanMap(CampaignSalesmanMap campaignSalesmanMap) {
+        if (campaignSalesmanMap.getId() == null) {
+            CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
+            campaignSalesmanMap.setUpdateAt(new Date());
+            int updateNum = campaignSalesmanMapMapper.updateByExampleSelective(campaignSalesmanMap, example);
+            if (updateNum == 0) {
+                campaignSalesmanMap.setCreateAt(new Date());
+                campaignSalesmanMapMapper.insertSelective(campaignSalesmanMap);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            campaignSalesmanMapMapper.updateByPrimaryKeySelective(info);
+            campaignSalesmanMap.setUpdateAt(new Date());
+            campaignSalesmanMapMapper.updateByPrimaryKeySelective(campaignSalesmanMap);
         }
-        id = info.getId();
-        return id;
+        return campaignSalesmanMap;
     }
-	
+
     @Cacheable(value = "CampaignSalesmanMap", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<CampaignSalesmanMap> getAllCampaignSalesmanMapList(Byte valid) {
@@ -67,16 +70,22 @@ public class CampaignSalesmanMapDao {
 
         return campaignSalesmanMapMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "CampaignSalesmanMap", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public CampaignSalesmanMap getCampaignSalesmanMapbyId(Integer id) {
         return campaignSalesmanMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "CampaignSalesmanMap", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "CampaignSalesmanMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<CampaignSalesmanMap> getCampaignSalesmanMapSelective(CampaignSalesmanMap campaignSalesmanMap) {
+        CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
+        List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
+        return res;
+    }
+
+    private CampaignSalesmanMapExample getCampaignSalesmanMapExample(CampaignSalesmanMap campaignSalesmanMap) {
         CampaignSalesmanMapExample example = new CampaignSalesmanMapExample();
         CampaignSalesmanMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(campaignSalesmanMap);
@@ -98,10 +107,8 @@ public class CampaignSalesmanMapDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

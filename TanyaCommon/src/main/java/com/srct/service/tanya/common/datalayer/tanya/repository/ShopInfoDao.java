@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class ShopInfoDao {
     ShopInfoMapper shopInfoMapper;
 
     @CacheEvict(value = "ShopInfo", allEntries = true)
-    public Integer updateShopInfo(ShopInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            shopInfoMapper.insertSelective(info);
+    public ShopInfo updateShopInfo(ShopInfo shopInfo) {
+        if (shopInfo.getId() == null) {
+            ShopInfoExample example = getShopInfoExample(shopInfo);
+            shopInfo.setUpdateAt(new Date());
+            int updateNum = shopInfoMapper.updateByExampleSelective(shopInfo, example);
+            if (updateNum == 0) {
+                shopInfo.setCreateAt(new Date());
+                shopInfoMapper.insertSelective(shopInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            shopInfoMapper.updateByPrimaryKeySelective(info);
+            shopInfo.setUpdateAt(new Date());
+            shopInfoMapper.updateByPrimaryKeySelective(shopInfo);
         }
-        id = info.getId();
-        return id;
+        return shopInfo;
     }
-	
+
     @Cacheable(value = "ShopInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<ShopInfo> getAllShopInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class ShopInfoDao {
 
         return shopInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "ShopInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public ShopInfo getShopInfobyId(Integer id) {
         return shopInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<ShopInfo> getShopInfoSelective(ShopInfo shopInfo) {
+        ShopInfoExample example = getShopInfoExample(shopInfo);
+        List<ShopInfo> res = shopInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private ShopInfoExample getShopInfoExample(ShopInfo shopInfo) {
         ShopInfoExample example = new ShopInfoExample();
         ShopInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(shopInfo);
@@ -98,10 +107,8 @@ public class ShopInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<ShopInfo> res = shopInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

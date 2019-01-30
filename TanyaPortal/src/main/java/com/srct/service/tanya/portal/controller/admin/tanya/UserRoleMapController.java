@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class UserRoleMapController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateUserRoleMap(@RequestBody UserRoleMapEntityVO vo) {
         UserRoleMap userRoleMap = new UserRoleMap();
         BeanUtil.copyProperties(vo, userRoleMap);
-        Integer id = userRoleMapDao.updateUserRoleMap(userRoleMap);
+        Integer id = userRoleMapDao.updateUserRoleMap(userRoleMap).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class UserRoleMapController {
         UserRoleMap userRoleMap = new UserRoleMap();
         userRoleMap.setId(id);
         userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = userRoleMapDao.updateUserRoleMap(userRoleMap);
+        Integer delId = userRoleMapDao.updateUserRoleMap(userRoleMap).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

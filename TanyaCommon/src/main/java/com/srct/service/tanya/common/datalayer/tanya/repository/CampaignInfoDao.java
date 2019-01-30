@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class CampaignInfoDao {
     CampaignInfoMapper campaignInfoMapper;
 
     @CacheEvict(value = "CampaignInfo", allEntries = true)
-    public Integer updateCampaignInfo(CampaignInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            campaignInfoMapper.insertSelective(info);
+    public CampaignInfo updateCampaignInfo(CampaignInfo campaignInfo) {
+        if (campaignInfo.getId() == null) {
+            CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
+            campaignInfo.setUpdateAt(new Date());
+            int updateNum = campaignInfoMapper.updateByExampleSelective(campaignInfo, example);
+            if (updateNum == 0) {
+                campaignInfo.setCreateAt(new Date());
+                campaignInfoMapper.insertSelective(campaignInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            campaignInfoMapper.updateByPrimaryKeySelective(info);
+            campaignInfo.setUpdateAt(new Date());
+            campaignInfoMapper.updateByPrimaryKeySelective(campaignInfo);
         }
-        id = info.getId();
-        return id;
+        return campaignInfo;
     }
-	
+
     @Cacheable(value = "CampaignInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<CampaignInfo> getAllCampaignInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class CampaignInfoDao {
 
         return campaignInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "CampaignInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public CampaignInfo getCampaignInfobyId(Integer id) {
         return campaignInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "CampaignInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "CampaignInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<CampaignInfo> getCampaignInfoSelective(CampaignInfo campaignInfo) {
+        CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
+        List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private CampaignInfoExample getCampaignInfoExample(CampaignInfo campaignInfo) {
         CampaignInfoExample example = new CampaignInfoExample();
         CampaignInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(campaignInfo);
@@ -98,10 +107,8 @@ public class CampaignInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class CampaignSalesmanMapController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateCampaignSalesmanMap(@RequestBody CampaignSalesmanMapEntityVO vo) {
         CampaignSalesmanMap campaignSalesmanMap = new CampaignSalesmanMap();
         BeanUtil.copyProperties(vo, campaignSalesmanMap);
-        Integer id = campaignSalesmanMapDao.updateCampaignSalesmanMap(campaignSalesmanMap);
+        Integer id = campaignSalesmanMapDao.updateCampaignSalesmanMap(campaignSalesmanMap).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class CampaignSalesmanMapController {
         CampaignSalesmanMap campaignSalesmanMap = new CampaignSalesmanMap();
         campaignSalesmanMap.setId(id);
         campaignSalesmanMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = campaignSalesmanMapDao.updateCampaignSalesmanMap(campaignSalesmanMap);
+        Integer delId = campaignSalesmanMapDao.updateCampaignSalesmanMap(campaignSalesmanMap).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

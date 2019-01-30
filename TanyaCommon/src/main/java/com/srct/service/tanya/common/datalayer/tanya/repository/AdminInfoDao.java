@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class AdminInfoDao {
     AdminInfoMapper adminInfoMapper;
 
     @CacheEvict(value = "AdminInfo", allEntries = true)
-    public Integer updateAdminInfo(AdminInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            adminInfoMapper.insertSelective(info);
+    public AdminInfo updateAdminInfo(AdminInfo adminInfo) {
+        if (adminInfo.getId() == null) {
+            AdminInfoExample example = getAdminInfoExample(adminInfo);
+            adminInfo.setUpdateAt(new Date());
+            int updateNum = adminInfoMapper.updateByExampleSelective(adminInfo, example);
+            if (updateNum == 0) {
+                adminInfo.setCreateAt(new Date());
+                adminInfoMapper.insertSelective(adminInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            adminInfoMapper.updateByPrimaryKeySelective(info);
+            adminInfo.setUpdateAt(new Date());
+            adminInfoMapper.updateByPrimaryKeySelective(adminInfo);
         }
-        id = info.getId();
-        return id;
+        return adminInfo;
     }
-	
+
     @Cacheable(value = "AdminInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<AdminInfo> getAllAdminInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class AdminInfoDao {
 
         return adminInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "AdminInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public AdminInfo getAdminInfobyId(Integer id) {
         return adminInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo) {
+        AdminInfoExample example = getAdminInfoExample(adminInfo);
+        List<AdminInfo> res = adminInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private AdminInfoExample getAdminInfoExample(AdminInfo adminInfo) {
         AdminInfoExample example = new AdminInfoExample();
         AdminInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(adminInfo);
@@ -98,10 +107,8 @@ public class AdminInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<AdminInfo> res = adminInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

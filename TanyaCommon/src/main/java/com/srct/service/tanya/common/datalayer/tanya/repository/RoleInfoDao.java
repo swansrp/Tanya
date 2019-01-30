@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,17 +42,19 @@ public class RoleInfoDao {
     RoleInfoMapper roleInfoMapper;
 
     @CacheEvict(value = "RoleInfo", allEntries = true)
-    public Integer updateRoleInfo(RoleInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            roleInfoMapper.insertSelective(info);
+    public RoleInfo updateRoleInfo(RoleInfo roleInfo) {
+        if (roleInfo.getId() == null) {
+            RoleInfoExample example = getRoleInfoExample(roleInfo);
+            int updateNum = roleInfoMapper.updateByExampleSelective(roleInfo, example);
+            if (updateNum == 0) {
+                roleInfoMapper.insertSelective(roleInfo);
+            }
         } else {
-            roleInfoMapper.updateByPrimaryKeySelective(info);
+            roleInfoMapper.updateByPrimaryKeySelective(roleInfo);
         }
-        id = info.getId();
-        return id;
+        return roleInfo;
     }
-	
+
     @Cacheable(value = "RoleInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<RoleInfo> getAllRoleInfoList(Byte valid) {
@@ -64,16 +66,22 @@ public class RoleInfoDao {
 
         return roleInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "RoleInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public RoleInfo getRoleInfobyId(Integer id) {
         return roleInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo) {
+        RoleInfoExample example = getRoleInfoExample(roleInfo);
+        List<RoleInfo> res = roleInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private RoleInfoExample getRoleInfoExample(RoleInfo roleInfo) {
         RoleInfoExample example = new RoleInfoExample();
         RoleInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(roleInfo);
@@ -95,10 +103,8 @@ public class RoleInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<RoleInfo> res = roleInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

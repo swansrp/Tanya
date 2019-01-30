@@ -1,11 +1,12 @@
 
-/**
+
+/**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
- * @author: srct
- * @date: 2019/01/29
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -26,8 +27,10 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.UserInfoMapper;
+
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+
 
 /**
  * @ClassName: UserInfoDao
@@ -40,22 +43,20 @@ public class UserInfoDao {
     UserInfoMapper userInfoMapper;
 
     @CacheEvict(value = "UserInfo", allEntries = true)
-    public Integer updateUserInfo(UserInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            UserInfoExample example = getUserInfoExample(info);
-            int updateNum = userInfoMapper.updateByExampleSelective(info, example);
+    public UserInfo updateUserInfo(UserInfo userInfo) {
+        if (userInfo.getId() == null) {
+            UserInfoExample example = getUserInfoExample(userInfo);
+            userInfo.setUpdateAt(new Date());
+            int updateNum = userInfoMapper.updateByExampleSelective(userInfo, example);
             if (updateNum == 0) {
-                info.setCreateAt(new Date());
-                userInfoMapper.insertSelective(info);
+                userInfo.setCreateAt(new Date());
+                userInfoMapper.insertSelective(userInfo);
             }
         } else {
-            info.setUpdateAt(new Date());
-            userInfoMapper.updateByPrimaryKeySelective(info);
+            userInfo.setUpdateAt(new Date());
+            userInfoMapper.updateByPrimaryKeySelective(userInfo);
         }
-
-        id = info.getId();
-        return id;
+        return userInfo;
     }
 
     @Cacheable(value = "UserInfo", key = "'valid_' + #valid")
@@ -69,7 +70,7 @@ public class UserInfoDao {
 
         return userInfoMapper.selectByExample(example);
     }
-
+    
     @Cacheable(value = "UserInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public UserInfo getUserInfobyId(Integer id) {
@@ -106,7 +107,6 @@ public class UserInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
         return example;

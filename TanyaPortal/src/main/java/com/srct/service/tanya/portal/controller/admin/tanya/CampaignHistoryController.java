@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class CampaignHistoryController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateCampaignHistory(@RequestBody CampaignHistoryEntityVO vo) {
         CampaignHistory campaignHistory = new CampaignHistory();
         BeanUtil.copyProperties(vo, campaignHistory);
-        Integer id = campaignHistoryDao.updateCampaignHistory(campaignHistory);
+        Integer id = campaignHistoryDao.updateCampaignHistory(campaignHistory).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class CampaignHistoryController {
         CampaignHistory campaignHistory = new CampaignHistory();
         campaignHistory.setId(id);
         campaignHistory.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = campaignHistoryDao.updateCampaignHistory(campaignHistory);
+        Integer delId = campaignHistoryDao.updateCampaignHistory(campaignHistory).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

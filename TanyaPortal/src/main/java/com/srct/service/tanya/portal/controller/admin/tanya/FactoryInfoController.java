@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class FactoryInfoController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateFactoryInfo(@RequestBody FactoryInfoEntityVO vo) {
         FactoryInfo factoryInfo = new FactoryInfo();
         BeanUtil.copyProperties(vo, factoryInfo);
-        Integer id = factoryInfoDao.updateFactoryInfo(factoryInfo);
+        Integer id = factoryInfoDao.updateFactoryInfo(factoryInfo).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class FactoryInfoController {
         FactoryInfo factoryInfo = new FactoryInfo();
         factoryInfo.setId(id);
         factoryInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = factoryInfoDao.updateFactoryInfo(factoryInfo);
+        Integer delId = factoryInfoDao.updateFactoryInfo(factoryInfo).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

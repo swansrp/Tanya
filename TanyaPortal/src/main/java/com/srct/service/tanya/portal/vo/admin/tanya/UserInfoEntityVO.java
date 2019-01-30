@@ -10,7 +10,7 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: srct
+* @author: Sharp
 * @create: 2019/01/30
  **/
 @Data

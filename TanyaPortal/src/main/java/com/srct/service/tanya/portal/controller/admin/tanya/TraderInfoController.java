@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class TraderInfoController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateTraderInfo(@RequestBody TraderInfoEntityVO vo) {
         TraderInfo traderInfo = new TraderInfo();
         BeanUtil.copyProperties(vo, traderInfo);
-        Integer id = traderInfoDao.updateTraderInfo(traderInfo);
+        Integer id = traderInfoDao.updateTraderInfo(traderInfo).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class TraderInfoController {
         TraderInfo traderInfo = new TraderInfo();
         traderInfo.setId(id);
         traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = traderInfoDao.updateTraderInfo(traderInfo);
+        Integer delId = traderInfoDao.updateTraderInfo(traderInfo).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

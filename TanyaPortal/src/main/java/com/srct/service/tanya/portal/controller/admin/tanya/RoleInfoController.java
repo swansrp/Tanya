@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class RoleInfoController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateRoleInfo(@RequestBody RoleInfoEntityVO vo) {
         RoleInfo roleInfo = new RoleInfo();
         BeanUtil.copyProperties(vo, roleInfo);
-        Integer id = roleInfoDao.updateRoleInfo(roleInfo);
+        Integer id = roleInfoDao.updateRoleInfo(roleInfo).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class RoleInfoController {
         RoleInfo roleInfo = new RoleInfo();
         roleInfo.setId(id);
         roleInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = roleInfoDao.updateRoleInfo(roleInfo);
+        Integer delId = roleInfoDao.updateRoleInfo(roleInfo).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

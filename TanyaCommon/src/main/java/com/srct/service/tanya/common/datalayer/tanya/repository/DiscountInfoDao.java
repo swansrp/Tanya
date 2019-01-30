@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class DiscountInfoDao {
     DiscountInfoMapper discountInfoMapper;
 
     @CacheEvict(value = "DiscountInfo", allEntries = true)
-    public Integer updateDiscountInfo(DiscountInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            discountInfoMapper.insertSelective(info);
+    public DiscountInfo updateDiscountInfo(DiscountInfo discountInfo) {
+        if (discountInfo.getId() == null) {
+            DiscountInfoExample example = getDiscountInfoExample(discountInfo);
+            discountInfo.setUpdateAt(new Date());
+            int updateNum = discountInfoMapper.updateByExampleSelective(discountInfo, example);
+            if (updateNum == 0) {
+                discountInfo.setCreateAt(new Date());
+                discountInfoMapper.insertSelective(discountInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            discountInfoMapper.updateByPrimaryKeySelective(info);
+            discountInfo.setUpdateAt(new Date());
+            discountInfoMapper.updateByPrimaryKeySelective(discountInfo);
         }
-        id = info.getId();
-        return id;
+        return discountInfo;
     }
-	
+
     @Cacheable(value = "DiscountInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<DiscountInfo> getAllDiscountInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class DiscountInfoDao {
 
         return discountInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "DiscountInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public DiscountInfo getDiscountInfobyId(Integer id) {
         return discountInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo) {
+        DiscountInfoExample example = getDiscountInfoExample(discountInfo);
+        List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private DiscountInfoExample getDiscountInfoExample(DiscountInfo discountInfo) {
         DiscountInfoExample example = new DiscountInfoExample();
         DiscountInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(discountInfo);
@@ -98,10 +107,8 @@ public class DiscountInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

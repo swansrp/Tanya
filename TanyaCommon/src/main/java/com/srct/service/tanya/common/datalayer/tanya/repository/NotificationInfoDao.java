@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class NotificationInfoDao {
     NotificationInfoMapper notificationInfoMapper;
 
     @CacheEvict(value = "NotificationInfo", allEntries = true)
-    public Integer updateNotificationInfo(NotificationInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            notificationInfoMapper.insertSelective(info);
+    public NotificationInfo updateNotificationInfo(NotificationInfo notificationInfo) {
+        if (notificationInfo.getId() == null) {
+            NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
+            notificationInfo.setUpdateAt(new Date());
+            int updateNum = notificationInfoMapper.updateByExampleSelective(notificationInfo, example);
+            if (updateNum == 0) {
+                notificationInfo.setCreateAt(new Date());
+                notificationInfoMapper.insertSelective(notificationInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            notificationInfoMapper.updateByPrimaryKeySelective(info);
+            notificationInfo.setUpdateAt(new Date());
+            notificationInfoMapper.updateByPrimaryKeySelective(notificationInfo);
         }
-        id = info.getId();
-        return id;
+        return notificationInfo;
     }
-	
+
     @Cacheable(value = "NotificationInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<NotificationInfo> getAllNotificationInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class NotificationInfoDao {
 
         return notificationInfoMapper.selectByExample(example);
     }
-	
-    @Cacheable(value = "NotificationInfo", keyGenerator = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    
+    @Cacheable(value = "NotificationInfo", key = "'id_' + #id")
+    @CacheExpire(expire = 24 * 3600L)
     public NotificationInfo getNotificationInfobyId(Integer id) {
         return notificationInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "NotificationInfo", key = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "NotificationInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<NotificationInfo> getNotificationInfoSelective(NotificationInfo notificationInfo) {
+        NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
+        List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private NotificationInfoExample getNotificationInfoExample(NotificationInfo notificationInfo) {
         NotificationInfoExample example = new NotificationInfoExample();
         NotificationInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(notificationInfo);
@@ -98,10 +107,8 @@ public class NotificationInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

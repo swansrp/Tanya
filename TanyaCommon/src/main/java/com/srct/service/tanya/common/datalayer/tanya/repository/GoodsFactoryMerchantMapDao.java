@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class GoodsFactoryMerchantMapDao {
     GoodsFactoryMerchantMapMapper goodsFactoryMerchantMapMapper;
 
     @CacheEvict(value = "GoodsFactoryMerchantMap", allEntries = true)
-    public Integer updateGoodsFactoryMerchantMap(GoodsFactoryMerchantMap info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            goodsFactoryMerchantMapMapper.insertSelective(info);
+    public GoodsFactoryMerchantMap updateGoodsFactoryMerchantMap(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
+        if (goodsFactoryMerchantMap.getId() == null) {
+            GoodsFactoryMerchantMapExample example = getGoodsFactoryMerchantMapExample(goodsFactoryMerchantMap);
+            goodsFactoryMerchantMap.setUpdateAt(new Date());
+            int updateNum = goodsFactoryMerchantMapMapper.updateByExampleSelective(goodsFactoryMerchantMap, example);
+            if (updateNum == 0) {
+                goodsFactoryMerchantMap.setCreateAt(new Date());
+                goodsFactoryMerchantMapMapper.insertSelective(goodsFactoryMerchantMap);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            goodsFactoryMerchantMapMapper.updateByPrimaryKeySelective(info);
+            goodsFactoryMerchantMap.setUpdateAt(new Date());
+            goodsFactoryMerchantMapMapper.updateByPrimaryKeySelective(goodsFactoryMerchantMap);
         }
-        id = info.getId();
-        return id;
+        return goodsFactoryMerchantMap;
     }
-	
+
     @Cacheable(value = "GoodsFactoryMerchantMap", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<GoodsFactoryMerchantMap> getAllGoodsFactoryMerchantMapList(Byte valid) {
@@ -67,16 +70,22 @@ public class GoodsFactoryMerchantMapDao {
 
         return goodsFactoryMerchantMapMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "GoodsFactoryMerchantMap", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public GoodsFactoryMerchantMap getGoodsFactoryMerchantMapbyId(Integer id) {
         return goodsFactoryMerchantMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "GoodsFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "GoodsFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<GoodsFactoryMerchantMap> getGoodsFactoryMerchantMapSelective(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
+        GoodsFactoryMerchantMapExample example = getGoodsFactoryMerchantMapExample(goodsFactoryMerchantMap);
+        List<GoodsFactoryMerchantMap> res = goodsFactoryMerchantMapMapper.selectByExample(example);
+        return res;
+    }
+
+    private GoodsFactoryMerchantMapExample getGoodsFactoryMerchantMapExample(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
         GoodsFactoryMerchantMapExample example = new GoodsFactoryMerchantMapExample();
         GoodsFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(goodsFactoryMerchantMap);
@@ -98,10 +107,8 @@ public class GoodsFactoryMerchantMapDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<GoodsFactoryMerchantMap> res = goodsFactoryMerchantMapMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

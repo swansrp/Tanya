@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class UserRoleMapDao {
     UserRoleMapMapper userRoleMapMapper;
 
     @CacheEvict(value = "UserRoleMap", allEntries = true)
-    public Integer updateUserRoleMap(UserRoleMap info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            userRoleMapMapper.insertSelective(info);
+    public UserRoleMap updateUserRoleMap(UserRoleMap userRoleMap) {
+        if (userRoleMap.getId() == null) {
+            UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
+            userRoleMap.setUpdateAt(new Date());
+            int updateNum = userRoleMapMapper.updateByExampleSelective(userRoleMap, example);
+            if (updateNum == 0) {
+                userRoleMap.setCreateAt(new Date());
+                userRoleMapMapper.insertSelective(userRoleMap);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            userRoleMapMapper.updateByPrimaryKeySelective(info);
+            userRoleMap.setUpdateAt(new Date());
+            userRoleMapMapper.updateByPrimaryKeySelective(userRoleMap);
         }
-        id = info.getId();
-        return id;
+        return userRoleMap;
     }
-	
+
     @Cacheable(value = "UserRoleMap", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<UserRoleMap> getAllUserRoleMapList(Byte valid) {
@@ -67,16 +70,22 @@ public class UserRoleMapDao {
 
         return userRoleMapMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "UserRoleMap", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public UserRoleMap getUserRoleMapbyId(Integer id) {
         return userRoleMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap) {
+        UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
+        List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
+        return res;
+    }
+
+    private UserRoleMapExample getUserRoleMapExample(UserRoleMap userRoleMap) {
         UserRoleMapExample example = new UserRoleMapExample();
         UserRoleMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(userRoleMap);
@@ -98,10 +107,8 @@ public class UserRoleMapDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

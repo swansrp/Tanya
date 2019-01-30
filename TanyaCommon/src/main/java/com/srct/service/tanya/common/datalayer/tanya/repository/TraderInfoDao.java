@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class TraderInfoDao {
     TraderInfoMapper traderInfoMapper;
 
     @CacheEvict(value = "TraderInfo", allEntries = true)
-    public Integer updateTraderInfo(TraderInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            traderInfoMapper.insertSelective(info);
+    public TraderInfo updateTraderInfo(TraderInfo traderInfo) {
+        if (traderInfo.getId() == null) {
+            TraderInfoExample example = getTraderInfoExample(traderInfo);
+            traderInfo.setUpdateAt(new Date());
+            int updateNum = traderInfoMapper.updateByExampleSelective(traderInfo, example);
+            if (updateNum == 0) {
+                traderInfo.setCreateAt(new Date());
+                traderInfoMapper.insertSelective(traderInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            traderInfoMapper.updateByPrimaryKeySelective(info);
+            traderInfo.setUpdateAt(new Date());
+            traderInfoMapper.updateByPrimaryKeySelective(traderInfo);
         }
-        id = info.getId();
-        return id;
+        return traderInfo;
     }
-	
+
     @Cacheable(value = "TraderInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<TraderInfo> getAllTraderInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class TraderInfoDao {
 
         return traderInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "TraderInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public TraderInfo getTraderInfobyId(Integer id) {
         return traderInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "TraderInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "TraderInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<TraderInfo> getTraderInfoSelective(TraderInfo traderInfo) {
+        TraderInfoExample example = getTraderInfoExample(traderInfo);
+        List<TraderInfo> res = traderInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private TraderInfoExample getTraderInfoExample(TraderInfo traderInfo) {
         TraderInfoExample example = new TraderInfoExample();
         TraderInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(traderInfo);
@@ -98,10 +107,8 @@ public class TraderInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<TraderInfo> res = traderInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

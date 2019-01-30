@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class FactoryMerchantMapDao {
     FactoryMerchantMapMapper factoryMerchantMapMapper;
 
     @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
-    public Integer updateFactoryMerchantMap(FactoryMerchantMap info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            factoryMerchantMapMapper.insertSelective(info);
+    public FactoryMerchantMap updateFactoryMerchantMap(FactoryMerchantMap factoryMerchantMap) {
+        if (factoryMerchantMap.getId() == null) {
+            FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
+            factoryMerchantMap.setUpdateAt(new Date());
+            int updateNum = factoryMerchantMapMapper.updateByExampleSelective(factoryMerchantMap, example);
+            if (updateNum == 0) {
+                factoryMerchantMap.setCreateAt(new Date());
+                factoryMerchantMapMapper.insertSelective(factoryMerchantMap);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            factoryMerchantMapMapper.updateByPrimaryKeySelective(info);
+            factoryMerchantMap.setUpdateAt(new Date());
+            factoryMerchantMapMapper.updateByPrimaryKeySelective(factoryMerchantMap);
         }
-        id = info.getId();
-        return id;
+        return factoryMerchantMap;
     }
-	
+
     @Cacheable(value = "FactoryMerchantMap", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<FactoryMerchantMap> getAllFactoryMerchantMapList(Byte valid) {
@@ -67,16 +70,22 @@ public class FactoryMerchantMapDao {
 
         return factoryMerchantMapMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "FactoryMerchantMap", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public FactoryMerchantMap getFactoryMerchantMapbyId(Integer id) {
         return factoryMerchantMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "FactoryMerchantMap", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "FactoryMerchantMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<FactoryMerchantMap> getFactoryMerchantMapSelective(FactoryMerchantMap factoryMerchantMap) {
+        FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
+        List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
+        return res;
+    }
+
+    private FactoryMerchantMapExample getFactoryMerchantMapExample(FactoryMerchantMap factoryMerchantMap) {
         FactoryMerchantMapExample example = new FactoryMerchantMapExample();
         FactoryMerchantMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(factoryMerchantMap);
@@ -98,10 +107,8 @@ public class FactoryMerchantMapDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

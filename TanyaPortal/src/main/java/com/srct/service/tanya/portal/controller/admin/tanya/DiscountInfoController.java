@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class DiscountInfoController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateDiscountInfo(@RequestBody DiscountInfoEntityVO vo) {
         DiscountInfo discountInfo = new DiscountInfo();
         BeanUtil.copyProperties(vo, discountInfo);
-        Integer id = discountInfoDao.updateDiscountInfo(discountInfo);
+        Integer id = discountInfoDao.updateDiscountInfo(discountInfo).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class DiscountInfoController {
         DiscountInfo discountInfo = new DiscountInfo();
         discountInfo.setId(id);
         discountInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = discountInfoDao.updateDiscountInfo(discountInfo);
+        Integer delId = discountInfoDao.updateDiscountInfo(discountInfo).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class SalesmanTraderMapDao {
     SalesmanTraderMapMapper salesmanTraderMapMapper;
 
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
-    public Integer updateSalesmanTraderMap(SalesmanTraderMap info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            salesmanTraderMapMapper.insertSelective(info);
+    public SalesmanTraderMap updateSalesmanTraderMap(SalesmanTraderMap salesmanTraderMap) {
+        if (salesmanTraderMap.getId() == null) {
+            SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
+            salesmanTraderMap.setUpdateAt(new Date());
+            int updateNum = salesmanTraderMapMapper.updateByExampleSelective(salesmanTraderMap, example);
+            if (updateNum == 0) {
+                salesmanTraderMap.setCreateAt(new Date());
+                salesmanTraderMapMapper.insertSelective(salesmanTraderMap);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            salesmanTraderMapMapper.updateByPrimaryKeySelective(info);
+            salesmanTraderMap.setUpdateAt(new Date());
+            salesmanTraderMapMapper.updateByPrimaryKeySelective(salesmanTraderMap);
         }
-        id = info.getId();
-        return id;
+        return salesmanTraderMap;
     }
-	
+
     @Cacheable(value = "SalesmanTraderMap", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<SalesmanTraderMap> getAllSalesmanTraderMapList(Byte valid) {
@@ -67,16 +70,22 @@ public class SalesmanTraderMapDao {
 
         return salesmanTraderMapMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "SalesmanTraderMap", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public SalesmanTraderMap getSalesmanTraderMapbyId(Integer id) {
         return salesmanTraderMapMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap) {
+        SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
+        List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
+        return res;
+    }
+
+    private SalesmanTraderMapExample getSalesmanTraderMapExample(SalesmanTraderMap salesmanTraderMap) {
         SalesmanTraderMapExample example = new SalesmanTraderMapExample();
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(salesmanTraderMap);
@@ -98,10 +107,8 @@ public class SalesmanTraderMapDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class FactoryMerchantMapController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateFactoryMerchantMap(@RequestBody FactoryMerchantMapEntityVO vo) {
         FactoryMerchantMap factoryMerchantMap = new FactoryMerchantMap();
         BeanUtil.copyProperties(vo, factoryMerchantMap);
-        Integer id = factoryMerchantMapDao.updateFactoryMerchantMap(factoryMerchantMap);
+        Integer id = factoryMerchantMapDao.updateFactoryMerchantMap(factoryMerchantMap).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class FactoryMerchantMapController {
         FactoryMerchantMap factoryMerchantMap = new FactoryMerchantMap();
         factoryMerchantMap.setId(id);
         factoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = factoryMerchantMapDao.updateFactoryMerchantMap(factoryMerchantMap);
+        Integer delId = factoryMerchantMapDao.updateFactoryMerchantMap(factoryMerchantMap).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

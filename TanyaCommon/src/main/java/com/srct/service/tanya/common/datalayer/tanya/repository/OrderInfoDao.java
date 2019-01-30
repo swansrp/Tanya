@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class OrderInfoDao {
     OrderInfoMapper orderInfoMapper;
 
     @CacheEvict(value = "OrderInfo", allEntries = true)
-    public Integer updateOrderInfo(OrderInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            orderInfoMapper.insertSelective(info);
+    public OrderInfo updateOrderInfo(OrderInfo orderInfo) {
+        if (orderInfo.getId() == null) {
+            OrderInfoExample example = getOrderInfoExample(orderInfo);
+            orderInfo.setUpdateAt(new Date());
+            int updateNum = orderInfoMapper.updateByExampleSelective(orderInfo, example);
+            if (updateNum == 0) {
+                orderInfo.setCreateAt(new Date());
+                orderInfoMapper.insertSelective(orderInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            orderInfoMapper.updateByPrimaryKeySelective(info);
+            orderInfo.setUpdateAt(new Date());
+            orderInfoMapper.updateByPrimaryKeySelective(orderInfo);
         }
-        id = info.getId();
-        return id;
+        return orderInfo;
     }
-	
+
     @Cacheable(value = "OrderInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<OrderInfo> getAllOrderInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class OrderInfoDao {
 
         return orderInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "OrderInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public OrderInfo getOrderInfobyId(Integer id) {
         return orderInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo) {
+        OrderInfoExample example = getOrderInfoExample(orderInfo);
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private OrderInfoExample getOrderInfoExample(OrderInfo orderInfo) {
         OrderInfoExample example = new OrderInfoExample();
         OrderInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(orderInfo);
@@ -98,10 +107,8 @@ public class OrderInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

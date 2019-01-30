@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class GoodsInfoDao {
     GoodsInfoMapper goodsInfoMapper;
 
     @CacheEvict(value = "GoodsInfo", allEntries = true)
-    public Integer updateGoodsInfo(GoodsInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            goodsInfoMapper.insertSelective(info);
+    public GoodsInfo updateGoodsInfo(GoodsInfo goodsInfo) {
+        if (goodsInfo.getId() == null) {
+            GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
+            goodsInfo.setUpdateAt(new Date());
+            int updateNum = goodsInfoMapper.updateByExampleSelective(goodsInfo, example);
+            if (updateNum == 0) {
+                goodsInfo.setCreateAt(new Date());
+                goodsInfoMapper.insertSelective(goodsInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            goodsInfoMapper.updateByPrimaryKeySelective(info);
+            goodsInfo.setUpdateAt(new Date());
+            goodsInfoMapper.updateByPrimaryKeySelective(goodsInfo);
         }
-        id = info.getId();
-        return id;
+        return goodsInfo;
     }
-	
+
     @Cacheable(value = "GoodsInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<GoodsInfo> getAllGoodsInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class GoodsInfoDao {
 
         return goodsInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "GoodsInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public GoodsInfo getGoodsInfobyId(Integer id) {
         return goodsInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "GoodsInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "GoodsInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<GoodsInfo> getGoodsInfoSelective(GoodsInfo goodsInfo) {
+        GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
+        List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private GoodsInfoExample getGoodsInfoExample(GoodsInfo goodsInfo) {
         GoodsInfoExample example = new GoodsInfoExample();
         GoodsInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(goodsInfo);
@@ -98,10 +107,8 @@ public class GoodsInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

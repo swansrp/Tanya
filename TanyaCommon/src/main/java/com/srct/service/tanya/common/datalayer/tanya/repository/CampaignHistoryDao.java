@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class CampaignHistoryDao {
     CampaignHistoryMapper campaignHistoryMapper;
 
     @CacheEvict(value = "CampaignHistory", allEntries = true)
-    public Integer updateCampaignHistory(CampaignHistory info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            campaignHistoryMapper.insertSelective(info);
+    public CampaignHistory updateCampaignHistory(CampaignHistory campaignHistory) {
+        if (campaignHistory.getId() == null) {
+            CampaignHistoryExample example = getCampaignHistoryExample(campaignHistory);
+            campaignHistory.setUpdateAt(new Date());
+            int updateNum = campaignHistoryMapper.updateByExampleSelective(campaignHistory, example);
+            if (updateNum == 0) {
+                campaignHistory.setCreateAt(new Date());
+                campaignHistoryMapper.insertSelective(campaignHistory);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            campaignHistoryMapper.updateByPrimaryKeySelective(info);
+            campaignHistory.setUpdateAt(new Date());
+            campaignHistoryMapper.updateByPrimaryKeySelective(campaignHistory);
         }
-        id = info.getId();
-        return id;
+        return campaignHistory;
     }
-	
+
     @Cacheable(value = "CampaignHistory", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<CampaignHistory> getAllCampaignHistoryList(Byte valid) {
@@ -67,16 +70,22 @@ public class CampaignHistoryDao {
 
         return campaignHistoryMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "CampaignHistory", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public CampaignHistory getCampaignHistorybyId(Integer id) {
         return campaignHistoryMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "CampaignHistory", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "CampaignHistory", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<CampaignHistory> getCampaignHistorySelective(CampaignHistory campaignHistory) {
+        CampaignHistoryExample example = getCampaignHistoryExample(campaignHistory);
+        List<CampaignHistory> res = campaignHistoryMapper.selectByExample(example);
+        return res;
+    }
+
+    private CampaignHistoryExample getCampaignHistoryExample(CampaignHistory campaignHistory) {
         CampaignHistoryExample example = new CampaignHistoryExample();
         CampaignHistoryExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(campaignHistory);
@@ -98,10 +107,8 @@ public class CampaignHistoryDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<CampaignHistory> res = campaignHistoryMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }

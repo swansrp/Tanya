@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.portal.controller.admin.tanya 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
 
@@ -56,7 +56,7 @@ public class NotificationInfoController {
     public ResponseEntity<CommonResponse<Integer>.Resp> updateNotificationInfo(@RequestBody NotificationInfoEntityVO vo) {
         NotificationInfo notificationInfo = new NotificationInfo();
         BeanUtil.copyProperties(vo, notificationInfo);
-        Integer id = notificationInfoDao.updateNotificationInfo(notificationInfo);
+        Integer id = notificationInfoDao.updateNotificationInfo(notificationInfo).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
 
@@ -109,7 +109,7 @@ public class NotificationInfoController {
         NotificationInfo notificationInfo = new NotificationInfo();
         notificationInfo.setId(id);
         notificationInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        Integer delId = notificationInfoDao.updateNotificationInfo(notificationInfo);
+        Integer delId = notificationInfoDao.updateNotificationInfo(notificationInfo).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }
 }

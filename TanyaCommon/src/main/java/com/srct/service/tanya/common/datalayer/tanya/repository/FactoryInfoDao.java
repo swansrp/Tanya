@@ -5,8 +5,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/01/29
+ * @author: Sharp   
+ * @date: 2019/01/30
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -43,19 +43,22 @@ public class FactoryInfoDao {
     FactoryInfoMapper factoryInfoMapper;
 
     @CacheEvict(value = "FactoryInfo", allEntries = true)
-    public Integer updateFactoryInfo(FactoryInfo info) {
-        Integer id = null;
-        if (info.getId() == null) {
-            info.setCreateAt(new Date());
-            factoryInfoMapper.insertSelective(info);
+    public FactoryInfo updateFactoryInfo(FactoryInfo factoryInfo) {
+        if (factoryInfo.getId() == null) {
+            FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
+            factoryInfo.setUpdateAt(new Date());
+            int updateNum = factoryInfoMapper.updateByExampleSelective(factoryInfo, example);
+            if (updateNum == 0) {
+                factoryInfo.setCreateAt(new Date());
+                factoryInfoMapper.insertSelective(factoryInfo);
+            }
         } else {
-            info.setUpdateAt(new Date());
-            factoryInfoMapper.updateByPrimaryKeySelective(info);
+            factoryInfo.setUpdateAt(new Date());
+            factoryInfoMapper.updateByPrimaryKeySelective(factoryInfo);
         }
-        id = info.getId();
-        return id;
+        return factoryInfo;
     }
-	
+
     @Cacheable(value = "FactoryInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<FactoryInfo> getAllFactoryInfoList(Byte valid) {
@@ -67,16 +70,22 @@ public class FactoryInfoDao {
 
         return factoryInfoMapper.selectByExample(example);
     }
-	
+    
     @Cacheable(value = "FactoryInfo", key = "'id_' + #id")
-	@CacheExpire(expire = 24 * 3600L)
+    @CacheExpire(expire = 24 * 3600L)
     public FactoryInfo getFactoryInfobyId(Integer id) {
         return factoryInfoMapper.selectByPrimaryKey(id);
     }
 
-	@Cacheable(value = "FactoryInfo", keyGenerator = "CacheKeyByParam")
-	@CacheExpire(expire = 3600L)
+    @Cacheable(value = "FactoryInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<FactoryInfo> getFactoryInfoSelective(FactoryInfo factoryInfo) {
+        FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
+        List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    private FactoryInfoExample getFactoryInfoExample(FactoryInfo factoryInfo) {
         FactoryInfoExample example = new FactoryInfoExample();
         FactoryInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(factoryInfo);
@@ -98,10 +107,8 @@ public class FactoryInfoDao {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
         });
-        List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
-        return res;
-    }	
+        return example;
+    }
 }
