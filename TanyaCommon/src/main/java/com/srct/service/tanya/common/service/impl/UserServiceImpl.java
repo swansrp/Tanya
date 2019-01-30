@@ -14,7 +14,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.srct.service.bo.wechat.OpenIdBO;
 import com.srct.service.config.db.DataSourceCommonConstant;
+import com.srct.service.service.WechatService;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -51,6 +53,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     TokenService tokenService;
 
+    @Autowired
+    WechatService wechatService;
+
     /* (non-Javadoc)
      * @see com.srct.service.tanya.common.service.UserService#regUser(com.srct.service.tanya.common.vo.user.UserRegReqVO)
      */
@@ -69,8 +74,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserLoginRespBO login(String wechatCode) {
 
-        String wechatId = wechatCode;
+        OpenIdBO openIdBO = wechatService.getOpenId(wechatCode);
 
+        String wechatId = openIdBO.getOpenId();
         UserInfo userInfoEx = new UserInfo();
         userInfoEx.setWechatId(wechatId);
         userInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
