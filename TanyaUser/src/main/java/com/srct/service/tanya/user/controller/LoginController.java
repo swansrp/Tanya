@@ -67,12 +67,13 @@ public class LoginController {
         request.getSession().setAttribute("AuthToken", token);
 
         BeanUtil.copyProperties(bo, res);
+        res.setRegistered(bo.getGuid() != null);
 
         return TanyaExceptionHandler.generateResponse(res);
     }
 
-    @ApiOperation(value = "注册用户信息", notes = "输入用户详细信息")
-    @RequestMapping(value = "/reg", method = RequestMethod.POST)
+    @ApiOperation(value = "更新用户信息", notes = "输入用户详细信息")
+    @RequestMapping(value = "/info", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<String>.Resp>
         reg(@RequestParam(value = "guid", required = true) String guid, @RequestBody UserRegReqVO vo) {
         Log.i(guid);

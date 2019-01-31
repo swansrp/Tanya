@@ -24,8 +24,13 @@ public class UserLoginRespVO {
     @NotBlank(message = "sn cant be null")
     @ApiModelProperty("用户SN")
     private String sn;
+    
+    @ApiModelProperty("用户信息录入")
+    private boolean registered;
 
     @ApiModelProperty("用户等级")
     private List<String> role;
+    
+    
 
 }
