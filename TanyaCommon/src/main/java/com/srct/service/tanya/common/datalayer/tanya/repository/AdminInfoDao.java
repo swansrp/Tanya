@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class AdminInfoDao {
     @CacheEvict(value = "AdminInfo", allEntries = true)
     public AdminInfo updateAdminInfo(AdminInfo adminInfo) {
         if (adminInfo.getId() == null) {
-            AdminInfoExample example = getAdminInfoExample(adminInfo);
-            adminInfo.setUpdateAt(new Date());
-            int updateNum = adminInfoMapper.updateByExampleSelective(adminInfo, example);
-            if (updateNum == 0) {
-                adminInfo.setCreateAt(new Date());
-                adminInfoMapper.insertSelective(adminInfo);
-            }
+            adminInfo.setCreateAt(new Date());
+            adminInfoMapper.insertSelective(adminInfo);
         } else {
             adminInfo.setUpdateAt(new Date());
             adminInfoMapper.updateByPrimaryKeySelective(adminInfo);
         }
         return adminInfo;
+    }
+
+    @CacheEvict(value = "AdminInfo", allEntries = true)
+    public Integer updateAdminInfoByExample(AdminInfo adminInfo, AdminInfoExample example) {
+        return adminInfoMapper.updateByExampleSelective(adminInfo, example);
+    }
+
+    @CacheEvict(value = "AdminInfo", allEntries = true)
+    public Integer delAdminInfo(AdminInfo adminInfo) {
+        AdminInfoExample example = getAdminInfoExample(adminInfo);
+        adminInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return adminInfoMapper.updateByExampleSelective(adminInfo, example);
+    }
+
+    @CacheEvict(value = "AdminInfo", allEntries = true)
+    public Integer delAdminInfoByExample(AdminInfoExample example) {
+        Integer res = 0;
+        List<AdminInfo> adminInfoList = getAdminInfoByExample(example);
+        for (AdminInfo adminInfo : adminInfoList) {
+            adminInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += adminInfoMapper.updateByPrimaryKey(adminInfo);
+        }
+        return res;
+    }
+
+    public Long countAdminInfo(AdminInfo adminInfo) {
+        AdminInfoExample example = getAdminInfoExample(adminInfo);
+        return adminInfoMapper.countByExample(example);
+    }
+
+    public Long countAdminInfoByExample(AdminInfoExample example) {
+        return adminInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "AdminInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class AdminInfoDao {
 
         return adminInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "AdminInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public AdminInfo getAdminInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class AdminInfoDao {
     @CacheExpire(expire = 3600L)
     public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo) {
         AdminInfoExample example = getAdminInfoExample(adminInfo);
+        List<AdminInfo> res = adminInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<AdminInfo> getAdminInfoByExample(AdminInfoExample example) {
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
         return res;
     }

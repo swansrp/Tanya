@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class CampaignInfoDao {
     @CacheEvict(value = "CampaignInfo", allEntries = true)
     public CampaignInfo updateCampaignInfo(CampaignInfo campaignInfo) {
         if (campaignInfo.getId() == null) {
-            CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
-            campaignInfo.setUpdateAt(new Date());
-            int updateNum = campaignInfoMapper.updateByExampleSelective(campaignInfo, example);
-            if (updateNum == 0) {
-                campaignInfo.setCreateAt(new Date());
-                campaignInfoMapper.insertSelective(campaignInfo);
-            }
+            campaignInfo.setCreateAt(new Date());
+            campaignInfoMapper.insertSelective(campaignInfo);
         } else {
             campaignInfo.setUpdateAt(new Date());
             campaignInfoMapper.updateByPrimaryKeySelective(campaignInfo);
         }
         return campaignInfo;
+    }
+
+    @CacheEvict(value = "CampaignInfo", allEntries = true)
+    public Integer updateCampaignInfoByExample(CampaignInfo campaignInfo, CampaignInfoExample example) {
+        return campaignInfoMapper.updateByExampleSelective(campaignInfo, example);
+    }
+
+    @CacheEvict(value = "CampaignInfo", allEntries = true)
+    public Integer delCampaignInfo(CampaignInfo campaignInfo) {
+        CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
+        campaignInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return campaignInfoMapper.updateByExampleSelective(campaignInfo, example);
+    }
+
+    @CacheEvict(value = "CampaignInfo", allEntries = true)
+    public Integer delCampaignInfoByExample(CampaignInfoExample example) {
+        Integer res = 0;
+        List<CampaignInfo> campaignInfoList = getCampaignInfoByExample(example);
+        for (CampaignInfo campaignInfo : campaignInfoList) {
+            campaignInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += campaignInfoMapper.updateByPrimaryKey(campaignInfo);
+        }
+        return res;
+    }
+
+    public Long countCampaignInfo(CampaignInfo campaignInfo) {
+        CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
+        return campaignInfoMapper.countByExample(example);
+    }
+
+    public Long countCampaignInfoByExample(CampaignInfoExample example) {
+        return campaignInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "CampaignInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class CampaignInfoDao {
 
         return campaignInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "CampaignInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public CampaignInfo getCampaignInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class CampaignInfoDao {
     @CacheExpire(expire = 3600L)
     public List<CampaignInfo> getCampaignInfoSelective(CampaignInfo campaignInfo) {
         CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
+        List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<CampaignInfo> getCampaignInfoByExample(CampaignInfoExample example) {
         List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
         return res;
     }

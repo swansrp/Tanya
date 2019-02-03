@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class NotificationInfoDao {
     @CacheEvict(value = "NotificationInfo", allEntries = true)
     public NotificationInfo updateNotificationInfo(NotificationInfo notificationInfo) {
         if (notificationInfo.getId() == null) {
-            NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
-            notificationInfo.setUpdateAt(new Date());
-            int updateNum = notificationInfoMapper.updateByExampleSelective(notificationInfo, example);
-            if (updateNum == 0) {
-                notificationInfo.setCreateAt(new Date());
-                notificationInfoMapper.insertSelective(notificationInfo);
-            }
+            notificationInfo.setCreateAt(new Date());
+            notificationInfoMapper.insertSelective(notificationInfo);
         } else {
             notificationInfo.setUpdateAt(new Date());
             notificationInfoMapper.updateByPrimaryKeySelective(notificationInfo);
         }
         return notificationInfo;
+    }
+
+    @CacheEvict(value = "NotificationInfo", allEntries = true)
+    public Integer updateNotificationInfoByExample(NotificationInfo notificationInfo, NotificationInfoExample example) {
+        return notificationInfoMapper.updateByExampleSelective(notificationInfo, example);
+    }
+
+    @CacheEvict(value = "NotificationInfo", allEntries = true)
+    public Integer delNotificationInfo(NotificationInfo notificationInfo) {
+        NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
+        notificationInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return notificationInfoMapper.updateByExampleSelective(notificationInfo, example);
+    }
+
+    @CacheEvict(value = "NotificationInfo", allEntries = true)
+    public Integer delNotificationInfoByExample(NotificationInfoExample example) {
+        Integer res = 0;
+        List<NotificationInfo> notificationInfoList = getNotificationInfoByExample(example);
+        for (NotificationInfo notificationInfo : notificationInfoList) {
+            notificationInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += notificationInfoMapper.updateByPrimaryKey(notificationInfo);
+        }
+        return res;
+    }
+
+    public Long countNotificationInfo(NotificationInfo notificationInfo) {
+        NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
+        return notificationInfoMapper.countByExample(example);
+    }
+
+    public Long countNotificationInfoByExample(NotificationInfoExample example) {
+        return notificationInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "NotificationInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class NotificationInfoDao {
 
         return notificationInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "NotificationInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public NotificationInfo getNotificationInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class NotificationInfoDao {
     @CacheExpire(expire = 3600L)
     public List<NotificationInfo> getNotificationInfoSelective(NotificationInfo notificationInfo) {
         NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
+        List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<NotificationInfo> getNotificationInfoByExample(NotificationInfoExample example) {
         List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
         return res;
     }

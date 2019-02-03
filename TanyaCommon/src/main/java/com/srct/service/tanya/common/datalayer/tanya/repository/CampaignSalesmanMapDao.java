@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class CampaignSalesmanMapDao {
     @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
     public CampaignSalesmanMap updateCampaignSalesmanMap(CampaignSalesmanMap campaignSalesmanMap) {
         if (campaignSalesmanMap.getId() == null) {
-            CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
-            campaignSalesmanMap.setUpdateAt(new Date());
-            int updateNum = campaignSalesmanMapMapper.updateByExampleSelective(campaignSalesmanMap, example);
-            if (updateNum == 0) {
-                campaignSalesmanMap.setCreateAt(new Date());
-                campaignSalesmanMapMapper.insertSelective(campaignSalesmanMap);
-            }
+            campaignSalesmanMap.setCreateAt(new Date());
+            campaignSalesmanMapMapper.insertSelective(campaignSalesmanMap);
         } else {
             campaignSalesmanMap.setUpdateAt(new Date());
             campaignSalesmanMapMapper.updateByPrimaryKeySelective(campaignSalesmanMap);
         }
         return campaignSalesmanMap;
+    }
+
+    @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
+    public Integer updateCampaignSalesmanMapByExample(CampaignSalesmanMap campaignSalesmanMap, CampaignSalesmanMapExample example) {
+        return campaignSalesmanMapMapper.updateByExampleSelective(campaignSalesmanMap, example);
+    }
+
+    @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
+    public Integer delCampaignSalesmanMap(CampaignSalesmanMap campaignSalesmanMap) {
+        CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
+        campaignSalesmanMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return campaignSalesmanMapMapper.updateByExampleSelective(campaignSalesmanMap, example);
+    }
+
+    @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
+    public Integer delCampaignSalesmanMapByExample(CampaignSalesmanMapExample example) {
+        Integer res = 0;
+        List<CampaignSalesmanMap> campaignSalesmanMapList = getCampaignSalesmanMapByExample(example);
+        for (CampaignSalesmanMap campaignSalesmanMap : campaignSalesmanMapList) {
+            campaignSalesmanMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += campaignSalesmanMapMapper.updateByPrimaryKey(campaignSalesmanMap);
+        }
+        return res;
+    }
+
+    public Long countCampaignSalesmanMap(CampaignSalesmanMap campaignSalesmanMap) {
+        CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
+        return campaignSalesmanMapMapper.countByExample(example);
+    }
+
+    public Long countCampaignSalesmanMapByExample(CampaignSalesmanMapExample example) {
+        return campaignSalesmanMapMapper.countByExample(example);
     }
 
     @Cacheable(value = "CampaignSalesmanMap", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class CampaignSalesmanMapDao {
 
         return campaignSalesmanMapMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "CampaignSalesmanMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public CampaignSalesmanMap getCampaignSalesmanMapbyId(Integer id) {
@@ -81,6 +106,11 @@ public class CampaignSalesmanMapDao {
     @CacheExpire(expire = 3600L)
     public List<CampaignSalesmanMap> getCampaignSalesmanMapSelective(CampaignSalesmanMap campaignSalesmanMap) {
         CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
+        List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<CampaignSalesmanMap> getCampaignSalesmanMapByExample(CampaignSalesmanMapExample example) {
         List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
         return res;
     }

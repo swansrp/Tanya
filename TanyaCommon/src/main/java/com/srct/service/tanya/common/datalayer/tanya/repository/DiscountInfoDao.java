@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class DiscountInfoDao {
     @CacheEvict(value = "DiscountInfo", allEntries = true)
     public DiscountInfo updateDiscountInfo(DiscountInfo discountInfo) {
         if (discountInfo.getId() == null) {
-            DiscountInfoExample example = getDiscountInfoExample(discountInfo);
-            discountInfo.setUpdateAt(new Date());
-            int updateNum = discountInfoMapper.updateByExampleSelective(discountInfo, example);
-            if (updateNum == 0) {
-                discountInfo.setCreateAt(new Date());
-                discountInfoMapper.insertSelective(discountInfo);
-            }
+            discountInfo.setCreateAt(new Date());
+            discountInfoMapper.insertSelective(discountInfo);
         } else {
             discountInfo.setUpdateAt(new Date());
             discountInfoMapper.updateByPrimaryKeySelective(discountInfo);
         }
         return discountInfo;
+    }
+
+    @CacheEvict(value = "DiscountInfo", allEntries = true)
+    public Integer updateDiscountInfoByExample(DiscountInfo discountInfo, DiscountInfoExample example) {
+        return discountInfoMapper.updateByExampleSelective(discountInfo, example);
+    }
+
+    @CacheEvict(value = "DiscountInfo", allEntries = true)
+    public Integer delDiscountInfo(DiscountInfo discountInfo) {
+        DiscountInfoExample example = getDiscountInfoExample(discountInfo);
+        discountInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return discountInfoMapper.updateByExampleSelective(discountInfo, example);
+    }
+
+    @CacheEvict(value = "DiscountInfo", allEntries = true)
+    public Integer delDiscountInfoByExample(DiscountInfoExample example) {
+        Integer res = 0;
+        List<DiscountInfo> discountInfoList = getDiscountInfoByExample(example);
+        for (DiscountInfo discountInfo : discountInfoList) {
+            discountInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += discountInfoMapper.updateByPrimaryKey(discountInfo);
+        }
+        return res;
+    }
+
+    public Long countDiscountInfo(DiscountInfo discountInfo) {
+        DiscountInfoExample example = getDiscountInfoExample(discountInfo);
+        return discountInfoMapper.countByExample(example);
+    }
+
+    public Long countDiscountInfoByExample(DiscountInfoExample example) {
+        return discountInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "DiscountInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class DiscountInfoDao {
 
         return discountInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "DiscountInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public DiscountInfo getDiscountInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class DiscountInfoDao {
     @CacheExpire(expire = 3600L)
     public List<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo) {
         DiscountInfoExample example = getDiscountInfoExample(discountInfo);
+        List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<DiscountInfo> getDiscountInfoByExample(DiscountInfoExample example) {
         List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
         return res;
     }

@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class SalesmanTraderMapDao {
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
     public SalesmanTraderMap updateSalesmanTraderMap(SalesmanTraderMap salesmanTraderMap) {
         if (salesmanTraderMap.getId() == null) {
-            SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
-            salesmanTraderMap.setUpdateAt(new Date());
-            int updateNum = salesmanTraderMapMapper.updateByExampleSelective(salesmanTraderMap, example);
-            if (updateNum == 0) {
-                salesmanTraderMap.setCreateAt(new Date());
-                salesmanTraderMapMapper.insertSelective(salesmanTraderMap);
-            }
+            salesmanTraderMap.setCreateAt(new Date());
+            salesmanTraderMapMapper.insertSelective(salesmanTraderMap);
         } else {
             salesmanTraderMap.setUpdateAt(new Date());
             salesmanTraderMapMapper.updateByPrimaryKeySelective(salesmanTraderMap);
         }
         return salesmanTraderMap;
+    }
+
+    @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
+    public Integer updateSalesmanTraderMapByExample(SalesmanTraderMap salesmanTraderMap, SalesmanTraderMapExample example) {
+        return salesmanTraderMapMapper.updateByExampleSelective(salesmanTraderMap, example);
+    }
+
+    @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
+    public Integer delSalesmanTraderMap(SalesmanTraderMap salesmanTraderMap) {
+        SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
+        salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return salesmanTraderMapMapper.updateByExampleSelective(salesmanTraderMap, example);
+    }
+
+    @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
+    public Integer delSalesmanTraderMapByExample(SalesmanTraderMapExample example) {
+        Integer res = 0;
+        List<SalesmanTraderMap> salesmanTraderMapList = getSalesmanTraderMapByExample(example);
+        for (SalesmanTraderMap salesmanTraderMap : salesmanTraderMapList) {
+            salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += salesmanTraderMapMapper.updateByPrimaryKey(salesmanTraderMap);
+        }
+        return res;
+    }
+
+    public Long countSalesmanTraderMap(SalesmanTraderMap salesmanTraderMap) {
+        SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
+        return salesmanTraderMapMapper.countByExample(example);
+    }
+
+    public Long countSalesmanTraderMapByExample(SalesmanTraderMapExample example) {
+        return salesmanTraderMapMapper.countByExample(example);
     }
 
     @Cacheable(value = "SalesmanTraderMap", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class SalesmanTraderMapDao {
 
         return salesmanTraderMapMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "SalesmanTraderMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public SalesmanTraderMap getSalesmanTraderMapbyId(Integer id) {
@@ -81,6 +106,11 @@ public class SalesmanTraderMapDao {
     @CacheExpire(expire = 3600L)
     public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap) {
         SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
+        List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example) {
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
         return res;
     }

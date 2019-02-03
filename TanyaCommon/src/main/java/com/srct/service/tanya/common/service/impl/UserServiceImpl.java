@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
         userRoleList.forEach(userRole -> {
             RoleInfo roleInfo = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
             if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
-                res.getRole().add(roleInfo.getTitle());
+                res.getRole().add(roleInfo.getRole());
         });
 
         return res;

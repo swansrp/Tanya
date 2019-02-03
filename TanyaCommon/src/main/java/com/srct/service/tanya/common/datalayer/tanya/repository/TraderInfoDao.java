@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class TraderInfoDao {
     @CacheEvict(value = "TraderInfo", allEntries = true)
     public TraderInfo updateTraderInfo(TraderInfo traderInfo) {
         if (traderInfo.getId() == null) {
-            TraderInfoExample example = getTraderInfoExample(traderInfo);
-            traderInfo.setUpdateAt(new Date());
-            int updateNum = traderInfoMapper.updateByExampleSelective(traderInfo, example);
-            if (updateNum == 0) {
-                traderInfo.setCreateAt(new Date());
-                traderInfoMapper.insertSelective(traderInfo);
-            }
+            traderInfo.setCreateAt(new Date());
+            traderInfoMapper.insertSelective(traderInfo);
         } else {
             traderInfo.setUpdateAt(new Date());
             traderInfoMapper.updateByPrimaryKeySelective(traderInfo);
         }
         return traderInfo;
+    }
+
+    @CacheEvict(value = "TraderInfo", allEntries = true)
+    public Integer updateTraderInfoByExample(TraderInfo traderInfo, TraderInfoExample example) {
+        return traderInfoMapper.updateByExampleSelective(traderInfo, example);
+    }
+
+    @CacheEvict(value = "TraderInfo", allEntries = true)
+    public Integer delTraderInfo(TraderInfo traderInfo) {
+        TraderInfoExample example = getTraderInfoExample(traderInfo);
+        traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return traderInfoMapper.updateByExampleSelective(traderInfo, example);
+    }
+
+    @CacheEvict(value = "TraderInfo", allEntries = true)
+    public Integer delTraderInfoByExample(TraderInfoExample example) {
+        Integer res = 0;
+        List<TraderInfo> traderInfoList = getTraderInfoByExample(example);
+        for (TraderInfo traderInfo : traderInfoList) {
+            traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += traderInfoMapper.updateByPrimaryKey(traderInfo);
+        }
+        return res;
+    }
+
+    public Long countTraderInfo(TraderInfo traderInfo) {
+        TraderInfoExample example = getTraderInfoExample(traderInfo);
+        return traderInfoMapper.countByExample(example);
+    }
+
+    public Long countTraderInfoByExample(TraderInfoExample example) {
+        return traderInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "TraderInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class TraderInfoDao {
 
         return traderInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "TraderInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public TraderInfo getTraderInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class TraderInfoDao {
     @CacheExpire(expire = 3600L)
     public List<TraderInfo> getTraderInfoSelective(TraderInfo traderInfo) {
         TraderInfoExample example = getTraderInfoExample(traderInfo);
+        List<TraderInfo> res = traderInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<TraderInfo> getTraderInfoByExample(TraderInfoExample example) {
         List<TraderInfo> res = traderInfoMapper.selectByExample(example);
         return res;
     }

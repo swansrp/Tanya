@@ -27,7 +27,7 @@ public interface UserService {
     public UserLoginRespBO login(String wecharCode);
 
     public UserLoginRespBO login(String name, String password);
-    
+
     public List<String> getRole(UserInfo userInfo);
 
 }

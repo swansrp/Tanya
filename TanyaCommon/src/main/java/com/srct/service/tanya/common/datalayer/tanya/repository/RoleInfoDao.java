@@ -1,17 +1,16 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,15 +43,45 @@ public class RoleInfoDao {
     @CacheEvict(value = "RoleInfo", allEntries = true)
     public RoleInfo updateRoleInfo(RoleInfo roleInfo) {
         if (roleInfo.getId() == null) {
-            RoleInfoExample example = getRoleInfoExample(roleInfo);
-            int updateNum = roleInfoMapper.updateByExampleSelective(roleInfo, example);
-            if (updateNum == 0) {
-                roleInfoMapper.insertSelective(roleInfo);
-            }
+            roleInfo.setCreateAt(new Date());
+            roleInfoMapper.insertSelective(roleInfo);
         } else {
+            roleInfo.setUpdateAt(new Date());
             roleInfoMapper.updateByPrimaryKeySelective(roleInfo);
         }
         return roleInfo;
+    }
+
+    @CacheEvict(value = "RoleInfo", allEntries = true)
+    public Integer updateRoleInfoByExample(RoleInfo roleInfo, RoleInfoExample example) {
+        return roleInfoMapper.updateByExampleSelective(roleInfo, example);
+    }
+
+    @CacheEvict(value = "RoleInfo", allEntries = true)
+    public Integer delRoleInfo(RoleInfo roleInfo) {
+        RoleInfoExample example = getRoleInfoExample(roleInfo);
+        roleInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return roleInfoMapper.updateByExampleSelective(roleInfo, example);
+    }
+
+    @CacheEvict(value = "RoleInfo", allEntries = true)
+    public Integer delRoleInfoByExample(RoleInfoExample example) {
+        Integer res = 0;
+        List<RoleInfo> roleInfoList = getRoleInfoByExample(example);
+        for (RoleInfo roleInfo : roleInfoList) {
+            roleInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += roleInfoMapper.updateByPrimaryKey(roleInfo);
+        }
+        return res;
+    }
+
+    public Long countRoleInfo(RoleInfo roleInfo) {
+        RoleInfoExample example = getRoleInfoExample(roleInfo);
+        return roleInfoMapper.countByExample(example);
+    }
+
+    public Long countRoleInfoByExample(RoleInfoExample example) {
+        return roleInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "RoleInfo", key = "'valid_' + #valid")
@@ -66,7 +95,7 @@ public class RoleInfoDao {
 
         return roleInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "RoleInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public RoleInfo getRoleInfobyId(Integer id) {
@@ -77,6 +106,11 @@ public class RoleInfoDao {
     @CacheExpire(expire = 3600L)
     public List<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo) {
         RoleInfoExample example = getRoleInfoExample(roleInfo);
+        List<RoleInfo> res = roleInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<RoleInfo> getRoleInfoByExample(RoleInfoExample example) {
         List<RoleInfo> res = roleInfoMapper.selectByExample(example);
         return res;
     }

@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class TraderFactoryMerchantMapDao {
     @CacheEvict(value = "TraderFactoryMerchantMap", allEntries = true)
     public TraderFactoryMerchantMap updateTraderFactoryMerchantMap(TraderFactoryMerchantMap traderFactoryMerchantMap) {
         if (traderFactoryMerchantMap.getId() == null) {
-            TraderFactoryMerchantMapExample example = getTraderFactoryMerchantMapExample(traderFactoryMerchantMap);
-            traderFactoryMerchantMap.setUpdateAt(new Date());
-            int updateNum = traderFactoryMerchantMapMapper.updateByExampleSelective(traderFactoryMerchantMap, example);
-            if (updateNum == 0) {
-                traderFactoryMerchantMap.setCreateAt(new Date());
-                traderFactoryMerchantMapMapper.insertSelective(traderFactoryMerchantMap);
-            }
+            traderFactoryMerchantMap.setCreateAt(new Date());
+            traderFactoryMerchantMapMapper.insertSelective(traderFactoryMerchantMap);
         } else {
             traderFactoryMerchantMap.setUpdateAt(new Date());
             traderFactoryMerchantMapMapper.updateByPrimaryKeySelective(traderFactoryMerchantMap);
         }
         return traderFactoryMerchantMap;
+    }
+
+    @CacheEvict(value = "TraderFactoryMerchantMap", allEntries = true)
+    public Integer updateTraderFactoryMerchantMapByExample(TraderFactoryMerchantMap traderFactoryMerchantMap, TraderFactoryMerchantMapExample example) {
+        return traderFactoryMerchantMapMapper.updateByExampleSelective(traderFactoryMerchantMap, example);
+    }
+
+    @CacheEvict(value = "TraderFactoryMerchantMap", allEntries = true)
+    public Integer delTraderFactoryMerchantMap(TraderFactoryMerchantMap traderFactoryMerchantMap) {
+        TraderFactoryMerchantMapExample example = getTraderFactoryMerchantMapExample(traderFactoryMerchantMap);
+        traderFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return traderFactoryMerchantMapMapper.updateByExampleSelective(traderFactoryMerchantMap, example);
+    }
+
+    @CacheEvict(value = "TraderFactoryMerchantMap", allEntries = true)
+    public Integer delTraderFactoryMerchantMapByExample(TraderFactoryMerchantMapExample example) {
+        Integer res = 0;
+        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList = getTraderFactoryMerchantMapByExample(example);
+        for (TraderFactoryMerchantMap traderFactoryMerchantMap : traderFactoryMerchantMapList) {
+            traderFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += traderFactoryMerchantMapMapper.updateByPrimaryKey(traderFactoryMerchantMap);
+        }
+        return res;
+    }
+
+    public Long countTraderFactoryMerchantMap(TraderFactoryMerchantMap traderFactoryMerchantMap) {
+        TraderFactoryMerchantMapExample example = getTraderFactoryMerchantMapExample(traderFactoryMerchantMap);
+        return traderFactoryMerchantMapMapper.countByExample(example);
+    }
+
+    public Long countTraderFactoryMerchantMapByExample(TraderFactoryMerchantMapExample example) {
+        return traderFactoryMerchantMapMapper.countByExample(example);
     }
 
     @Cacheable(value = "TraderFactoryMerchantMap", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class TraderFactoryMerchantMapDao {
 
         return traderFactoryMerchantMapMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "TraderFactoryMerchantMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public TraderFactoryMerchantMap getTraderFactoryMerchantMapbyId(Integer id) {
@@ -81,6 +106,11 @@ public class TraderFactoryMerchantMapDao {
     @CacheExpire(expire = 3600L)
     public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapSelective(TraderFactoryMerchantMap traderFactoryMerchantMap) {
         TraderFactoryMerchantMapExample example = getTraderFactoryMerchantMapExample(traderFactoryMerchantMap);
+        List<TraderFactoryMerchantMap> res = traderFactoryMerchantMapMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapByExample(TraderFactoryMerchantMapExample example) {
         List<TraderFactoryMerchantMap> res = traderFactoryMerchantMapMapper.selectByExample(example);
         return res;
     }

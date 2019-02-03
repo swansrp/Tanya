@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class MerchantInfoDao {
     @CacheEvict(value = "MerchantInfo", allEntries = true)
     public MerchantInfo updateMerchantInfo(MerchantInfo merchantInfo) {
         if (merchantInfo.getId() == null) {
-            MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
-            merchantInfo.setUpdateAt(new Date());
-            int updateNum = merchantInfoMapper.updateByExampleSelective(merchantInfo, example);
-            if (updateNum == 0) {
-                merchantInfo.setCreateAt(new Date());
-                merchantInfoMapper.insertSelective(merchantInfo);
-            }
+            merchantInfo.setCreateAt(new Date());
+            merchantInfoMapper.insertSelective(merchantInfo);
         } else {
             merchantInfo.setUpdateAt(new Date());
             merchantInfoMapper.updateByPrimaryKeySelective(merchantInfo);
         }
         return merchantInfo;
+    }
+
+    @CacheEvict(value = "MerchantInfo", allEntries = true)
+    public Integer updateMerchantInfoByExample(MerchantInfo merchantInfo, MerchantInfoExample example) {
+        return merchantInfoMapper.updateByExampleSelective(merchantInfo, example);
+    }
+
+    @CacheEvict(value = "MerchantInfo", allEntries = true)
+    public Integer delMerchantInfo(MerchantInfo merchantInfo) {
+        MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
+        merchantInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return merchantInfoMapper.updateByExampleSelective(merchantInfo, example);
+    }
+
+    @CacheEvict(value = "MerchantInfo", allEntries = true)
+    public Integer delMerchantInfoByExample(MerchantInfoExample example) {
+        Integer res = 0;
+        List<MerchantInfo> merchantInfoList = getMerchantInfoByExample(example);
+        for (MerchantInfo merchantInfo : merchantInfoList) {
+            merchantInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += merchantInfoMapper.updateByPrimaryKey(merchantInfo);
+        }
+        return res;
+    }
+
+    public Long countMerchantInfo(MerchantInfo merchantInfo) {
+        MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
+        return merchantInfoMapper.countByExample(example);
+    }
+
+    public Long countMerchantInfoByExample(MerchantInfoExample example) {
+        return merchantInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "MerchantInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class MerchantInfoDao {
 
         return merchantInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "MerchantInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public MerchantInfo getMerchantInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class MerchantInfoDao {
     @CacheExpire(expire = 3600L)
     public List<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo) {
         MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
+        List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example) {
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
         return res;
     }

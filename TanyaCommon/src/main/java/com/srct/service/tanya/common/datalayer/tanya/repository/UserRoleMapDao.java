@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class UserRoleMapDao {
     @CacheEvict(value = "UserRoleMap", allEntries = true)
     public UserRoleMap updateUserRoleMap(UserRoleMap userRoleMap) {
         if (userRoleMap.getId() == null) {
-            UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
-            userRoleMap.setUpdateAt(new Date());
-            int updateNum = userRoleMapMapper.updateByExampleSelective(userRoleMap, example);
-            if (updateNum == 0) {
-                userRoleMap.setCreateAt(new Date());
-                userRoleMapMapper.insertSelective(userRoleMap);
-            }
+            userRoleMap.setCreateAt(new Date());
+            userRoleMapMapper.insertSelective(userRoleMap);
         } else {
             userRoleMap.setUpdateAt(new Date());
             userRoleMapMapper.updateByPrimaryKeySelective(userRoleMap);
         }
         return userRoleMap;
+    }
+
+    @CacheEvict(value = "UserRoleMap", allEntries = true)
+    public Integer updateUserRoleMapByExample(UserRoleMap userRoleMap, UserRoleMapExample example) {
+        return userRoleMapMapper.updateByExampleSelective(userRoleMap, example);
+    }
+
+    @CacheEvict(value = "UserRoleMap", allEntries = true)
+    public Integer delUserRoleMap(UserRoleMap userRoleMap) {
+        UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
+        userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return userRoleMapMapper.updateByExampleSelective(userRoleMap, example);
+    }
+
+    @CacheEvict(value = "UserRoleMap", allEntries = true)
+    public Integer delUserRoleMapByExample(UserRoleMapExample example) {
+        Integer res = 0;
+        List<UserRoleMap> userRoleMapList = getUserRoleMapByExample(example);
+        for (UserRoleMap userRoleMap : userRoleMapList) {
+            userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += userRoleMapMapper.updateByPrimaryKey(userRoleMap);
+        }
+        return res;
+    }
+
+    public Long countUserRoleMap(UserRoleMap userRoleMap) {
+        UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
+        return userRoleMapMapper.countByExample(example);
+    }
+
+    public Long countUserRoleMapByExample(UserRoleMapExample example) {
+        return userRoleMapMapper.countByExample(example);
     }
 
     @Cacheable(value = "UserRoleMap", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class UserRoleMapDao {
 
         return userRoleMapMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "UserRoleMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public UserRoleMap getUserRoleMapbyId(Integer id) {
@@ -81,6 +106,11 @@ public class UserRoleMapDao {
     @CacheExpire(expire = 3600L)
     public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap) {
         UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
+        List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example) {
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
         return res;
     }

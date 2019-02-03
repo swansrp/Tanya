@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class UserInfoDao {
     @CacheEvict(value = "UserInfo", allEntries = true)
     public UserInfo updateUserInfo(UserInfo userInfo) {
         if (userInfo.getId() == null) {
-            UserInfoExample example = getUserInfoExample(userInfo);
-            userInfo.setUpdateAt(new Date());
-            int updateNum = userInfoMapper.updateByExampleSelective(userInfo, example);
-            if (updateNum == 0) {
-                userInfo.setCreateAt(new Date());
-                userInfoMapper.insertSelective(userInfo);
-            }
+            userInfo.setCreateAt(new Date());
+            userInfoMapper.insertSelective(userInfo);
         } else {
             userInfo.setUpdateAt(new Date());
             userInfoMapper.updateByPrimaryKeySelective(userInfo);
         }
         return userInfo;
+    }
+
+    @CacheEvict(value = "UserInfo", allEntries = true)
+    public Integer updateUserInfoByExample(UserInfo userInfo, UserInfoExample example) {
+        return userInfoMapper.updateByExampleSelective(userInfo, example);
+    }
+
+    @CacheEvict(value = "UserInfo", allEntries = true)
+    public Integer delUserInfo(UserInfo userInfo) {
+        UserInfoExample example = getUserInfoExample(userInfo);
+        userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return userInfoMapper.updateByExampleSelective(userInfo, example);
+    }
+
+    @CacheEvict(value = "UserInfo", allEntries = true)
+    public Integer delUserInfoByExample(UserInfoExample example) {
+        Integer res = 0;
+        List<UserInfo> userInfoList = getUserInfoByExample(example);
+        for (UserInfo userInfo : userInfoList) {
+            userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += userInfoMapper.updateByPrimaryKey(userInfo);
+        }
+        return res;
+    }
+
+    public Long countUserInfo(UserInfo userInfo) {
+        UserInfoExample example = getUserInfoExample(userInfo);
+        return userInfoMapper.countByExample(example);
+    }
+
+    public Long countUserInfoByExample(UserInfoExample example) {
+        return userInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "UserInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class UserInfoDao {
 
         return userInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "UserInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public UserInfo getUserInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class UserInfoDao {
     @CacheExpire(expire = 3600L)
     public List<UserInfo> getUserInfoSelective(UserInfo userInfo) {
         UserInfoExample example = getUserInfoExample(userInfo);
+        List<UserInfo> res = userInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<UserInfo> getUserInfoByExample(UserInfoExample example) {
         List<UserInfo> res = userInfoMapper.selectByExample(example);
         return res;
     }

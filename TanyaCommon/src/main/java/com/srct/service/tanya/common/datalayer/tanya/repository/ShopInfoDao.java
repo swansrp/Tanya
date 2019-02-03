@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class ShopInfoDao {
     @CacheEvict(value = "ShopInfo", allEntries = true)
     public ShopInfo updateShopInfo(ShopInfo shopInfo) {
         if (shopInfo.getId() == null) {
-            ShopInfoExample example = getShopInfoExample(shopInfo);
-            shopInfo.setUpdateAt(new Date());
-            int updateNum = shopInfoMapper.updateByExampleSelective(shopInfo, example);
-            if (updateNum == 0) {
-                shopInfo.setCreateAt(new Date());
-                shopInfoMapper.insertSelective(shopInfo);
-            }
+            shopInfo.setCreateAt(new Date());
+            shopInfoMapper.insertSelective(shopInfo);
         } else {
             shopInfo.setUpdateAt(new Date());
             shopInfoMapper.updateByPrimaryKeySelective(shopInfo);
         }
         return shopInfo;
+    }
+
+    @CacheEvict(value = "ShopInfo", allEntries = true)
+    public Integer updateShopInfoByExample(ShopInfo shopInfo, ShopInfoExample example) {
+        return shopInfoMapper.updateByExampleSelective(shopInfo, example);
+    }
+
+    @CacheEvict(value = "ShopInfo", allEntries = true)
+    public Integer delShopInfo(ShopInfo shopInfo) {
+        ShopInfoExample example = getShopInfoExample(shopInfo);
+        shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return shopInfoMapper.updateByExampleSelective(shopInfo, example);
+    }
+
+    @CacheEvict(value = "ShopInfo", allEntries = true)
+    public Integer delShopInfoByExample(ShopInfoExample example) {
+        Integer res = 0;
+        List<ShopInfo> shopInfoList = getShopInfoByExample(example);
+        for (ShopInfo shopInfo : shopInfoList) {
+            shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += shopInfoMapper.updateByPrimaryKey(shopInfo);
+        }
+        return res;
+    }
+
+    public Long countShopInfo(ShopInfo shopInfo) {
+        ShopInfoExample example = getShopInfoExample(shopInfo);
+        return shopInfoMapper.countByExample(example);
+    }
+
+    public Long countShopInfoByExample(ShopInfoExample example) {
+        return shopInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "ShopInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class ShopInfoDao {
 
         return shopInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "ShopInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public ShopInfo getShopInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class ShopInfoDao {
     @CacheExpire(expire = 3600L)
     public List<ShopInfo> getShopInfoSelective(ShopInfo shopInfo) {
         ShopInfoExample example = getShopInfoExample(shopInfo);
+        List<ShopInfo> res = shopInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<ShopInfo> getShopInfoByExample(ShopInfoExample example) {
         List<ShopInfo> res = shopInfoMapper.selectByExample(example);
         return res;
     }

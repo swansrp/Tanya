@@ -10,35 +10,44 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: Sharp
-* @create: 2019/01/30
+* @author: srct
+* @create: 2019/02/03
  **/
 @Data
 public class UserInfoEntityVO {
  
-    @ApiModelProperty(value = "用户id")
+    @ApiModelProperty(value = "")
     private Integer id;
  
-    @ApiModelProperty(value = "用户姓名")
-    private String name;
- 
-    @ApiModelProperty(value = "用户唯一标识")
+    @ApiModelProperty(value = "系统唯一标识")
     private String guid;
  
-    @ApiModelProperty(value = "微信id")
-    private String wechatId;
- 
-    @ApiModelProperty(value = "备注")
-    private String comment;
+    @ApiModelProperty(value = "用户名")
+    private String username;
  
     @ApiModelProperty(value = "登录密码")
     private String password;
  
+    @ApiModelProperty(value = "真实姓名")
+    private String name;
+ 
+    @ApiModelProperty(value = "身份证号码")
+    private String idCardNum;
+ 
+    @ApiModelProperty(value = "微信openId")
+    private String wechatId;
+ 
     @ApiModelProperty(value = "电话号码")
     private String phone;
  
-    @ApiModelProperty(value = "邮箱")
+    @ApiModelProperty(value = "邮箱号码")
     private String email;
+ 
+    @ApiModelProperty(value = "角色备注")
+    private String comment;
+ 
+    @ApiModelProperty(value = "用户状态：0:正常状态,1：用户被锁定")
+    private String state;
  
     @ApiModelProperty(value = "创建时间")
     private Date createAt;

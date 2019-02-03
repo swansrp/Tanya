@@ -10,8 +10,8 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: Sharp
-* @create: 2019/01/30
+* @author: srct
+* @create: 2019/02/03
  **/
 @Data
 public class SalesmanInfoEntityVO {

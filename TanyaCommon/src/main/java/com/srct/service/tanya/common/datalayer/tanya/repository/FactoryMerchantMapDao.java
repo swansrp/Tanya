@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class FactoryMerchantMapDao {
     @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
     public FactoryMerchantMap updateFactoryMerchantMap(FactoryMerchantMap factoryMerchantMap) {
         if (factoryMerchantMap.getId() == null) {
-            FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
-            factoryMerchantMap.setUpdateAt(new Date());
-            int updateNum = factoryMerchantMapMapper.updateByExampleSelective(factoryMerchantMap, example);
-            if (updateNum == 0) {
-                factoryMerchantMap.setCreateAt(new Date());
-                factoryMerchantMapMapper.insertSelective(factoryMerchantMap);
-            }
+            factoryMerchantMap.setCreateAt(new Date());
+            factoryMerchantMapMapper.insertSelective(factoryMerchantMap);
         } else {
             factoryMerchantMap.setUpdateAt(new Date());
             factoryMerchantMapMapper.updateByPrimaryKeySelective(factoryMerchantMap);
         }
         return factoryMerchantMap;
+    }
+
+    @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
+    public Integer updateFactoryMerchantMapByExample(FactoryMerchantMap factoryMerchantMap, FactoryMerchantMapExample example) {
+        return factoryMerchantMapMapper.updateByExampleSelective(factoryMerchantMap, example);
+    }
+
+    @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
+    public Integer delFactoryMerchantMap(FactoryMerchantMap factoryMerchantMap) {
+        FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
+        factoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return factoryMerchantMapMapper.updateByExampleSelective(factoryMerchantMap, example);
+    }
+
+    @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
+    public Integer delFactoryMerchantMapByExample(FactoryMerchantMapExample example) {
+        Integer res = 0;
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMapByExample(example);
+        for (FactoryMerchantMap factoryMerchantMap : factoryMerchantMapList) {
+            factoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += factoryMerchantMapMapper.updateByPrimaryKey(factoryMerchantMap);
+        }
+        return res;
+    }
+
+    public Long countFactoryMerchantMap(FactoryMerchantMap factoryMerchantMap) {
+        FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
+        return factoryMerchantMapMapper.countByExample(example);
+    }
+
+    public Long countFactoryMerchantMapByExample(FactoryMerchantMapExample example) {
+        return factoryMerchantMapMapper.countByExample(example);
     }
 
     @Cacheable(value = "FactoryMerchantMap", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class FactoryMerchantMapDao {
 
         return factoryMerchantMapMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "FactoryMerchantMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public FactoryMerchantMap getFactoryMerchantMapbyId(Integer id) {
@@ -81,6 +106,11 @@ public class FactoryMerchantMapDao {
     @CacheExpire(expire = 3600L)
     public List<FactoryMerchantMap> getFactoryMerchantMapSelective(FactoryMerchantMap factoryMerchantMap) {
         FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
+        List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<FactoryMerchantMap> getFactoryMerchantMapByExample(FactoryMerchantMapExample example) {
         List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
         return res;
     }

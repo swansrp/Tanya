@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class SalesmanInfoDao {
     @CacheEvict(value = "SalesmanInfo", allEntries = true)
     public SalesmanInfo updateSalesmanInfo(SalesmanInfo salesmanInfo) {
         if (salesmanInfo.getId() == null) {
-            SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
-            salesmanInfo.setUpdateAt(new Date());
-            int updateNum = salesmanInfoMapper.updateByExampleSelective(salesmanInfo, example);
-            if (updateNum == 0) {
-                salesmanInfo.setCreateAt(new Date());
-                salesmanInfoMapper.insertSelective(salesmanInfo);
-            }
+            salesmanInfo.setCreateAt(new Date());
+            salesmanInfoMapper.insertSelective(salesmanInfo);
         } else {
             salesmanInfo.setUpdateAt(new Date());
             salesmanInfoMapper.updateByPrimaryKeySelective(salesmanInfo);
         }
         return salesmanInfo;
+    }
+
+    @CacheEvict(value = "SalesmanInfo", allEntries = true)
+    public Integer updateSalesmanInfoByExample(SalesmanInfo salesmanInfo, SalesmanInfoExample example) {
+        return salesmanInfoMapper.updateByExampleSelective(salesmanInfo, example);
+    }
+
+    @CacheEvict(value = "SalesmanInfo", allEntries = true)
+    public Integer delSalesmanInfo(SalesmanInfo salesmanInfo) {
+        SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
+        salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return salesmanInfoMapper.updateByExampleSelective(salesmanInfo, example);
+    }
+
+    @CacheEvict(value = "SalesmanInfo", allEntries = true)
+    public Integer delSalesmanInfoByExample(SalesmanInfoExample example) {
+        Integer res = 0;
+        List<SalesmanInfo> salesmanInfoList = getSalesmanInfoByExample(example);
+        for (SalesmanInfo salesmanInfo : salesmanInfoList) {
+            salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += salesmanInfoMapper.updateByPrimaryKey(salesmanInfo);
+        }
+        return res;
+    }
+
+    public Long countSalesmanInfo(SalesmanInfo salesmanInfo) {
+        SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
+        return salesmanInfoMapper.countByExample(example);
+    }
+
+    public Long countSalesmanInfoByExample(SalesmanInfoExample example) {
+        return salesmanInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "SalesmanInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class SalesmanInfoDao {
 
         return salesmanInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "SalesmanInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public SalesmanInfo getSalesmanInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class SalesmanInfoDao {
     @CacheExpire(expire = 3600L)
     public List<SalesmanInfo> getSalesmanInfoSelective(SalesmanInfo salesmanInfo) {
         SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
+        List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<SalesmanInfo> getSalesmanInfoByExample(SalesmanInfoExample example) {
         List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
         return res;
     }

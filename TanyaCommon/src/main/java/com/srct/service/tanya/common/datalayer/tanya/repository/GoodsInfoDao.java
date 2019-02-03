@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class GoodsInfoDao {
     @CacheEvict(value = "GoodsInfo", allEntries = true)
     public GoodsInfo updateGoodsInfo(GoodsInfo goodsInfo) {
         if (goodsInfo.getId() == null) {
-            GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
-            goodsInfo.setUpdateAt(new Date());
-            int updateNum = goodsInfoMapper.updateByExampleSelective(goodsInfo, example);
-            if (updateNum == 0) {
-                goodsInfo.setCreateAt(new Date());
-                goodsInfoMapper.insertSelective(goodsInfo);
-            }
+            goodsInfo.setCreateAt(new Date());
+            goodsInfoMapper.insertSelective(goodsInfo);
         } else {
             goodsInfo.setUpdateAt(new Date());
             goodsInfoMapper.updateByPrimaryKeySelective(goodsInfo);
         }
         return goodsInfo;
+    }
+
+    @CacheEvict(value = "GoodsInfo", allEntries = true)
+    public Integer updateGoodsInfoByExample(GoodsInfo goodsInfo, GoodsInfoExample example) {
+        return goodsInfoMapper.updateByExampleSelective(goodsInfo, example);
+    }
+
+    @CacheEvict(value = "GoodsInfo", allEntries = true)
+    public Integer delGoodsInfo(GoodsInfo goodsInfo) {
+        GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
+        goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return goodsInfoMapper.updateByExampleSelective(goodsInfo, example);
+    }
+
+    @CacheEvict(value = "GoodsInfo", allEntries = true)
+    public Integer delGoodsInfoByExample(GoodsInfoExample example) {
+        Integer res = 0;
+        List<GoodsInfo> goodsInfoList = getGoodsInfoByExample(example);
+        for (GoodsInfo goodsInfo : goodsInfoList) {
+            goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += goodsInfoMapper.updateByPrimaryKey(goodsInfo);
+        }
+        return res;
+    }
+
+    public Long countGoodsInfo(GoodsInfo goodsInfo) {
+        GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
+        return goodsInfoMapper.countByExample(example);
+    }
+
+    public Long countGoodsInfoByExample(GoodsInfoExample example) {
+        return goodsInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "GoodsInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class GoodsInfoDao {
 
         return goodsInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "GoodsInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public GoodsInfo getGoodsInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class GoodsInfoDao {
     @CacheExpire(expire = 3600L)
     public List<GoodsInfo> getGoodsInfoSelective(GoodsInfo goodsInfo) {
         GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
+        List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<GoodsInfo> getGoodsInfoByExample(GoodsInfoExample example) {
         List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
         return res;
     }

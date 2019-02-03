@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class FactoryInfoDao {
     @CacheEvict(value = "FactoryInfo", allEntries = true)
     public FactoryInfo updateFactoryInfo(FactoryInfo factoryInfo) {
         if (factoryInfo.getId() == null) {
-            FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
-            factoryInfo.setUpdateAt(new Date());
-            int updateNum = factoryInfoMapper.updateByExampleSelective(factoryInfo, example);
-            if (updateNum == 0) {
-                factoryInfo.setCreateAt(new Date());
-                factoryInfoMapper.insertSelective(factoryInfo);
-            }
+            factoryInfo.setCreateAt(new Date());
+            factoryInfoMapper.insertSelective(factoryInfo);
         } else {
             factoryInfo.setUpdateAt(new Date());
             factoryInfoMapper.updateByPrimaryKeySelective(factoryInfo);
         }
         return factoryInfo;
+    }
+
+    @CacheEvict(value = "FactoryInfo", allEntries = true)
+    public Integer updateFactoryInfoByExample(FactoryInfo factoryInfo, FactoryInfoExample example) {
+        return factoryInfoMapper.updateByExampleSelective(factoryInfo, example);
+    }
+
+    @CacheEvict(value = "FactoryInfo", allEntries = true)
+    public Integer delFactoryInfo(FactoryInfo factoryInfo) {
+        FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
+        factoryInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return factoryInfoMapper.updateByExampleSelective(factoryInfo, example);
+    }
+
+    @CacheEvict(value = "FactoryInfo", allEntries = true)
+    public Integer delFactoryInfoByExample(FactoryInfoExample example) {
+        Integer res = 0;
+        List<FactoryInfo> factoryInfoList = getFactoryInfoByExample(example);
+        for (FactoryInfo factoryInfo : factoryInfoList) {
+            factoryInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += factoryInfoMapper.updateByPrimaryKey(factoryInfo);
+        }
+        return res;
+    }
+
+    public Long countFactoryInfo(FactoryInfo factoryInfo) {
+        FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
+        return factoryInfoMapper.countByExample(example);
+    }
+
+    public Long countFactoryInfoByExample(FactoryInfoExample example) {
+        return factoryInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "FactoryInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class FactoryInfoDao {
 
         return factoryInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "FactoryInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public FactoryInfo getFactoryInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class FactoryInfoDao {
     @CacheExpire(expire = 3600L)
     public List<FactoryInfo> getFactoryInfoSelective(FactoryInfo factoryInfo) {
         FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
+        List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<FactoryInfo> getFactoryInfoByExample(FactoryInfoExample example) {
         List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
         return res;
     }

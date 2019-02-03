@@ -1,12 +1,10 @@
-
-
 /**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/01/30
+ * @author: srct   
+ * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -45,18 +43,45 @@ public class OrderInfoDao {
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public OrderInfo updateOrderInfo(OrderInfo orderInfo) {
         if (orderInfo.getId() == null) {
-            OrderInfoExample example = getOrderInfoExample(orderInfo);
-            orderInfo.setUpdateAt(new Date());
-            int updateNum = orderInfoMapper.updateByExampleSelective(orderInfo, example);
-            if (updateNum == 0) {
-                orderInfo.setCreateAt(new Date());
-                orderInfoMapper.insertSelective(orderInfo);
-            }
+            orderInfo.setCreateAt(new Date());
+            orderInfoMapper.insertSelective(orderInfo);
         } else {
             orderInfo.setUpdateAt(new Date());
             orderInfoMapper.updateByPrimaryKeySelective(orderInfo);
         }
         return orderInfo;
+    }
+
+    @CacheEvict(value = "OrderInfo", allEntries = true)
+    public Integer updateOrderInfoByExample(OrderInfo orderInfo, OrderInfoExample example) {
+        return orderInfoMapper.updateByExampleSelective(orderInfo, example);
+    }
+
+    @CacheEvict(value = "OrderInfo", allEntries = true)
+    public Integer delOrderInfo(OrderInfo orderInfo) {
+        OrderInfoExample example = getOrderInfoExample(orderInfo);
+        orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        return orderInfoMapper.updateByExampleSelective(orderInfo, example);
+    }
+
+    @CacheEvict(value = "OrderInfo", allEntries = true)
+    public Integer delOrderInfoByExample(OrderInfoExample example) {
+        Integer res = 0;
+        List<OrderInfo> orderInfoList = getOrderInfoByExample(example);
+        for (OrderInfo orderInfo : orderInfoList) {
+            orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            res += orderInfoMapper.updateByPrimaryKey(orderInfo);
+        }
+        return res;
+    }
+
+    public Long countOrderInfo(OrderInfo orderInfo) {
+        OrderInfoExample example = getOrderInfoExample(orderInfo);
+        return orderInfoMapper.countByExample(example);
+    }
+
+    public Long countOrderInfoByExample(OrderInfoExample example) {
+        return orderInfoMapper.countByExample(example);
     }
 
     @Cacheable(value = "OrderInfo", key = "'valid_' + #valid")
@@ -70,7 +95,7 @@ public class OrderInfoDao {
 
         return orderInfoMapper.selectByExample(example);
     }
-    
+
     @Cacheable(value = "OrderInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
     public OrderInfo getOrderInfobyId(Integer id) {
@@ -81,6 +106,11 @@ public class OrderInfoDao {
     @CacheExpire(expire = 3600L)
     public List<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo) {
         OrderInfoExample example = getOrderInfoExample(orderInfo);
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
+        return res;
+    }
+
+    public List<OrderInfo> getOrderInfoByExample(OrderInfoExample example) {
         List<OrderInfo> res = orderInfoMapper.selectByExample(example);
         return res;
     }
