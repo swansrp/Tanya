@@ -1,9 +1,9 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.user 
- * @author: srct   
+ * @Package: com.srct.service.tanya.user
+ * @author: srct
  * @date: 2019/01/30
  */
 package com.srct.service.tanya.user;
@@ -15,8 +15,8 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * @ClassName: UserStartApplication 
- * @Description: Start Application for Tanya - User 
+ * @ClassName: UserStartApplication
+ * @Description: Start Application for Tanya - User
  */
 
 @ComponentScan(basePackages = "com.srct.service")

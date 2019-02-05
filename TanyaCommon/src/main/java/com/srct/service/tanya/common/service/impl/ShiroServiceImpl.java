@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfo;
@@ -31,6 +32,7 @@ import com.srct.service.tanya.common.service.ShiroService;
  * @author Sharp
  *
  */
+@Service
 public class ShiroServiceImpl implements ShiroService {
 
     @Autowired
