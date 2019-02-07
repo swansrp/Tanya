@@ -17,20 +17,18 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.service.TokenService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.log.Log;
 
-@Configuration
-@WebFilter(filterName = "RoleFilter", urlPatterns = "/*")
+// @Configuration
+// @WebFilter(filterName = "RoleFilter", urlPatterns = "/*")
 public class RoleFilter implements Filter {
 
     @Autowired

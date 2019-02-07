@@ -28,12 +28,14 @@ import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
 import com.srct.service.tanya.common.config.shiro.filter.KickoutSessionControlFilter;
@@ -45,8 +47,10 @@ import com.srct.service.tanya.common.config.shiro.utils.RetryLimitHashedCredenti
  * @author Sharp
  *
  */
-@Configuration
+@Component
 public class ShiroConfig {
+
+    private static Logger logger = LoggerFactory.getLogger(ShiroConfig.class);
 
     /**
      * ShiroFilterFactoryBean 处理拦截资源文件问题。 注意：初始化ShiroFilterFactoryBean的时候需要注入：SecurityManager
@@ -88,6 +92,13 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/js/**", "anon");
         filterChainDefinitionMap.put("/img/**", "anon");
         filterChainDefinitionMap.put("/druid/**", "anon");
+
+        // for swagger
+        filterChainDefinitionMap.put("/swagger-ui.html", "anon");
+        filterChainDefinitionMap.put("/swagger-resources", "anon");
+        filterChainDefinitionMap.put("/v2/api-docs", "anon");
+        filterChainDefinitionMap.put("/webjars/springfox-swagger-ui/**", "anon");
+
         // 解锁用户专用 测试用的
         filterChainDefinitionMap.put("/unlockAccount", "anon");
         filterChainDefinitionMap.put("/Captcha.jpg", "anon");
@@ -333,6 +344,7 @@ public class ShiroConfig {
 
     @Bean
     public RedisManager redisManager() {
+        logger.info("redisManager setup");
         RedisManager redisManager = new RedisManager();
         return redisManager;
     }

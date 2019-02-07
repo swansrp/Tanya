@@ -21,6 +21,8 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.srct.service.bo.wechat.OpenIdBO;
@@ -38,6 +40,8 @@ import com.srct.service.tanya.common.service.ShiroService;
  *
  */
 public class ShiroRealm extends AuthorizingRealm {
+
+    private static Logger logger = LoggerFactory.getLogger(ShiroRealm.class);
 
     @Autowired
     private ShiroService shiroService;
@@ -58,6 +62,8 @@ public class ShiroRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken)
         throws AuthenticationException {
+
+        logger.info("doGetAuthenticationInfo");
 
         // 获取用户名密码 第一种方式
         // String username = (String) authenticationToken.getPrincipal();
@@ -119,7 +125,7 @@ public class ShiroRealm extends AuthorizingRealm {
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
 
-        System.out.println("查询权限方法调用了！！！");
+        logger.info("doGetAuthorizationInfo");
 
         // 获取用户
         String username = (String)SecurityUtils.getSubject().getPrincipal();

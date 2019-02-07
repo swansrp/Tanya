@@ -13,25 +13,53 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.CollectionUtils;
+
+import com.srct.service.utils.BeanUtil;
 
 /**
  * @author Sharp
  *
  */
+@Configuration
 public class RedisManager {
 
-    @Autowired
-    @Qualifier("redisTemplate")
+    private static Logger logger = LoggerFactory.getLogger(RedisManager.class);
+
     private RedisTemplate<String, Object> redisTemplate;
+
+    private RedisTemplate<String, Object> getRedisTemplate() {
+        if (redisTemplate == null) {
+            redisTemplate = (RedisTemplate<String, Object>)BeanUtil.getBean("shiroRedisTemplate");
+        }
+        return redisTemplate;
+    }
+
+    @Bean(name = "shiroRedisTemplate")
+    public RedisTemplate<String, byte[]> shiroRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, byte[]> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new ShiroSerializer());
+        redisTemplate.setHashValueSerializer(new ShiroSerializer());
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
+    }
 
     // =============================common============================
     /**
@@ -43,7 +71,7 @@ public class RedisManager {
      *            时间(秒)
      */
     public void expire(String key, long time) {
-        redisTemplate.expire(key, time, TimeUnit.SECONDS);
+        getRedisTemplate().expire(key, time, TimeUnit.SECONDS);
     }
 
     /**
@@ -54,7 +82,7 @@ public class RedisManager {
      * @return true 存在 false不存在
      */
     public Boolean hasKey(String key) {
-        return redisTemplate.hasKey(key);
+        return getRedisTemplate().hasKey(key);
     }
 
     /**
@@ -67,9 +95,9 @@ public class RedisManager {
     public void del(String... key) {
         if (key != null && key.length > 0) {
             if (key.length == 1) {
-                redisTemplate.delete(key[0]);
+                getRedisTemplate().delete(key[0]);
             } else {
-                redisTemplate.delete(CollectionUtils.arrayToList(key));
+                getRedisTemplate().delete(CollectionUtils.arrayToList(key));
             }
         }
     }
@@ -80,7 +108,7 @@ public class RedisManager {
      * @param keys
      */
     public void del(Collection keys) {
-        redisTemplate.delete(keys);
+        getRedisTemplate().delete(keys);
     }
 
     // ============================String=============================
@@ -92,7 +120,7 @@ public class RedisManager {
      * @return 值
      */
     public Object get(String key) {
-        return redisTemplate.opsForValue().get(key);
+        return getRedisTemplate().opsForValue().get(key);
     }
 
     /**
@@ -104,7 +132,7 @@ public class RedisManager {
      *            值
      */
     public void set(String key, Object value) {
-        redisTemplate.opsForValue().set(key, value);
+        getRedisTemplate().opsForValue().set(key, value);
     }
 
     /**
@@ -119,7 +147,7 @@ public class RedisManager {
      */
     public void set(String key, Object value, long time) {
         if (time > 0) {
-            redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
+            getRedisTemplate().opsForValue().set(key, value, time, TimeUnit.SECONDS);
         } else {
             set(key, value);
         }
@@ -132,7 +160,7 @@ public class RedisManager {
      * @return
      */
     public Set<String> scan(String key) {
-        Set<String> execute = this.redisTemplate.execute(new RedisCallback<Set<String>>() {
+        Set<String> execute = this.getRedisTemplate().execute(new RedisCallback<Set<String>>() {
 
             @Override
             public Set<String> doInRedis(RedisConnection connection) throws DataAccessException {
@@ -157,7 +185,7 @@ public class RedisManager {
      * @return
      */
     public Long scanSize(String key) {
-        long dbSize = this.redisTemplate.execute(new RedisCallback<Long>() {
+        long dbSize = this.getRedisTemplate().execute(new RedisCallback<Long>() {
 
             @Override
             public Long doInRedis(RedisConnection connection) throws DataAccessException {
