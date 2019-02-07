@@ -19,13 +19,15 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
  */
 public interface ShiroService {
 
-    UserInfo findByUserName(String userName);
+    public UserInfo findByOpenId(String openId);
 
-    int insert(UserInfo user);
+    public UserInfo findByUserName(String userName);
 
-    int del(String username);
+    public int insert(UserInfo user);
 
-    Set<RoleInfo> findRolesByUserGuid(String guid);
+    public int del(String username);
 
-    Set<PermissionInfo> findPermissionsByRole(Set<RoleInfo> roles);
+    public Set<RoleInfo> findRolesByUserGuid(String guid);
+
+    public Set<PermissionInfo> findPermissionsByRole(Set<RoleInfo> roles);
 }

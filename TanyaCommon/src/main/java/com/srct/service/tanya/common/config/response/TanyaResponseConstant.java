@@ -18,15 +18,6 @@ public class TanyaResponseConstant extends CommonResponseConstant {
 
     public static final CommonResponseCode SUCCESS = new CommonResponseCode(TAG + "0000", "Success", HttpStatus.OK);
 
-    public static final CommonResponseCode SERVER_ERROR =
-        new CommonResponseCode(TAG + "0001", "Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-
-    public static final CommonResponseCode DB_ERROR =
-        new CommonResponseCode(TAG + "0002", "DB Error", HttpStatus.SERVICE_UNAVAILABLE);
-
-    public static final CommonResponseCode PERMISSION_DENIED_ERROR =
-        new CommonResponseCode(TAG + "0003", "Access denied", HttpStatus.FORBIDDEN);
-
     public static final CommonResponseCode NO_SUCH_USER =
-        new CommonResponseCode(TAG + "0004", "Access denied", HttpStatus.NOT_FOUND);
+        new CommonResponseCode(TAG + "1000", "NO_SUCH_USER", HttpStatus.NOT_FOUND);
 }

@@ -64,15 +64,35 @@ public class ShiroServiceImpl implements ShiroService {
         return userInfoList.get(0);
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.ShiroService#insert(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo)
+    @Override
+    public UserInfo findByOpenId(String openId) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setWechatId(openId);
+        List<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfo);
+        if (userInfoList == null || userInfoList.size() == 0) {
+            throw new NoSuchUserException("wechatId = " + openId);
+        }
+        if (userInfoList.size() != 1) {
+            throw new ServiceException("Multiuser wechatId as " + openId);
+        }
+        return userInfoList.get(0);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.srct.service.tanya.common.service.ShiroService#insert(com.srct.service.tanya.common.datalayer.tanya.entity.
+     * UserInfo)
      */
     @Override
     public int insert(UserInfo user) {
         return userInfoDao.updateUserInfo(user).getId();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.ShiroService#del(java.lang.String)
      */
     @Override
@@ -82,8 +102,12 @@ public class ShiroServiceImpl implements ShiroService {
         return userInfoDao.delUserInfo(userInfo);
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.ShiroService#findRolesByUser(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.srct.service.tanya.common.service.ShiroService#findRolesByUser(com.srct.service.tanya.common.datalayer.tanya.
+     * entity.UserInfo)
      */
     @Override
     public Set<RoleInfo> findRolesByUserGuid(String guid) {
@@ -107,7 +131,9 @@ public class ShiroServiceImpl implements ShiroService {
         return roleInfoSet;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.ShiroService#findPermissionsByRole(java.util.Set)
      */
     @Override

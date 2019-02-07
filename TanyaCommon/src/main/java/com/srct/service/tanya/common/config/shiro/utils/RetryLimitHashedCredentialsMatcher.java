@@ -78,8 +78,7 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
         if (matches) {
             // 如果正确,从缓存中将用户登录计数 清除
             redisManager.del(getRedisKickoutKey(username));
-        }
-        {
+        } else {
             redisManager.set(getRedisKickoutKey(username), retryCount);
         }
         return matches;

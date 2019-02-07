@@ -17,17 +17,20 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.srct.service.bo.wechat.OpenIdBO;
+import com.srct.service.service.WechatService;
+import com.srct.service.tanya.common.config.shiro.tanya.TanyaAuthToken;
 import com.srct.service.tanya.common.config.shiro.utils.MyByteSource;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.service.ShiroService;
 
 /**
@@ -38,6 +41,12 @@ public class ShiroRealm extends AuthorizingRealm {
 
     @Autowired
     private ShiroService shiroService;
+
+    @Autowired
+    private WechatService wechatService;
+
+    @Autowired
+    private UserInfoDao userInfDao;
 
     /**
      * 验证用户身份
@@ -55,12 +64,19 @@ public class ShiroRealm extends AuthorizingRealm {
         // String password = new String((char[]) authenticationToken.getCredentials());
 
         // 获取用户名 密码 第二种方式
-        UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken)authenticationToken;
-        String username = usernamePasswordToken.getUsername();
-        String password = new String(usernamePasswordToken.getPassword());
-
-        // 从数据库查询用户信息
-        UserInfo user = shiroService.findByUserName(username);
+        TanyaAuthToken authToken = (TanyaAuthToken)authenticationToken;
+        UserInfo user = null;
+        String wechatCode = authToken.getWechatAuthCode();
+        if (authToken.getWechatAuthCode() != null) {
+            OpenIdBO bo = wechatService.getOpenId(wechatCode);
+            user = shiroService.findByOpenId(bo.getOpenId());
+            authToken.setPassword(user.getPassword().toCharArray());
+        } else {
+            String username = authToken.getUsername();
+            String password = new String(authToken.getPassword());
+            // 从数据库查询用户信息
+            user = shiroService.findByUserName(username);
+        }
 
         // 可以在这里直接对用户名校验,或者调用 CredentialsMatcher 校验
         if (user == null) {

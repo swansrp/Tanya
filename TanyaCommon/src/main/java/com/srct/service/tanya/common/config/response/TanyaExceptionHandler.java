@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.srct.service.config.response.CommonExceptionHandler;
 import com.srct.service.config.response.CommonResponse;
+import com.srct.service.exception.UserNotLoginException;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.utils.log.LogAspect;
 
@@ -51,6 +52,15 @@ public class TanyaExceptionHandler extends CommonExceptionHandler {
     public ResponseEntity<CommonResponse<String>.Resp> errorHandler(NoSuchUserException ex) {
         mLogger.info(ex.getMessage());
         CommonResponse<String> res = new CommonResponse<String>(TanyaResponseConstant.NO_SUCH_USER, ex.getMessage());
+        return res.getEntity();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = UserNotLoginException.class)
+    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserNotLoginException ex) {
+        mLogger.info(ex.getMessage());
+        CommonResponse<String> res =
+            new CommonResponse<String>(TanyaResponseConstant.USER_NOT_LOGIN_ERROR, ex.getMessage());
         return res.getEntity();
     }
 
