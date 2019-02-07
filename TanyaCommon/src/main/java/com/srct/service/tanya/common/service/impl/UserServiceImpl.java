@@ -69,10 +69,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#login(java.lang.String)
+     * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String)
      */
     @Override
-    public UserLoginRespBO login(String wechatCode) {
+    public UserLoginRespBO reg(String wechatCode) {
 
         OpenIdBO openIdBO = wechatService.getOpenId(wechatCode);
 
@@ -101,10 +101,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#login(java.lang.String, java.lang.String)
+     * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String, java.lang.String)
      */
     @Override
-    public UserLoginRespBO login(String name, String password) {
+    public UserLoginRespBO reg(String name, String password) {
 
         UserInfo userInfoEx = new UserInfo();
         userInfoEx.setName(name);

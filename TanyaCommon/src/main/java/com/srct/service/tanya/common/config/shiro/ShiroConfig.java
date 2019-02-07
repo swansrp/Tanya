@@ -67,7 +67,7 @@ public class ShiroConfig {
         // 必须设置 SecurityManager,Shiro的核心安全接口
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         // 这里的/login是后台的接口名,非页面，如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-        shiroFilterFactoryBean.setLoginUrl("/");
+        shiroFilterFactoryBean.setLoginUrl("/login");
         // 这里的/index是后台的接口名,非页面,登录成功后要跳转的链接
         shiroFilterFactoryBean.setSuccessUrl("/index");
         // 未授权界面,该配置无效，并不会进行页面跳转
@@ -87,6 +87,7 @@ public class ShiroConfig {
         // 配置不登录可以访问的资源，anon 表示资源都可以匿名访问
         // 配置记住我或认证通过可以访问的地址
         filterChainDefinitionMap.put("/login", "anon");
+        filterChainDefinitionMap.put("/register", "anon");
         filterChainDefinitionMap.put("/", "anon");
         filterChainDefinitionMap.put("/css/**", "anon");
         filterChainDefinitionMap.put("/js/**", "anon");
@@ -344,7 +345,6 @@ public class ShiroConfig {
 
     @Bean
     public RedisManager redisManager() {
-        logger.info("redisManager setup");
         RedisManager redisManager = new RedisManager();
         return redisManager;
     }

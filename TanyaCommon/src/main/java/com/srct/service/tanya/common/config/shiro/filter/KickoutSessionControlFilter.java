@@ -26,10 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import com.srct.service.tanya.common.config.shiro.utils.RedisManager;
+import com.srct.service.utils.log.Log;
 
 /**
  * @author Sharp
- *
+ *         AuthenticatingFilter
  */
 public class KickoutSessionControlFilter extends AccessControlFilter {
 
@@ -89,6 +90,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue)
         throws Exception {
+        Log.i("KickoutSessionControlFilter - isAccessAllowed");
         return false;
     }
 
@@ -97,6 +99,8 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
+        Log.i("KickoutSessionControlFilter - onAccessDenied");
+
         Subject subject = getSubject(request, response);
         if (!subject.isAuthenticated() && !subject.isRemembered()) {
             // 如果没有登录，直接进行之后的流程

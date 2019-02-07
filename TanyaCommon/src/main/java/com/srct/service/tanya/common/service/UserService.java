@@ -24,9 +24,9 @@ public interface UserService {
 
     public UserInfo updateUser(UserRegReqBO vo);
 
-    public UserLoginRespBO login(String wecharCode);
+    public UserLoginRespBO reg(String wecharCode);
 
-    public UserLoginRespBO login(String name, String password);
+    public UserLoginRespBO reg(String name, String password);
 
     public List<String> getRole(UserInfo userInfo);
 

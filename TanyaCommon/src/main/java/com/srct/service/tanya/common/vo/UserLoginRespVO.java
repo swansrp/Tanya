@@ -5,7 +5,7 @@
  * @author Sharp
  * @date 2019-01-30 11:21:18
  */
-package com.srct.service.tanya.user.vo;
+package com.srct.service.tanya.common.vo;
 
 import java.util.List;
 

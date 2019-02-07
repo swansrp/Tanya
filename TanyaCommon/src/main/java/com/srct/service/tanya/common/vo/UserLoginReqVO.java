@@ -5,7 +5,7 @@
  * @author Sharp
  * @date 2019-01-30 12:08:55
  */
-package com.srct.service.tanya.user.vo;
+package com.srct.service.tanya.common.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,13 +17,16 @@ import lombok.Data;
 @Data
 public class UserLoginReqVO {
 
+    @ApiModelProperty("用户wechatCode")
+    private String wechatCode;
+
     @ApiModelProperty("用户名称")
-    private String name;
+    private String username;
 
     @ApiModelProperty("用户密码")
     private String password;
 
-    @ApiModelProperty("用户wechatCode")
-    private String wechatCode;
+    @ApiModelProperty("是否记住密码")
+    private boolean rememberMe;
 
 }

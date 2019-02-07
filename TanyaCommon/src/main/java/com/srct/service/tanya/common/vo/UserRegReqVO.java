@@ -5,7 +5,7 @@
  * @author Sharp
  * @date 2019-01-30 11:11:50
  */
-package com.srct.service.tanya.user.vo;
+package com.srct.service.tanya.common.vo;
 
 import javax.validation.constraints.NotBlank;
 

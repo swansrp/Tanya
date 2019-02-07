@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.srct.service.bo.wechat.OpenIdBO;
+import com.srct.service.exception.ServiceException;
 import com.srct.service.service.WechatService;
 import com.srct.service.tanya.common.config.shiro.tanya.TanyaAuthToken;
 import com.srct.service.tanya.common.config.shiro.utils.MyByteSource;
@@ -77,13 +78,14 @@ public class ShiroRealm extends AuthorizingRealm {
             OpenIdBO bo = wechatService.getOpenId(wechatCode);
             user = shiroService.findByOpenId(bo.getOpenId());
             authToken.setPassword(user.getPassword().toCharArray());
-        } else {
+        } else if (authToken.getUsername() != null && authToken.getPassword() != null) {
             String username = authToken.getUsername();
             String password = new String(authToken.getPassword());
             // 从数据库查询用户信息
             user = shiroService.findByUserName(username);
+        } else {
+            throw new ServiceException("There is no valid auth info");
         }
-
         // 可以在这里直接对用户名校验,或者调用 CredentialsMatcher 校验
         if (user == null) {
             throw new UnknownAccountException("用户名或密码错误！");
