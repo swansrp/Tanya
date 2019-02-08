@@ -30,10 +30,8 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -147,16 +145,6 @@ public class ShiroConfig {
         securityManager.setSessionManager(sessionManager());
         return securityManager;
     }
-
-    /**
-     * 配置Shiro生命周期处理器
-     *
-     * @return
-     */
-    // @Bean(name = "lifecycleBeanPostProcessor")
-    // public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
-    // return new LifecycleBeanPostProcessor();
-    // }
 
     /**
      * 身份认证realm; (这个需要自己写，账号密码校验；权限等)
@@ -303,7 +291,7 @@ public class ShiroConfig {
         ShiroRedisCacheManager shiroRedisCacheManager = new ShiroRedisCacheManager();
         shiroRedisCacheManager.setRedisManager(redisManager());
         // redis中针对不同用户缓存
-        shiroRedisCacheManager.setPrincipalIdFieldName("username");
+        shiroRedisCacheManager.setPrincipalIdFieldName("guid");
         // 用户权限信息缓存时间
         shiroRedisCacheManager.setExpire(200000);
         return shiroRedisCacheManager;
@@ -466,14 +454,6 @@ public class ShiroConfig {
         retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
 
         return retryLimitHashedCredentialsMatcher;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
-        DefaultAdvisorAutoProxyCreator daap = new DefaultAdvisorAutoProxyCreator();
-        daap.setProxyTargetClass(true);
-        return daap;
     }
 
 }

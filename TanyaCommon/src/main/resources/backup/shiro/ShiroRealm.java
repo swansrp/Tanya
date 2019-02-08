@@ -23,7 +23,6 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.srct.service.bo.wechat.OpenIdBO;
 import com.srct.service.exception.ServiceException;
@@ -33,8 +32,9 @@ import com.srct.service.tanya.common.config.shiro.utils.MyByteSource;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.service.ShiroService;
+import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.log.Log;
 
 /**
  * @author Sharp
@@ -44,14 +44,22 @@ public class ShiroRealm extends AuthorizingRealm {
 
     private static Logger logger = LoggerFactory.getLogger(ShiroRealm.class);
 
-    @Autowired
     private ShiroService shiroService;
-
-    @Autowired
     private WechatService wechatService;
 
-    @Autowired
-    private UserInfoDao userInfDao;
+    public ShiroService getShiroService() {
+        if (shiroService == null) {
+            shiroService = (ShiroService)BeanUtil.getBean("shiroServiceImpl");
+        }
+        return shiroService;
+    }
+
+    public WechatService getWechatService() {
+        if (wechatService == null) {
+            wechatService = (WechatService)BeanUtil.getBean("wechatServiceImpl");
+        }
+        return wechatService;
+    }
 
     /**
      * 验证用户身份
@@ -74,22 +82,39 @@ public class ShiroRealm extends AuthorizingRealm {
         TanyaAuthToken authToken = (TanyaAuthToken)authenticationToken;
         UserInfo user = null;
         String wechatCode = authToken.getWechatAuthCode();
-        if (authToken.getWechatAuthCode() != null) {
-            OpenIdBO bo = wechatService.getOpenId(wechatCode);
-            user = shiroService.findByOpenId(bo.getOpenId());
-            authToken.setPassword(user.getPassword().toCharArray());
-        } else if (authToken.getUsername() != null && authToken.getPassword() != null) {
-            String username = authToken.getUsername();
-            String password = new String(authToken.getPassword());
-            // 从数据库查询用户信息
-            user = shiroService.findByUserName(username);
-        } else {
-            throw new ServiceException("There is no valid auth info");
+
+        SimpleAuthenticationInfo info = null;
+
+        try {
+            if (authToken.getWechatAuthCode() != null) {
+                String guid = authToken.getGuid();
+                String openId = authToken.getWechatOpenId();
+                if (guid == null || openId == null) {
+                    OpenIdBO bo = getWechatService().getOpenId(wechatCode);
+                    guid = user.getGuid();
+                    openId = bo.getOpenId();
+                    authToken.setGuid(guid);
+                    authToken.setWechatOpenId(openId);
+                }
+                user = getShiroService().findByGuid(guid);
+                info = new SimpleAuthenticationInfo(guid, null, getName());
+            } else if (authToken.getUsername() != null && authToken.getPassword() != null) {
+                String username = authToken.getUsername();
+                String password = new String(authToken.getPassword());
+                // 从数据库查询用户信息
+                user = getShiroService().findByUserName(username);
+                authToken.setGuid(user.getGuid());
+                info = new SimpleAuthenticationInfo(user.getGuid(), user.getPassword(),
+                    new MyByteSource(user.getUsername()), getName());
+            } else {
+                throw new ServiceException("There is no valid auth info");
+            }
+        } catch (Exception e) {
+            Log.i(e);
+            throw new UnknownAccountException(e.getMessage());
         }
         // 可以在这里直接对用户名校验,或者调用 CredentialsMatcher 校验
-        if (user == null) {
-            throw new UnknownAccountException("用户名或密码错误！");
-        }
+
         // 这里将 密码对比 注销掉,否则 无法锁定 要将密码对比 交给 密码比较器
         // if (!password.equals(user.getPassword())) {
         // throw new IncorrectCredentialsException("用户名或密码错误！");
@@ -98,8 +123,6 @@ public class ShiroRealm extends AuthorizingRealm {
             throw new LockedAccountException("账号已被锁定,请联系管理员！");
         }
 
-        SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(user.getUsername(), user.getPassword(),
-            new MyByteSource(user.getUsername()), getName());
         return info;
     }
 
@@ -130,12 +153,12 @@ public class ShiroRealm extends AuthorizingRealm {
         logger.info("doGetAuthorizationInfo");
 
         // 获取用户
-        String username = (String)SecurityUtils.getSubject().getPrincipal();
+        String guid = (String)SecurityUtils.getSubject().getPrincipal();
         // 从数据库查询用户信息
-        UserInfo user = shiroService.findByUserName(username);
+        UserInfo user = getShiroService().findByGuid(guid);
 
         // 获取用户角色
-        Set<RoleInfo> roles = shiroService.findRolesByUserGuid(user.getGuid());
+        Set<RoleInfo> roles = getShiroService().findRolesByUserGuid(user.getGuid());
         // 添加角色
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
         for (RoleInfo role : roles) {
@@ -143,7 +166,7 @@ public class ShiroRealm extends AuthorizingRealm {
         }
 
         // 获取用户权限
-        Set<PermissionInfo> permissions = shiroService.findPermissionsByRole(roles);
+        Set<PermissionInfo> permissions = getShiroService().findPermissionsByRole(roles);
         // 添加权限
         for (PermissionInfo permission : permissions) {
             authorizationInfo.addStringPermission(permission.getPermission());

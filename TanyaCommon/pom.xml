@@ -19,12 +19,13 @@
             <groupId>com.srct.service</groupId>
             <artifactId>SpringBootCommonLib</artifactId>
         </dependency>
-        <!-- 整合shiro框架 -->
+        <!-- give up 整合shiro框架 
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-spring</artifactId>
             <version>1.4.0</version>
         </dependency>
+        -->
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

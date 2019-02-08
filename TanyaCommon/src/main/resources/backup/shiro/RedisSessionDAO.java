@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.srct.service.tanya.common.config.shiro.utils.RedisManager;
+import com.srct.service.utils.log.Log;
 
 /**
  * @author Sharp
@@ -176,6 +177,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
             s = (Session)redisManager.get(getRedisSessionKey(sessionId));
             setSessionToThreadLocal(sessionId, s);
         } catch (Exception e) {
+            Log.i(e);
             logger.error("read session error. settionId= {}", sessionId);
         }
         return s;

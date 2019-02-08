@@ -23,6 +23,8 @@ public interface ShiroService {
 
     public UserInfo findByUserName(String userName);
 
+    public int update(UserInfo user);
+
     public int insert(UserInfo user);
 
     public int del(String username);
@@ -30,4 +32,6 @@ public interface ShiroService {
     public Set<RoleInfo> findRolesByUserGuid(String guid);
 
     public Set<PermissionInfo> findPermissionsByRole(Set<RoleInfo> roles);
+
+    public UserInfo findByGuid(String guid);
 }

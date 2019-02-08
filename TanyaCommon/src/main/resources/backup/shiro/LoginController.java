@@ -17,6 +17,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,11 +31,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import com.srct.service.config.response.CommonResponse;
+import com.srct.service.exception.AccountOrPasswordIncorrectException;
+import com.srct.service.exception.ServiceException;
+import com.srct.service.exception.UserNotLoginException;
+import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
+import com.srct.service.tanya.common.config.shiro.tanya.TanyaAuthToken;
+import com.srct.service.tanya.common.config.shiro.utils.MyByteSource;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.tanya.common.service.TokenService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.common.vo.UserRegReqVO;
@@ -50,6 +64,14 @@ import io.swagger.annotations.ApiOperation;
 public class LoginController {
 
     @Autowired
+    private ResourceUrlProvider resourceUrlProvider;
+
+    // 散列算法类型为MD5
+    private static final String ALGORITH_NAME = "md5";
+    // hash的次数
+    private static final int HASH_ITERATIONS = 2;
+
+    @Autowired
     private HttpServletRequest request;
 
     @Autowired
@@ -68,6 +90,38 @@ public class LoginController {
         HttpServletResponse response) throws IOException, ServletException {
 
         Log.i("**********login**********");
+        Subject subject = SecurityUtils.getSubject();
+        String guid = (String)subject.getPrincipal();
+
+        if (guid == null) {
+            Log.i("Have not login");
+            TanyaAuthToken authToken = new TanyaAuthToken(wechatAuthCode, username, password, rememberMe);
+            try {
+                // 登录操作
+                subject.login(authToken);
+                response.sendRedirect("/info");
+            } catch (Exception e) {
+                // 登录失败从request中获取shiro处理的异常信息 shiroLoginFailure:就是shiro异常类的全类名
+                String exception = (String)request.getAttribute("shiroLoginFailure");
+
+                if (e instanceof UnknownAccountException) {
+                    throw new NoSuchUserException(e.getMessage());
+                }
+
+                if (e instanceof IncorrectCredentialsException) {
+                    throw new AccountOrPasswordIncorrectException();
+                }
+
+                if (e instanceof LockedAccountException) {
+                    throw new ServiceException("account has been locked");
+                }
+
+                throw new ServiceException(e.getMessage());
+
+            }
+        } else {
+            response.sendRedirect("/info");
+        }
 
         return TanyaExceptionHandler.generateResponse("");
     }
@@ -83,7 +137,33 @@ public class LoginController {
         Log.i("**********register**********");
         Log.i("name: {} pw: {}, wechat: {}", username, password, wechatAuthCode);
 
-        return TanyaExceptionHandler.generateResponse("");
+        String guid = null;
+        TanyaAuthToken authToken = new TanyaAuthToken(wechatAuthCode, username, password, true);
+        if (wechatAuthCode != null) {
+            UserLoginRespBO bo = userService.reg(wechatAuthCode);
+            authToken.setGuid(bo.getGuid());
+            authToken.setWechatOpenId(bo.getWechatOpenId());
+        } else if (username != null && password != null) {
+            String hashedPassword =
+                new SimpleHash(ALGORITH_NAME, password, new MyByteSource(username), HASH_ITERATIONS).toHex();
+            Log.i("encrypt password {}-{}", password, hashedPassword);
+            userService.reg(username, hashedPassword);
+        } else {
+            throw new ServiceException("cant regitser user info");
+        }
+
+        Subject subject = SecurityUtils.getSubject();
+        try {
+            // 登录操作
+            Log.i("before subject.login ");
+            subject.login(authToken);
+            Log.i("after subject.login ");
+        } catch (Exception e) {
+            throw new ServiceException(e.getMessage());
+        }
+        String token = subject.getSession().getId().toString();
+
+        return TanyaExceptionHandler.generateResponse(token);
     }
 
     @ApiOperation(value = "更新用户信息", notes = "输入用户详细信息")
@@ -102,8 +182,14 @@ public class LoginController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<UserInfo>.Resp> info() {
         Log.i("**********info**********");
-
-        return TanyaExceptionHandler.generateResponse(new UserInfo());
+        Subject subject = SecurityUtils.getSubject();
+        String guid = (String)subject.getPrincipal();
+        UserInfo info = userService.getUserbyGuid(guid);
+        if (info == null) {
+            throw new UserNotLoginException();
+        } else {
+            return TanyaExceptionHandler.generateResponse(info);
+        }
     }
 
 }

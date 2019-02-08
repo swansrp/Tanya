@@ -22,10 +22,10 @@ import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.AccessControlFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import com.srct.service.tanya.common.config.shiro.utils.RedisManager;
+import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
 /**
@@ -34,7 +34,6 @@ import com.srct.service.utils.log.Log;
  */
 public class KickoutSessionControlFilter extends AccessControlFilter {
 
-    @Autowired
     private ResourceUrlProvider resourceUrlProvider;
 
     /** 踢出后到的地址 */
@@ -51,6 +50,13 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
 
     public static final String DEFAULT_KICKOUT_CACHE_KEY_PREFIX = "shiro:cache:kickout:";
     private String keyPrefix = DEFAULT_KICKOUT_CACHE_KEY_PREFIX;
+
+    private ResourceUrlProvider getResourceUrlProvider() {
+        if (resourceUrlProvider == null) {
+            this.resourceUrlProvider = (ResourceUrlProvider)BeanUtil.getBean(ResourceUrlProvider.class);
+        }
+        return resourceUrlProvider;
+    }
 
     public void setKickoutUrl(String kickoutUrl) {
         this.kickoutUrl = kickoutUrl;
@@ -118,11 +124,14 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
         Session session = subject.getSession();
         // 这里获取的User是实体 因为我在 自定义ShiroRealm中的doGetAuthenticationInfo方法中
         // new SimpleAuthenticationInfo(user, password, getName()); 传的是 User实体 所以这里拿到的也是实体,如果传的是userName 这里拿到的就是userName
-        String username = (String)subject.getPrincipal();
+        String guid = (String)subject.getPrincipal();
         Serializable sessionId = session.getId();
+        if (sessionId == null) {
+            sessionId = httpServletRequest.getHeader("tanya-auth-code");
+        }
 
         // 初始化用户的队列放到缓存里
-        Deque<Serializable> deque = (Deque<Serializable>)redisManager.get(getRedisKickoutKey(username));
+        Deque<Serializable> deque = (Deque<Serializable>)redisManager.get(getRedisKickoutKey(guid));
         if (deque == null || deque.size() == 0) {
             deque = new LinkedList<Serializable>();
         }
@@ -152,7 +161,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
             }
         }
 
-        redisManager.set(getRedisKickoutKey(username), deque);
+        redisManager.set(getRedisKickoutKey(guid), deque);
 
         // 如果被踢出了，直接退出，重定向到踢出后的地址
         if (session.getAttribute("kickout") != null) {
@@ -168,7 +177,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
     }
 
     private boolean isStaticFile(String path) {
-        String staticUri = resourceUrlProvider.getForLookupPath(path);
+        String staticUri = getResourceUrlProvider().getForLookupPath(path);
         return staticUri != null;
     }
 

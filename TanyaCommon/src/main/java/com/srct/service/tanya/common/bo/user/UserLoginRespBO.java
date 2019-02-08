@@ -24,9 +24,9 @@ public class UserLoginRespBO {
     @ApiModelProperty("用户guid")
     private String guid;
 
-    @NotBlank(message = "sn cant be null")
-    @ApiModelProperty("用户SN")
-    private String sn;
+    @NotBlank(message = "wechatOpenId cant be null")
+    @ApiModelProperty("用户微信openId")
+    private String wechatOpenId;
 
     @ApiModelProperty("用户等级")
     private List<String> role;

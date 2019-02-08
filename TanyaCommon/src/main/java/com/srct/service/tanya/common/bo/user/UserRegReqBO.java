@@ -20,7 +20,7 @@ import lombok.Data;
 public class UserRegReqBO {
 
     @ApiModelProperty(name = "名字", notes = "Sharp", required = true)
-    private String name;
+    private String username;
 
     @ApiModelProperty(name = "密码", notes = "123qwe", required = false)
     private String password;

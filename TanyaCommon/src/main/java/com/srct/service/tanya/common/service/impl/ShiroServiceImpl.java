@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.srct.service.exception.ServiceException;
@@ -36,18 +37,23 @@ import com.srct.service.tanya.common.service.ShiroService;
 public class ShiroServiceImpl implements ShiroService {
 
     @Autowired
+    @Lazy
     UserInfoDao userInfoDao;
 
     @Autowired
+    @Lazy
     RoleInfoDao roleInfoDao;
 
     @Autowired
+    @Lazy
     PermissionInfoDao permissionInfoDao;
 
     @Autowired
+    @Lazy
     UserRoleMapDao userRoleMapDao;
 
     @Autowired
+    @Lazy
     RolePermissionMapDao rolePermissionMapDao;
 
     @Override
@@ -87,6 +93,14 @@ public class ShiroServiceImpl implements ShiroService {
      */
     @Override
     public int insert(UserInfo user) {
+        return userInfoDao.updateUserInfo(user).getId();
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.ShiroService#update(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo)
+     */
+    @Override
+    public int update(UserInfo user) {
         return userInfoDao.updateUserInfo(user).getId();
     }
 
@@ -149,6 +163,23 @@ public class ShiroServiceImpl implements ShiroService {
             }
         }
         return permissionInfoSet;
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.ShiroService#findByGuid(java.lang.String)
+     */
+    @Override
+    public UserInfo findByGuid(String guid) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setGuid(guid);
+        List<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfo);
+        if (userInfoList == null || userInfoList.size() == 0) {
+            throw new NoSuchUserException("guid = " + guid);
+        }
+        if (userInfoList.size() != 1) {
+            throw new ServiceException("Multiuser guid as " + guid);
+        }
+        return userInfoList.get(0);
     }
 
 }

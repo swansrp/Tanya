@@ -72,6 +72,7 @@
     <!-- 控制台输出日志级别 -->   
     <root level="trace">      
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="syslog" />
     </root>
     
     <!-- 指定项目中某个包，当有日志操作行为时的日志记录级别 -->  
@@ -80,9 +81,9 @@
     <logger name="com.srct.service.utils.log" level="TRACE">      
         <appender-ref ref="apipoint" />      
     </logger> 
-    <!--
+
     <logger name="com.srct.service" level="DEBUG">      
         <appender-ref ref="syslog" />      
     </logger>
-    -->
+
 </configuration>    

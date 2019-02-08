@@ -46,7 +46,7 @@ public class ShiroRedisCacheManager implements CacheManager {
     public static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache:";
     private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
 
-    public static final String DEFAULT_PRINCIPAL_ID_FIELD_NAME = "username";
+    public static final String DEFAULT_PRINCIPAL_ID_FIELD_NAME = "guid";
     private String principalIdFieldName = DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
     @Override

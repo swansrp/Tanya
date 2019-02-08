@@ -23,6 +23,10 @@ import lombok.Data;
 public class TanyaAuthToken extends UsernamePasswordToken {
     private String wechatAuthCode;
 
+    private String guid;
+
+    private String wechatOpenId;
+
     public TanyaAuthToken(final String wechatAuthCode, final String username, final String password,
         final boolean rememberMe) {
         super(username, password, rememberMe);

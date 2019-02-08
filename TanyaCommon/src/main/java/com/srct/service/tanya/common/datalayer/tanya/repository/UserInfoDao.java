@@ -1,9 +1,9 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: srct
  * @date: 2019/02/03
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
@@ -25,10 +25,8 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.UserInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
-
 
 /**
  * @ClassName: UserInfoDao
