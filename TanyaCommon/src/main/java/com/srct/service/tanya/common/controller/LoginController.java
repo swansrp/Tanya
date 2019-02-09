@@ -188,9 +188,13 @@ public class LoginController {
 
     @ApiOperation(value = "获取用户GUID二维码", notes = "获取用户详细信息")
     @RequestMapping(value = "/qrcode", method = RequestMethod.GET)
-    public void qrcode(HttpServletResponse response) throws IOException {
+    public void qrcode(@RequestParam(value = "token", required = false) String token, HttpServletResponse response)
+        throws IOException {
         Log.i("**********QR CODE**********");
         String guid = (String)request.getAttribute("guid");
+        if (guid == null && token != null) {
+            guid = sessionService.getGuidByToken(token);
+        }
         Log.i(guid);
         ServletOutputStream stream = response.getOutputStream();
         if (guid != null) {

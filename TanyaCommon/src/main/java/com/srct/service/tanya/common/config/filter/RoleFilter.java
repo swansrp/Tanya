@@ -67,6 +67,7 @@ public class RoleFilter implements Filter {
         String token = req.getHeader("x-access-token");
         if (token != null) {
             guid = tokenService.getGuidByToken(token.toString());
+            req.setAttribute("guid", guid);
         }
 
         String requestURI = req.getRequestURI();
@@ -89,16 +90,21 @@ public class RoleFilter implements Filter {
         }
 
         if (guid == null || guid.length() == 0) {
-            Log.i("token invalid or expired, please re-login");
-            RequestDispatcher rd = req.getRequestDispatcher("/unlogin");
-            chain.doFilter(request, response);
-            return;
+            if (isInclude(url)) {
+                Log.i("Dont need check role {}", url);
+                chain.doFilter(request, response);
+                return;
+            } else {
+                Log.i("token invalid or expired, please re-login");
+                RequestDispatcher rd = req.getRequestDispatcher("/unlogin");
+                rd.forward(request, response);
+                return;
+            }
         } else {
             UserInfo userInfo = new UserInfo();
             userInfo.setGuid(guid);
             List<String> roles = userService.getRole(userInfo);
             req.setAttribute("role", roles);
-            req.setAttribute("guid", guid);
             chain.doFilter(request, response);
             return;
         }

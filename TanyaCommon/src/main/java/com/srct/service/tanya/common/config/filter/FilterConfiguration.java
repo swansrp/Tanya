@@ -32,7 +32,7 @@ public class FilterConfiguration {
         registration.addUrlPatterns("/*");
         // 拦截规则
         registration.addInitParameter("exclusions",
-            "/login,/logout,/register,/test/*,/reset,"
+            "/login,/logout,/register,/test/*,/reset,/qrcode,"
                 + "/swagger-ui.html,/swagger-resources,/v2/api-docs,/webjars/springfox-swagger-ui/*,/configuration/*,"
                 + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
         // 过滤器名称
