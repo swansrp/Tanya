@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.srct.service.bo.wechat.OpenIdBO;
 import com.srct.service.config.db.DataSourceCommonConstant;
+import com.srct.service.exception.AccountOrPasswordIncorrectException;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.service.WechatService;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
@@ -27,11 +28,13 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
-import com.srct.service.tanya.common.service.TokenService;
+import com.srct.service.tanya.common.exception.UserAccountLocked;
+import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.JSONUtil;
 import com.srct.service.utils.log.Log;
+import com.srct.service.utils.security.MD5Util;
 import com.srct.service.utils.security.RandomUtil;
 
 /**
@@ -51,7 +54,7 @@ public class UserServiceImpl implements UserService {
     RoleInfoDao roleInfoDao;
 
     @Autowired
-    TokenService tokenService;
+    SessionService sessionService;
 
     @Autowired
     WechatService wechatService;
@@ -85,6 +88,26 @@ public class UserServiceImpl implements UserService {
             userInfo = updateUser(bo);
         } catch (Exception e) {
             throw new ServiceException("register wechatid " + wechatId + " failed\n" + e.getMessage());
+        }
+
+        UserLoginRespBO res = getRoleInfo(userInfo);
+
+        return res;
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.UserService#regbyOpenId(java.lang.String)
+     */
+    @Override
+    public UserLoginRespBO regbyOpenId(String openId) {
+        UserInfo userInfo = null;
+        try {
+            UserRegReqBO bo = new UserRegReqBO();
+            bo.setWechatId(openId);
+            bo.setGuid(RandomUtil.getUUID());
+            userInfo = updateUser(bo);
+        } catch (Exception e) {
+            throw new ServiceException("register wechatid " + openId + " failed\n" + e.getMessage());
         }
 
         UserLoginRespBO res = getRoleInfo(userInfo);
@@ -133,7 +156,7 @@ public class UserServiceImpl implements UserService {
             userInfo.setLastAt(new Date());
             userInfoDao.getUserInfoSelective(userInfo);
         } catch (Exception e) {
-            throw new NoSuchUserException("No such user with wechat code " + wechatCode);
+            throw new NoSuchUserException(wechatId);
         }
 
         UserLoginRespBO res = getRoleInfo(userInfo);
@@ -148,18 +171,29 @@ public class UserServiceImpl implements UserService {
     public UserLoginRespBO login(String name, String password) {
 
         UserInfo userInfoEx = new UserInfo();
-        userInfoEx.setName(name);
-        userInfoEx.setPassword(password);
+        userInfoEx.setUsername(name);
         userInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         List<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfoEx);
 
-        UserInfo userInfo = null;
-        try {
-            userInfo = userInfoList.get(0);
+        if (userInfoList == null || userInfoList.size() != 1) {
+            throw new NoSuchUserException("No such user with name " + name);
+        }
+        UserInfo userInfo = userInfoList.get(0);
+        String guid = userInfo.getGuid();
+
+        if (!userInfo.getState().equals("0")) {
+            throw new UserAccountLocked(guid);
+        }
+
+        if (MD5Util.verify(password, userInfo.getPassword())) {
             userInfo.setLastAt(new Date());
             userInfoDao.getUserInfoSelective(userInfo);
-        } catch (Exception e) {
-            throw new NoSuchUserException("No such user with name-password name-password");
+        } else {
+            if (!sessionService.retry(guid)) {
+                userInfo.setState("1");
+                userInfoDao.updateUserInfo(userInfo);
+            }
+            throw new AccountOrPasswordIncorrectException();
         }
 
         UserLoginRespBO res = getRoleInfo(userInfo);
@@ -219,6 +253,33 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             throw new NoSuchUserException("No such user with guid " + guid);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.UserService#getUserbyEmail(java.lang.String)
+     */
+    @Override
+    public UserInfo getUserbyEmail(String email) {
+        UserInfo userInfoEx = new UserInfo();
+        userInfoEx.setEmail(email);
+        userInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfoEx);
+
+        try {
+            return userInfoList.get(0);
+        } catch (Exception e) {
+            throw new NoSuchUserException("No such user with email " + email);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.UserService#cleanUserPassword()
+     */
+    @Override
+    public UserInfo cleanUserPassword(UserInfo userInfo) {
+        UserInfo info = userInfoDao.getUserInfobyId(userInfo.getId());
+        info.setPassword("");
+        return userInfoDao.updateUserInfo(info);
     }
 
 }

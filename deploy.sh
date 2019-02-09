@@ -40,7 +40,7 @@ deploy() {
 	restart $1
 	if test -z $2
 	then
-		trace $1
+		api $1
 	fi
 	
 	return 0

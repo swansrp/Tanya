@@ -19,7 +19,7 @@ import lombok.Data;
 @Data
 public class UserRegReqBO {
 
-    @ApiModelProperty(name = "名字", notes = "Sharp", required = true)
+    @ApiModelProperty(name = "登录名", notes = "非前端输入,默认为邮箱", required = true)
     private String username;
 
     @ApiModelProperty(name = "密码", notes = "123qwe", required = false)
@@ -27,6 +27,9 @@ public class UserRegReqBO {
 
     @ApiModelProperty(name = "系统guid", notes = "非前端输入", required = false)
     private String guid;
+
+    @ApiModelProperty(name = "用户名", notes = "Sharp", required = false)
+    private String name;
 
     @ApiModelProperty(name = "微信openId", notes = "非前端输入", required = false)
     private String wechatId;

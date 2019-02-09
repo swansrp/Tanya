@@ -8,6 +8,7 @@
 package com.srct.service.tanya.common.config.filter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.Filter;
@@ -20,26 +21,39 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.service.TokenService;
+import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.log.Log;
 
-// @Configuration
-// @WebFilter(filterName = "RoleFilter", urlPatterns = "/*")
 public class RoleFilter implements Filter {
 
+    /**
+     * 封装，不需要过滤的list列表
+     */
+    protected static List<String> patterns = new ArrayList<String>();
+
     @Autowired
-    TokenService tokenService;
+    SessionService tokenService;
 
     @Autowired
     UserService userService;
 
     @Override
-    public void init(FilterConfig arg0) throws ServletException {
+    public void init(FilterConfig config) throws ServletException {
         Log.i("...RoleFilter init...");
+        String ignoresParam = config.getInitParameter("exclusions");
+        if (StringUtils.isNotEmpty(ignoresParam)) {
+            String prefixIgnores[] = ignoresParam.split(",");
+            for (String ignore : prefixIgnores) {
+                patterns.add(ignore);
+            }
+
+        }
+        return;
     }
 
     @Override
@@ -48,38 +62,66 @@ public class RoleFilter implements Filter {
         // TODO Auto-generated method stub
         HttpServletRequest req = (HttpServletRequest)request;
         HttpServletResponse resp = (HttpServletResponse)response;
+
+        String guid = null;
+        String token = req.getHeader("x-access-token");
+        if (token != null) {
+            guid = tokenService.getGuidByToken(token.toString());
+        }
+
         String requestURI = req.getRequestURI();
         String queryString = req.getQueryString();
-        Log.d("...RoleFilter doFilter...");
-        Log.d("req:" + requestURI);
-        Log.d("query:" + queryString);
+        Log.i("req: {}", requestURI);
+        Log.i("query: {}", queryString);
+        // Log.i(req.getServletPath());
+        // Log.i(req.getCharacterEncoding());
+        // Log.i(req.getContentType());
+        // Log.i(req.getMethod());
+
         if (requestURI != null && requestURI.contains("elb.check")) {
             return;
         }
-        String guid = null;
-        Object token = req.getSession().getAttribute("AuthToken");
-        if (token != null) {
-            Log.i(token.toString());
-            guid = tokenService.getGuidByToken(token.toString());
+        String url = req.getRequestURI().substring(req.getContextPath().length());
+        if (isInclude(url)) {
+            Log.i("Dont need check role {}", url);
+            chain.doFilter(request, response);
+            return;
         }
+
         if (guid == null || guid.length() == 0) {
-            Log.d("token invalid or expired, please re-login");
+            Log.i("token invalid or expired, please re-login");
+            RequestDispatcher rd = req.getRequestDispatcher("/unlogin");
+            chain.doFilter(request, response);
+            return;
         } else {
-            RequestDispatcher rd = req.getRequestDispatcher(requestURI);
             UserInfo userInfo = new UserInfo();
             userInfo.setGuid(guid);
             List<String> roles = userService.getRole(userInfo);
             req.setAttribute("role", roles);
             req.setAttribute("guid", guid);
-            rd.forward(req, resp);
+            chain.doFilter(request, response);
             return;
         }
 
-        chain.doFilter(req, resp);
     }
 
     @Override
     public void destroy() {
         Log.d("...RoleFilter destroy...");
+    }
+
+    /**
+     * 是否需要过滤
+     * 
+     * @param url
+     * @return
+     */
+    private boolean isInclude(String url) {
+        for (String pattern : patterns) {
+            if (PathMatcherUtil.matches(pattern, url)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

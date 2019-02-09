@@ -24,7 +24,9 @@ public interface UserService {
 
     public UserInfo updateUser(UserRegReqBO vo);
 
-    public UserLoginRespBO reg(String wecharCode);
+    public UserLoginRespBO reg(String wechatCode);
+
+    public UserLoginRespBO regbyOpenId(String openId);
 
     public UserLoginRespBO reg(String name, String password);
 
@@ -35,5 +37,9 @@ public interface UserService {
     public List<String> getRole(UserInfo userInfo);
 
     public UserInfo getUserbyGuid(String guid);
+
+    public UserInfo getUserbyEmail(String email);
+
+    public UserInfo cleanUserPassword(UserInfo userInfo);
 
 }

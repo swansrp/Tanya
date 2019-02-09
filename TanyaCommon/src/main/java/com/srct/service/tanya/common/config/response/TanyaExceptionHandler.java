@@ -18,16 +18,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.srct.service.config.response.CommonExceptionHandler;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.UserNotLoginException;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
-import com.srct.service.utils.log.LogAspect;
+import com.srct.service.tanya.common.exception.UserAccountLocked;
 
 @RestControllerAdvice
-public class TanyaExceptionHandler extends CommonExceptionHandler {
+public class TanyaExceptionHandler {
 
-    private static final Logger mLogger = LoggerFactory.getLogger(LogAspect.class);
+    private static final Logger mLogger = LoggerFactory.getLogger(TanyaExceptionHandler.class);
 
     /**
      * 全局异常捕捉处理
@@ -41,8 +40,9 @@ public class TanyaExceptionHandler extends CommonExceptionHandler {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
-        String msg = sw.toString();
-        mLogger.info(msg);
+        int endIndex = sw.toString().indexOf("\n", 500);
+        String msg = sw.toString().substring(0, endIndex);
+        // mLogger.info(msg);
         CommonResponse<String> res = new CommonResponse<String>(TanyaResponseConstant.SERVER_ERROR, ex.getMessage());
         return res.getEntity();
     }
@@ -50,7 +50,7 @@ public class TanyaExceptionHandler extends CommonExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = NoSuchUserException.class)
     public ResponseEntity<CommonResponse<String>.Resp> errorHandler(NoSuchUserException ex) {
-        mLogger.info(ex.getMessage());
+        mLogger.info("NoSuchUserException {}", ex.getMessage());
         CommonResponse<String> res = new CommonResponse<String>(TanyaResponseConstant.NO_SUCH_USER, ex.getMessage());
         return res.getEntity();
     }
@@ -58,9 +58,17 @@ public class TanyaExceptionHandler extends CommonExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = UserNotLoginException.class)
     public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserNotLoginException ex) {
-        mLogger.info(ex.getMessage());
+        mLogger.info("UserNotLoginException {}", ex.getMessage());
         CommonResponse<String> res =
             new CommonResponse<String>(TanyaResponseConstant.USER_NOT_LOGIN_ERROR, ex.getMessage());
+        return res.getEntity();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = UserAccountLocked.class)
+    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserAccountLocked ex) {
+        mLogger.info("UserAccountLocked {}", ex.getMessage());
+        CommonResponse<String> res = new CommonResponse<String>(TanyaResponseConstant.USER_LOCKED, ex.getMessage());
         return res.getEntity();
     }
 

@@ -1,0 +1,57 @@
+/**
+ * Title: FilterConfiguration.java
+ * Description:
+ * Copyright: Copyright (c) 2019
+ * Company: Sharp
+ * 
+ * @Project Name: TanyaCommon
+ * @Package: com.srct.service.tanya.common.config.filter
+ * @author Sharp
+ * @date 2019-02-09 00:15:58
+ */
+package com.srct.service.tanya.common.config.filter;
+
+import javax.servlet.Filter;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author Sharp
+ *
+ */
+@Configuration
+public class FilterConfiguration {
+
+    @Bean
+    public FilterRegistrationBean filterDemo4Registration() {
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        // 注入过滤器
+        registration.setFilter(roleFilter());
+        registration.addUrlPatterns("/*");
+        // 拦截规则
+        registration.addInitParameter("exclusions",
+            "/login,/logout,/register,/test/*,/reset,"
+                + "/swagger-ui.html,/swagger-resources,/v2/api-docs,/webjars/springfox-swagger-ui/*,/configuration/*,"
+                + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
+        // 过滤器名称
+        registration.setName("RoleFilter");
+        // 是否自动注册 false 取消Filter的自动注册
+        registration.setEnabled(true);
+        // 过滤器顺序
+        registration.setOrder(1);
+        return registration;
+    }
+
+    /**
+     * 创建一个bean
+     * 
+     * @return
+     */
+    @Bean(name = "sessionFilter")
+    public Filter roleFilter() {
+        return new RoleFilter();
+    }
+
+}
