@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.UserNotLoginException;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
-import com.srct.service.tanya.common.exception.UserAccountLocked;
+import com.srct.service.tanya.common.exception.UserAccountLockedException;
+import com.srct.service.tanya.common.exception.UserNotInRoleException;
 
 @RestControllerAdvice
 public class TanyaExceptionHandler {
@@ -65,10 +66,19 @@ public class TanyaExceptionHandler {
     }
 
     @ResponseBody
-    @ExceptionHandler(value = UserAccountLocked.class)
-    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserAccountLocked ex) {
+    @ExceptionHandler(value = UserAccountLockedException.class)
+    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserAccountLockedException ex) {
         mLogger.info("UserAccountLocked {}", ex.getMessage());
         CommonResponse<String> res = new CommonResponse<String>(TanyaResponseConstant.USER_LOCKED, ex.getMessage());
+        return res.getEntity();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = UserNotInRoleException.class)
+    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserNotInRoleException ex) {
+        mLogger.info("UserAccountLocked {}", ex.getMessage());
+        CommonResponse<String> res =
+            new CommonResponse<String>(TanyaResponseConstant.USER_NOT_IN_ROLE, ex.getMessage());
         return res.getEntity();
     }
 

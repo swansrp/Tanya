@@ -29,7 +29,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
-import com.srct.service.tanya.common.exception.UserAccountLocked;
+import com.srct.service.tanya.common.exception.UserAccountLockedException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.BeanUtil;
@@ -199,7 +199,7 @@ public class UserServiceImpl implements UserService {
         String guid = userInfo.getGuid();
 
         if (!userInfo.getState().equals("0")) {
-            throw new UserAccountLocked(guid);
+            throw new UserAccountLockedException(guid);
         }
 
         if (MD5Util.verify(password, userInfo.getPassword())) {

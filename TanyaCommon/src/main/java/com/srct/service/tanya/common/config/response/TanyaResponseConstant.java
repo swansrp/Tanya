@@ -24,4 +24,7 @@ public class TanyaResponseConstant extends CommonResponseConstant {
 
     public static final CommonResponseCode USER_LOCKED =
         new CommonResponseCode(TAG + "1001", "USER_LOCKED", HttpStatus.OK);
+
+    public static final CommonResponseCode USER_NOT_IN_ROLE =
+        new CommonResponseCode(TAG + "1002", "USER_DONT_HAVE_ROLE", HttpStatus.OK);
 }

@@ -35,6 +35,8 @@ public class FilterConfiguration {
             "/portal/admin/*," + "/login,/logout,/register,/test/*,/reset,/qrcode,"
                 + "/swagger-ui.html,/swagger-resources,/v2/api-docs,/webjars/springfox-swagger-ui/*,/configuration/*,"
                 + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
+        // 拦截规则
+        registration.addInitParameter("roleRequired", "/role/*");
         // 过滤器名称
         registration.setName("RoleFilter");
         // 是否自动注册 false 取消Filter的自动注册

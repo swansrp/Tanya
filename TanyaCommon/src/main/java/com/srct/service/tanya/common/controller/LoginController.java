@@ -13,7 +13,6 @@ package com.srct.service.tanya.common.controller;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
@@ -44,6 +43,7 @@ import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
+import com.srct.service.tanya.common.exception.UserNotInRoleException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.common.vo.UserInfoVO;
@@ -81,6 +81,13 @@ public class LoginController {
     public ResponseEntity<CommonResponse<String>.Resp> unlogin() {
         Log.i("**********unlogin**********");
         throw new UserNotLoginException();
+    }
+
+    @ApiOperation(value = "用户无角色", notes = "返回错误,告知前台登录")
+    @RequestMapping(value = "/norole", method = RequestMethod.GET)
+    public ResponseEntity<CommonResponse<String>.Resp> noRole() {
+        Log.i("**********norole**********");
+        throw new UserNotInRoleException();
     }
 
     @ApiOperation(value = "用户登入", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
@@ -163,7 +170,7 @@ public class LoginController {
         UserInfo info = userService.getUserbyGuid(guid);
         BeanUtil.copyProperties(info, vo);
         try {
-            RoleInfo role = ((List<RoleInfo>)request.getAttribute("role")).get(0);
+            RoleInfo role = (RoleInfo)request.getAttribute("role");
             Log.i("guid {} role {}", guid, role.getId());
             // Only one role
             vo.setRoleId(role.getId());

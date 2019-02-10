@@ -17,14 +17,14 @@ import com.srct.service.exception.ServiceException;
  * @author Sharp
  *
  */
-public class UserAccountLocked extends ServiceException {
+public class UserAccountLockedException extends ServiceException {
 
     /**
      * 
      */
     private static final long serialVersionUID = -6775990767233708520L;
 
-    public UserAccountLocked(String msg) {
+    public UserAccountLockedException(String msg) {
         super(msg);
     }
 

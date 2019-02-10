@@ -37,6 +37,11 @@ public class RoleFilter implements Filter {
      */
     protected static List<String> patterns = new ArrayList<String>();
 
+    /**
+     * 封装，必须有身份list列表
+     */
+    protected static List<String> rolePatterns = new ArrayList<String>();
+
     @Autowired
     SessionService tokenService;
 
@@ -52,7 +57,14 @@ public class RoleFilter implements Filter {
             for (String ignore : prefixIgnores) {
                 patterns.add(ignore);
             }
+        }
 
+        String roleRequiredPaths = config.getInitParameter("roleRequired");
+        if (StringUtils.isNotEmpty(roleRequiredPaths)) {
+            String prefixRoleRequired[] = roleRequiredPaths.split(",");
+            for (String path : prefixRoleRequired) {
+                rolePatterns.add(path);
+            }
         }
         return;
     }
@@ -84,34 +96,34 @@ public class RoleFilter implements Filter {
             return;
         }
         String url = req.getRequestURI().substring(req.getContextPath().length());
-        if (isInclude(url)) {
+
+        boolean isIgonrePath = isInclude(url, patterns);
+        boolean isRoleRequiredPath = isInclude(url, rolePatterns);
+        if (isIgonrePath) {
             Log.i("Dont need check role {}", url);
             chain.doFilter(request, response);
             return;
         }
 
         if (guid == null || guid.length() == 0) {
-            if (isInclude(url)) {
-                Log.i("Dont need check role {}", url);
-                chain.doFilter(request, response);
-                return;
-            } else {
-                Log.i("token invalid or expired, please re-login");
-                RequestDispatcher rd = req.getRequestDispatcher("/unlogin");
-                rd.forward(request, response);
-                return;
-            }
+            Log.i("token invalid or expired, please re-login");
+            RequestDispatcher rd = req.getRequestDispatcher("/unlogin");
+            rd.forward(request, response);
+            return;
         } else {
             UserInfo userInfo = new UserInfo();
             userInfo.setGuid(guid);
             List<RoleInfo> roles = userService.getRole(userInfo);
             if (roles != null && roles.size() > 0) {
-                req.setAttribute("role", roles);
+                req.setAttribute("role", roles.get(0));
+            } else if (isRoleRequiredPath) {
+                RequestDispatcher rd = req.getRequestDispatcher("/norole");
+                rd.forward(request, response);
+                return;
             }
-            chain.doFilter(request, response);
-            return;
         }
-
+        chain.doFilter(request, response);
+        return;
     }
 
     @Override
@@ -125,8 +137,8 @@ public class RoleFilter implements Filter {
      * @param url
      * @return
      */
-    private boolean isInclude(String url) {
-        for (String pattern : patterns) {
+    private boolean isInclude(String url, List<String> patternList) {
+        for (String pattern : patternList) {
             if (PathMatcherUtil.matches(pattern, url)) {
                 return true;
             }
