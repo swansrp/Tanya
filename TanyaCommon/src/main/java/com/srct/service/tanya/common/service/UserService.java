@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 
 /**
@@ -34,7 +35,7 @@ public interface UserService {
 
     public UserLoginRespBO login(String name, String password);
 
-    public List<String> getRole(UserInfo userInfo);
+    public List<RoleInfo> getRole(UserInfo userInfo);
 
     public UserInfo getUserbyGuid(String guid);
 

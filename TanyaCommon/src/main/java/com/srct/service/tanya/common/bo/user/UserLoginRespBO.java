@@ -11,6 +11,8 @@ import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -29,6 +31,6 @@ public class UserLoginRespBO {
     private String wechatOpenId;
 
     @ApiModelProperty("用户等级")
-    private List<String> role;
+    private List<RoleInfo> role;
 
 }

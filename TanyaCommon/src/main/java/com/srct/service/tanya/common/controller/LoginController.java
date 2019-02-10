@@ -13,6 +13,7 @@ package com.srct.service.tanya.common.controller;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
@@ -40,10 +41,12 @@ import com.srct.service.exception.UserNotLoginException;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
+import com.srct.service.tanya.common.vo.UserInfoVO;
 import com.srct.service.tanya.common.vo.UserRegReqVO;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.email.EmailRepository;
@@ -151,12 +154,25 @@ public class LoginController {
 
     @ApiOperation(value = "获取用户信息", notes = "获取用户详细信息")
     @RequestMapping(value = "/info", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<UserInfo>.Resp> info() {
+    public ResponseEntity<CommonResponse<UserInfoVO>.Resp> info() {
         Log.i("**********info**********");
+
+        UserInfoVO vo = new UserInfoVO();
+
         String guid = (String)request.getAttribute("guid");
-        Log.i(guid);
         UserInfo info = userService.getUserbyGuid(guid);
-        return TanyaExceptionHandler.generateResponse(info);
+        BeanUtil.copyProperties(info, vo);
+        try {
+            RoleInfo role = ((List<RoleInfo>)request.getAttribute("role")).get(0);
+            Log.i("guid {} role {}", guid, role.getId());
+            // Only one role
+            vo.setRoleId(role.getId());
+        } catch (Exception e) {
+            Log.i("guid {} ", guid);
+            Log.i(e.getMessage());
+        }
+
+        return TanyaExceptionHandler.generateResponse(vo);
     }
 
     @ApiOperation(value = "重置密码", notes = "向用户邮箱发送重置密码链接")

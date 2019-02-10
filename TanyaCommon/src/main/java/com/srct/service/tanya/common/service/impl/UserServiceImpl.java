@@ -23,6 +23,7 @@ import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMap;
 import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
@@ -66,7 +67,23 @@ public class UserServiceImpl implements UserService {
     public UserInfo updateUser(UserRegReqBO bo) {
         UserInfo userInfo = new UserInfo();
         BeanUtil.copyProperties(bo, userInfo);
+
+        UserInfoExample example = new UserInfoExample();
+        UserInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andGuidEqualTo(bo.getGuid());
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
         userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        Integer num = userInfoDao.updateUserInfoByExample(userInfo, example);
+        return userInfo;
+    }
+
+    private UserInfo createUser(UserRegReqBO bo) {
+        UserInfo userInfo = new UserInfo();
+        BeanUtil.copyProperties(bo, userInfo);
+        userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
         userInfoDao.updateUserInfo(userInfo);
         return userInfo;
     }
@@ -85,7 +102,7 @@ public class UserServiceImpl implements UserService {
             UserRegReqBO bo = new UserRegReqBO();
             bo.setWechatId(wechatId);
             bo.setGuid(RandomUtil.getUUID());
-            userInfo = updateUser(bo);
+            userInfo = createUser(bo);
         } catch (Exception e) {
             throw new ServiceException("register wechatid " + wechatId + " failed\n" + e.getMessage());
         }
@@ -105,7 +122,7 @@ public class UserServiceImpl implements UserService {
             UserRegReqBO bo = new UserRegReqBO();
             bo.setWechatId(openId);
             bo.setGuid(RandomUtil.getUUID());
-            userInfo = updateUser(bo);
+            userInfo = createUser(bo);
         } catch (Exception e) {
             throw new ServiceException("register wechatid " + openId + " failed\n" + e.getMessage());
         }
@@ -127,7 +144,7 @@ public class UserServiceImpl implements UserService {
             bo.setUsername(name);
             bo.setPassword(password);
             bo.setGuid(RandomUtil.getUUID());
-            userInfo = updateUser(bo);
+            userInfo = createUser(bo);
         } catch (Exception e) {
             throw new ServiceException("register user " + name + " failed\n" + e.getMessage());
         }
@@ -205,7 +222,7 @@ public class UserServiceImpl implements UserService {
         res.setGuid(userInfo.getGuid());
         // res.setSn(String.format("%08d", userInfo.getId()));
         res.setWechatOpenId(userInfo.getWechatId());
-        res.setRole(new ArrayList<String>());
+        res.setRole(new ArrayList<RoleInfo>());
 
         Integer userId = userInfo.getId();
         if (userId == null) {
@@ -224,7 +241,7 @@ public class UserServiceImpl implements UserService {
         userRoleList.forEach(userRole -> {
             RoleInfo roleInfo = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
             if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
-                res.getRole().add(roleInfo.getRole());
+                res.getRole().add(roleInfo);
         });
 
         return res;
@@ -234,7 +251,7 @@ public class UserServiceImpl implements UserService {
      * @see com.srct.service.tanya.common.service.UserService#getRole(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo)
      */
     @Override
-    public List<String> getRole(UserInfo userInfo) {
+    public List<RoleInfo> getRole(UserInfo userInfo) {
         return getRoleInfo(userInfo).getRole();
     }
 

@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
@@ -103,8 +104,10 @@ public class RoleFilter implements Filter {
         } else {
             UserInfo userInfo = new UserInfo();
             userInfo.setGuid(guid);
-            List<String> roles = userService.getRole(userInfo);
-            req.setAttribute("role", roles);
+            List<RoleInfo> roles = userService.getRole(userInfo);
+            if (roles != null && roles.size() > 0) {
+                req.setAttribute("role", roles);
+            }
             chain.doFilter(request, response);
             return;
         }
