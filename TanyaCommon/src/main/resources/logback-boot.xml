@@ -70,7 +70,7 @@
     </appender>  
         
     <!-- 控制台输出日志级别 -->   
-    <root level="trace">      
+    <root level="INFO">      
         <appender-ref ref="STDOUT" />
         <appender-ref ref="syslog" />
     </root>
@@ -81,7 +81,7 @@
     <logger name="com.srct.service.utils.log" level="TRACE">      
         <appender-ref ref="apipoint" />      
     </logger> 
-    <logger name="com.srct.service" level="DEBUG">      
+    <logger name="com.srct.service" level="TRACE", additivity="false">      
         <appender-ref ref="syslog" />      
     </logger>
 </configuration>    
