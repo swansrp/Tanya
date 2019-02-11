@@ -80,7 +80,9 @@ public class RoleFilter implements Filter {
         String token = req.getHeader("x-access-token");
         if (token != null) {
             guid = tokenService.getGuidByToken(token.toString());
+            UserInfo info = userService.getUserbyGuid(guid);
             req.setAttribute("guid", guid);
+            req.setAttribute("user", info);
         }
 
         String requestURI = req.getRequestURI();

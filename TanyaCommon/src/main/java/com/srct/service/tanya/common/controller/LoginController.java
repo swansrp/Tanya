@@ -166,8 +166,8 @@ public class LoginController {
 
         UserInfoVO vo = new UserInfoVO();
 
-        String guid = (String)request.getAttribute("guid");
-        UserInfo info = userService.getUserbyGuid(guid);
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        String guid = info.getGuid();
         BeanUtil.copyProperties(info, vo);
         try {
             RoleInfo role = (RoleInfo)request.getAttribute("role");
