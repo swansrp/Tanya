@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class AdminInfoDao {
 
     @CacheEvict(value = "AdminInfo", allEntries = true)
     public AdminInfo updateAdminInfo(AdminInfo adminInfo) {
+        int res = 0;
         if (adminInfo.getId() == null) {
             adminInfo.setCreateAt(new Date());
-            adminInfoMapper.insertSelective(adminInfo);
+            res = adminInfoMapper.insertSelective(adminInfo);
         } else {
             adminInfo.setUpdateAt(new Date());
-            adminInfoMapper.updateByPrimaryKeySelective(adminInfo);
+            res = adminInfoMapper.updateByPrimaryKeySelective(adminInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update AdminInfo error");
+        }
+        return adminInfo;
+    }
+
+    @CacheEvict(value = "AdminInfo", allEntries = true)
+    public AdminInfo updateAdminInfoStrict(AdminInfo adminInfo) {
+        int res = 0;
+        if (adminInfo.getId() == null) {
+            adminInfo.setCreateAt(new Date());
+            res = adminInfoMapper.insert(adminInfo);
+        } else {
+            adminInfo.setUpdateAt(new Date());
+            res = adminInfoMapper.updateByPrimaryKey(adminInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update AdminInfo error");
         }
         return adminInfo;
     }
@@ -55,6 +75,11 @@ public class AdminInfoDao {
     @CacheEvict(value = "AdminInfo", allEntries = true)
     public Integer updateAdminInfoByExample(AdminInfo adminInfo, AdminInfoExample example) {
         return adminInfoMapper.updateByExampleSelective(adminInfo, example);
+    }
+
+    @CacheEvict(value = "AdminInfo", allEntries = true)
+    public Integer updateAdminInfoByExampleStrict(AdminInfo adminInfo, AdminInfoExample example) {
+        return adminInfoMapper.updateByExample(adminInfo, example);
     }
 
     @CacheEvict(value = "AdminInfo", allEntries = true)

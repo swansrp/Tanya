@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class FactoryMerchantMapDao {
 
     @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
     public FactoryMerchantMap updateFactoryMerchantMap(FactoryMerchantMap factoryMerchantMap) {
+        int res = 0;
         if (factoryMerchantMap.getId() == null) {
             factoryMerchantMap.setCreateAt(new Date());
-            factoryMerchantMapMapper.insertSelective(factoryMerchantMap);
+            res = factoryMerchantMapMapper.insertSelective(factoryMerchantMap);
         } else {
             factoryMerchantMap.setUpdateAt(new Date());
-            factoryMerchantMapMapper.updateByPrimaryKeySelective(factoryMerchantMap);
+            res = factoryMerchantMapMapper.updateByPrimaryKeySelective(factoryMerchantMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update FactoryMerchantMap error");
+        }
+        return factoryMerchantMap;
+    }
+
+    @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
+    public FactoryMerchantMap updateFactoryMerchantMapStrict(FactoryMerchantMap factoryMerchantMap) {
+        int res = 0;
+        if (factoryMerchantMap.getId() == null) {
+            factoryMerchantMap.setCreateAt(new Date());
+            res = factoryMerchantMapMapper.insert(factoryMerchantMap);
+        } else {
+            factoryMerchantMap.setUpdateAt(new Date());
+            res = factoryMerchantMapMapper.updateByPrimaryKey(factoryMerchantMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update FactoryMerchantMap error");
         }
         return factoryMerchantMap;
     }
@@ -55,6 +75,11 @@ public class FactoryMerchantMapDao {
     @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
     public Integer updateFactoryMerchantMapByExample(FactoryMerchantMap factoryMerchantMap, FactoryMerchantMapExample example) {
         return factoryMerchantMapMapper.updateByExampleSelective(factoryMerchantMap, example);
+    }
+
+    @CacheEvict(value = "FactoryMerchantMap", allEntries = true)
+    public Integer updateFactoryMerchantMapByExampleStrict(FactoryMerchantMap factoryMerchantMap, FactoryMerchantMapExample example) {
+        return factoryMerchantMapMapper.updateByExample(factoryMerchantMap, example);
     }
 
     @CacheEvict(value = "FactoryMerchantMap", allEntries = true)

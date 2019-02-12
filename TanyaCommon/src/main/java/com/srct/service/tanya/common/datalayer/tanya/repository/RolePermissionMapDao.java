@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class RolePermissionMapDao {
 
     @CacheEvict(value = "RolePermissionMap", allEntries = true)
     public RolePermissionMap updateRolePermissionMap(RolePermissionMap rolePermissionMap) {
+        int res = 0;
         if (rolePermissionMap.getId() == null) {
             rolePermissionMap.setCreateAt(new Date());
-            rolePermissionMapMapper.insertSelective(rolePermissionMap);
+            res = rolePermissionMapMapper.insertSelective(rolePermissionMap);
         } else {
             rolePermissionMap.setUpdateAt(new Date());
-            rolePermissionMapMapper.updateByPrimaryKeySelective(rolePermissionMap);
+            res = rolePermissionMapMapper.updateByPrimaryKeySelective(rolePermissionMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update RolePermissionMap error");
+        }
+        return rolePermissionMap;
+    }
+
+    @CacheEvict(value = "RolePermissionMap", allEntries = true)
+    public RolePermissionMap updateRolePermissionMapStrict(RolePermissionMap rolePermissionMap) {
+        int res = 0;
+        if (rolePermissionMap.getId() == null) {
+            rolePermissionMap.setCreateAt(new Date());
+            res = rolePermissionMapMapper.insert(rolePermissionMap);
+        } else {
+            rolePermissionMap.setUpdateAt(new Date());
+            res = rolePermissionMapMapper.updateByPrimaryKey(rolePermissionMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update RolePermissionMap error");
         }
         return rolePermissionMap;
     }
@@ -55,6 +75,11 @@ public class RolePermissionMapDao {
     @CacheEvict(value = "RolePermissionMap", allEntries = true)
     public Integer updateRolePermissionMapByExample(RolePermissionMap rolePermissionMap, RolePermissionMapExample example) {
         return rolePermissionMapMapper.updateByExampleSelective(rolePermissionMap, example);
+    }
+
+    @CacheEvict(value = "RolePermissionMap", allEntries = true)
+    public Integer updateRolePermissionMapByExampleStrict(RolePermissionMap rolePermissionMap, RolePermissionMapExample example) {
+        return rolePermissionMapMapper.updateByExample(rolePermissionMap, example);
     }
 
     @CacheEvict(value = "RolePermissionMap", allEntries = true)

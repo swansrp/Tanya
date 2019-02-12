@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class DiscountInfoDao {
 
     @CacheEvict(value = "DiscountInfo", allEntries = true)
     public DiscountInfo updateDiscountInfo(DiscountInfo discountInfo) {
+        int res = 0;
         if (discountInfo.getId() == null) {
             discountInfo.setCreateAt(new Date());
-            discountInfoMapper.insertSelective(discountInfo);
+            res = discountInfoMapper.insertSelective(discountInfo);
         } else {
             discountInfo.setUpdateAt(new Date());
-            discountInfoMapper.updateByPrimaryKeySelective(discountInfo);
+            res = discountInfoMapper.updateByPrimaryKeySelective(discountInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update DiscountInfo error");
+        }
+        return discountInfo;
+    }
+
+    @CacheEvict(value = "DiscountInfo", allEntries = true)
+    public DiscountInfo updateDiscountInfoStrict(DiscountInfo discountInfo) {
+        int res = 0;
+        if (discountInfo.getId() == null) {
+            discountInfo.setCreateAt(new Date());
+            res = discountInfoMapper.insert(discountInfo);
+        } else {
+            discountInfo.setUpdateAt(new Date());
+            res = discountInfoMapper.updateByPrimaryKey(discountInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update DiscountInfo error");
         }
         return discountInfo;
     }
@@ -55,6 +75,11 @@ public class DiscountInfoDao {
     @CacheEvict(value = "DiscountInfo", allEntries = true)
     public Integer updateDiscountInfoByExample(DiscountInfo discountInfo, DiscountInfoExample example) {
         return discountInfoMapper.updateByExampleSelective(discountInfo, example);
+    }
+
+    @CacheEvict(value = "DiscountInfo", allEntries = true)
+    public Integer updateDiscountInfoByExampleStrict(DiscountInfo discountInfo, DiscountInfoExample example) {
+        return discountInfoMapper.updateByExample(discountInfo, example);
     }
 
     @CacheEvict(value = "DiscountInfo", allEntries = true)

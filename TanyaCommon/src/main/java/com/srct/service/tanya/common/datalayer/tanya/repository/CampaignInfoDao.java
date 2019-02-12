@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class CampaignInfoDao {
 
     @CacheEvict(value = "CampaignInfo", allEntries = true)
     public CampaignInfo updateCampaignInfo(CampaignInfo campaignInfo) {
+        int res = 0;
         if (campaignInfo.getId() == null) {
             campaignInfo.setCreateAt(new Date());
-            campaignInfoMapper.insertSelective(campaignInfo);
+            res = campaignInfoMapper.insertSelective(campaignInfo);
         } else {
             campaignInfo.setUpdateAt(new Date());
-            campaignInfoMapper.updateByPrimaryKeySelective(campaignInfo);
+            res = campaignInfoMapper.updateByPrimaryKeySelective(campaignInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update CampaignInfo error");
+        }
+        return campaignInfo;
+    }
+
+    @CacheEvict(value = "CampaignInfo", allEntries = true)
+    public CampaignInfo updateCampaignInfoStrict(CampaignInfo campaignInfo) {
+        int res = 0;
+        if (campaignInfo.getId() == null) {
+            campaignInfo.setCreateAt(new Date());
+            res = campaignInfoMapper.insert(campaignInfo);
+        } else {
+            campaignInfo.setUpdateAt(new Date());
+            res = campaignInfoMapper.updateByPrimaryKey(campaignInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update CampaignInfo error");
         }
         return campaignInfo;
     }
@@ -55,6 +75,11 @@ public class CampaignInfoDao {
     @CacheEvict(value = "CampaignInfo", allEntries = true)
     public Integer updateCampaignInfoByExample(CampaignInfo campaignInfo, CampaignInfoExample example) {
         return campaignInfoMapper.updateByExampleSelective(campaignInfo, example);
+    }
+
+    @CacheEvict(value = "CampaignInfo", allEntries = true)
+    public Integer updateCampaignInfoByExampleStrict(CampaignInfo campaignInfo, CampaignInfoExample example) {
+        return campaignInfoMapper.updateByExample(campaignInfo, example);
     }
 
     @CacheEvict(value = "CampaignInfo", allEntries = true)

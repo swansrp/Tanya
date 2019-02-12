@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class RoleInfoDao {
 
     @CacheEvict(value = "RoleInfo", allEntries = true)
     public RoleInfo updateRoleInfo(RoleInfo roleInfo) {
+        int res = 0;
         if (roleInfo.getId() == null) {
             roleInfo.setCreateAt(new Date());
-            roleInfoMapper.insertSelective(roleInfo);
+            res = roleInfoMapper.insertSelective(roleInfo);
         } else {
             roleInfo.setUpdateAt(new Date());
-            roleInfoMapper.updateByPrimaryKeySelective(roleInfo);
+            res = roleInfoMapper.updateByPrimaryKeySelective(roleInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update RoleInfo error");
+        }
+        return roleInfo;
+    }
+
+    @CacheEvict(value = "RoleInfo", allEntries = true)
+    public RoleInfo updateRoleInfoStrict(RoleInfo roleInfo) {
+        int res = 0;
+        if (roleInfo.getId() == null) {
+            roleInfo.setCreateAt(new Date());
+            res = roleInfoMapper.insert(roleInfo);
+        } else {
+            roleInfo.setUpdateAt(new Date());
+            res = roleInfoMapper.updateByPrimaryKey(roleInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update RoleInfo error");
         }
         return roleInfo;
     }
@@ -55,6 +75,11 @@ public class RoleInfoDao {
     @CacheEvict(value = "RoleInfo", allEntries = true)
     public Integer updateRoleInfoByExample(RoleInfo roleInfo, RoleInfoExample example) {
         return roleInfoMapper.updateByExampleSelective(roleInfo, example);
+    }
+
+    @CacheEvict(value = "RoleInfo", allEntries = true)
+    public Integer updateRoleInfoByExampleStrict(RoleInfo roleInfo, RoleInfoExample example) {
+        return roleInfoMapper.updateByExample(roleInfo, example);
     }
 
     @CacheEvict(value = "RoleInfo", allEntries = true)

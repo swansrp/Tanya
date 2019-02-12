@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class OrderInfoDao {
 
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public OrderInfo updateOrderInfo(OrderInfo orderInfo) {
+        int res = 0;
         if (orderInfo.getId() == null) {
             orderInfo.setCreateAt(new Date());
-            orderInfoMapper.insertSelective(orderInfo);
+            res = orderInfoMapper.insertSelective(orderInfo);
         } else {
             orderInfo.setUpdateAt(new Date());
-            orderInfoMapper.updateByPrimaryKeySelective(orderInfo);
+            res = orderInfoMapper.updateByPrimaryKeySelective(orderInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update OrderInfo error");
+        }
+        return orderInfo;
+    }
+
+    @CacheEvict(value = "OrderInfo", allEntries = true)
+    public OrderInfo updateOrderInfoStrict(OrderInfo orderInfo) {
+        int res = 0;
+        if (orderInfo.getId() == null) {
+            orderInfo.setCreateAt(new Date());
+            res = orderInfoMapper.insert(orderInfo);
+        } else {
+            orderInfo.setUpdateAt(new Date());
+            res = orderInfoMapper.updateByPrimaryKey(orderInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update OrderInfo error");
         }
         return orderInfo;
     }
@@ -55,6 +75,11 @@ public class OrderInfoDao {
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public Integer updateOrderInfoByExample(OrderInfo orderInfo, OrderInfoExample example) {
         return orderInfoMapper.updateByExampleSelective(orderInfo, example);
+    }
+
+    @CacheEvict(value = "OrderInfo", allEntries = true)
+    public Integer updateOrderInfoByExampleStrict(OrderInfo orderInfo, OrderInfoExample example) {
+        return orderInfoMapper.updateByExample(orderInfo, example);
     }
 
     @CacheEvict(value = "OrderInfo", allEntries = true)

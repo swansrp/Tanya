@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class TraderInfoDao {
 
     @CacheEvict(value = "TraderInfo", allEntries = true)
     public TraderInfo updateTraderInfo(TraderInfo traderInfo) {
+        int res = 0;
         if (traderInfo.getId() == null) {
             traderInfo.setCreateAt(new Date());
-            traderInfoMapper.insertSelective(traderInfo);
+            res = traderInfoMapper.insertSelective(traderInfo);
         } else {
             traderInfo.setUpdateAt(new Date());
-            traderInfoMapper.updateByPrimaryKeySelective(traderInfo);
+            res = traderInfoMapper.updateByPrimaryKeySelective(traderInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update TraderInfo error");
+        }
+        return traderInfo;
+    }
+
+    @CacheEvict(value = "TraderInfo", allEntries = true)
+    public TraderInfo updateTraderInfoStrict(TraderInfo traderInfo) {
+        int res = 0;
+        if (traderInfo.getId() == null) {
+            traderInfo.setCreateAt(new Date());
+            res = traderInfoMapper.insert(traderInfo);
+        } else {
+            traderInfo.setUpdateAt(new Date());
+            res = traderInfoMapper.updateByPrimaryKey(traderInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update TraderInfo error");
         }
         return traderInfo;
     }
@@ -55,6 +75,11 @@ public class TraderInfoDao {
     @CacheEvict(value = "TraderInfo", allEntries = true)
     public Integer updateTraderInfoByExample(TraderInfo traderInfo, TraderInfoExample example) {
         return traderInfoMapper.updateByExampleSelective(traderInfo, example);
+    }
+
+    @CacheEvict(value = "TraderInfo", allEntries = true)
+    public Integer updateTraderInfoByExampleStrict(TraderInfo traderInfo, TraderInfoExample example) {
+        return traderInfoMapper.updateByExample(traderInfo, example);
     }
 
     @CacheEvict(value = "TraderInfo", allEntries = true)

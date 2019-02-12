@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class PermissionInfoDao {
 
     @CacheEvict(value = "PermissionInfo", allEntries = true)
     public PermissionInfo updatePermissionInfo(PermissionInfo permissionInfo) {
+        int res = 0;
         if (permissionInfo.getId() == null) {
             permissionInfo.setCreateAt(new Date());
-            permissionInfoMapper.insertSelective(permissionInfo);
+            res = permissionInfoMapper.insertSelective(permissionInfo);
         } else {
             permissionInfo.setUpdateAt(new Date());
-            permissionInfoMapper.updateByPrimaryKeySelective(permissionInfo);
+            res = permissionInfoMapper.updateByPrimaryKeySelective(permissionInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update PermissionInfo error");
+        }
+        return permissionInfo;
+    }
+
+    @CacheEvict(value = "PermissionInfo", allEntries = true)
+    public PermissionInfo updatePermissionInfoStrict(PermissionInfo permissionInfo) {
+        int res = 0;
+        if (permissionInfo.getId() == null) {
+            permissionInfo.setCreateAt(new Date());
+            res = permissionInfoMapper.insert(permissionInfo);
+        } else {
+            permissionInfo.setUpdateAt(new Date());
+            res = permissionInfoMapper.updateByPrimaryKey(permissionInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update PermissionInfo error");
         }
         return permissionInfo;
     }
@@ -55,6 +75,11 @@ public class PermissionInfoDao {
     @CacheEvict(value = "PermissionInfo", allEntries = true)
     public Integer updatePermissionInfoByExample(PermissionInfo permissionInfo, PermissionInfoExample example) {
         return permissionInfoMapper.updateByExampleSelective(permissionInfo, example);
+    }
+
+    @CacheEvict(value = "PermissionInfo", allEntries = true)
+    public Integer updatePermissionInfoByExampleStrict(PermissionInfo permissionInfo, PermissionInfoExample example) {
+        return permissionInfoMapper.updateByExample(permissionInfo, example);
     }
 
     @CacheEvict(value = "PermissionInfo", allEntries = true)

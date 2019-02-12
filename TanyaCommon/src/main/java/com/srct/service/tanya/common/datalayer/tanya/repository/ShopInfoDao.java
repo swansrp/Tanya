@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class ShopInfoDao {
 
     @CacheEvict(value = "ShopInfo", allEntries = true)
     public ShopInfo updateShopInfo(ShopInfo shopInfo) {
+        int res = 0;
         if (shopInfo.getId() == null) {
             shopInfo.setCreateAt(new Date());
-            shopInfoMapper.insertSelective(shopInfo);
+            res = shopInfoMapper.insertSelective(shopInfo);
         } else {
             shopInfo.setUpdateAt(new Date());
-            shopInfoMapper.updateByPrimaryKeySelective(shopInfo);
+            res = shopInfoMapper.updateByPrimaryKeySelective(shopInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update ShopInfo error");
+        }
+        return shopInfo;
+    }
+
+    @CacheEvict(value = "ShopInfo", allEntries = true)
+    public ShopInfo updateShopInfoStrict(ShopInfo shopInfo) {
+        int res = 0;
+        if (shopInfo.getId() == null) {
+            shopInfo.setCreateAt(new Date());
+            res = shopInfoMapper.insert(shopInfo);
+        } else {
+            shopInfo.setUpdateAt(new Date());
+            res = shopInfoMapper.updateByPrimaryKey(shopInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update ShopInfo error");
         }
         return shopInfo;
     }
@@ -55,6 +75,11 @@ public class ShopInfoDao {
     @CacheEvict(value = "ShopInfo", allEntries = true)
     public Integer updateShopInfoByExample(ShopInfo shopInfo, ShopInfoExample example) {
         return shopInfoMapper.updateByExampleSelective(shopInfo, example);
+    }
+
+    @CacheEvict(value = "ShopInfo", allEntries = true)
+    public Integer updateShopInfoByExampleStrict(ShopInfo shopInfo, ShopInfoExample example) {
+        return shopInfoMapper.updateByExample(shopInfo, example);
     }
 
     @CacheEvict(value = "ShopInfo", allEntries = true)

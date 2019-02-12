@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class FactoryInfoDao {
 
     @CacheEvict(value = "FactoryInfo", allEntries = true)
     public FactoryInfo updateFactoryInfo(FactoryInfo factoryInfo) {
+        int res = 0;
         if (factoryInfo.getId() == null) {
             factoryInfo.setCreateAt(new Date());
-            factoryInfoMapper.insertSelective(factoryInfo);
+            res = factoryInfoMapper.insertSelective(factoryInfo);
         } else {
             factoryInfo.setUpdateAt(new Date());
-            factoryInfoMapper.updateByPrimaryKeySelective(factoryInfo);
+            res = factoryInfoMapper.updateByPrimaryKeySelective(factoryInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update FactoryInfo error");
+        }
+        return factoryInfo;
+    }
+
+    @CacheEvict(value = "FactoryInfo", allEntries = true)
+    public FactoryInfo updateFactoryInfoStrict(FactoryInfo factoryInfo) {
+        int res = 0;
+        if (factoryInfo.getId() == null) {
+            factoryInfo.setCreateAt(new Date());
+            res = factoryInfoMapper.insert(factoryInfo);
+        } else {
+            factoryInfo.setUpdateAt(new Date());
+            res = factoryInfoMapper.updateByPrimaryKey(factoryInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update FactoryInfo error");
         }
         return factoryInfo;
     }
@@ -55,6 +75,11 @@ public class FactoryInfoDao {
     @CacheEvict(value = "FactoryInfo", allEntries = true)
     public Integer updateFactoryInfoByExample(FactoryInfo factoryInfo, FactoryInfoExample example) {
         return factoryInfoMapper.updateByExampleSelective(factoryInfo, example);
+    }
+
+    @CacheEvict(value = "FactoryInfo", allEntries = true)
+    public Integer updateFactoryInfoByExampleStrict(FactoryInfo factoryInfo, FactoryInfoExample example) {
+        return factoryInfoMapper.updateByExample(factoryInfo, example);
     }
 
     @CacheEvict(value = "FactoryInfo", allEntries = true)

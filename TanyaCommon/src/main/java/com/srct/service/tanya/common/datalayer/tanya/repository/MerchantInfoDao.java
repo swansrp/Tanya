@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class MerchantInfoDao {
 
     @CacheEvict(value = "MerchantInfo", allEntries = true)
     public MerchantInfo updateMerchantInfo(MerchantInfo merchantInfo) {
+        int res = 0;
         if (merchantInfo.getId() == null) {
             merchantInfo.setCreateAt(new Date());
-            merchantInfoMapper.insertSelective(merchantInfo);
+            res = merchantInfoMapper.insertSelective(merchantInfo);
         } else {
             merchantInfo.setUpdateAt(new Date());
-            merchantInfoMapper.updateByPrimaryKeySelective(merchantInfo);
+            res = merchantInfoMapper.updateByPrimaryKeySelective(merchantInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update MerchantInfo error");
+        }
+        return merchantInfo;
+    }
+
+    @CacheEvict(value = "MerchantInfo", allEntries = true)
+    public MerchantInfo updateMerchantInfoStrict(MerchantInfo merchantInfo) {
+        int res = 0;
+        if (merchantInfo.getId() == null) {
+            merchantInfo.setCreateAt(new Date());
+            res = merchantInfoMapper.insert(merchantInfo);
+        } else {
+            merchantInfo.setUpdateAt(new Date());
+            res = merchantInfoMapper.updateByPrimaryKey(merchantInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update MerchantInfo error");
         }
         return merchantInfo;
     }
@@ -55,6 +75,11 @@ public class MerchantInfoDao {
     @CacheEvict(value = "MerchantInfo", allEntries = true)
     public Integer updateMerchantInfoByExample(MerchantInfo merchantInfo, MerchantInfoExample example) {
         return merchantInfoMapper.updateByExampleSelective(merchantInfo, example);
+    }
+
+    @CacheEvict(value = "MerchantInfo", allEntries = true)
+    public Integer updateMerchantInfoByExampleStrict(MerchantInfo merchantInfo, MerchantInfoExample example) {
+        return merchantInfoMapper.updateByExample(merchantInfo, example);
     }
 
     @CacheEvict(value = "MerchantInfo", allEntries = true)

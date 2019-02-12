@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class SalesmanInfoDao {
 
     @CacheEvict(value = "SalesmanInfo", allEntries = true)
     public SalesmanInfo updateSalesmanInfo(SalesmanInfo salesmanInfo) {
+        int res = 0;
         if (salesmanInfo.getId() == null) {
             salesmanInfo.setCreateAt(new Date());
-            salesmanInfoMapper.insertSelective(salesmanInfo);
+            res = salesmanInfoMapper.insertSelective(salesmanInfo);
         } else {
             salesmanInfo.setUpdateAt(new Date());
-            salesmanInfoMapper.updateByPrimaryKeySelective(salesmanInfo);
+            res = salesmanInfoMapper.updateByPrimaryKeySelective(salesmanInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update SalesmanInfo error");
+        }
+        return salesmanInfo;
+    }
+
+    @CacheEvict(value = "SalesmanInfo", allEntries = true)
+    public SalesmanInfo updateSalesmanInfoStrict(SalesmanInfo salesmanInfo) {
+        int res = 0;
+        if (salesmanInfo.getId() == null) {
+            salesmanInfo.setCreateAt(new Date());
+            res = salesmanInfoMapper.insert(salesmanInfo);
+        } else {
+            salesmanInfo.setUpdateAt(new Date());
+            res = salesmanInfoMapper.updateByPrimaryKey(salesmanInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update SalesmanInfo error");
         }
         return salesmanInfo;
     }
@@ -55,6 +75,11 @@ public class SalesmanInfoDao {
     @CacheEvict(value = "SalesmanInfo", allEntries = true)
     public Integer updateSalesmanInfoByExample(SalesmanInfo salesmanInfo, SalesmanInfoExample example) {
         return salesmanInfoMapper.updateByExampleSelective(salesmanInfo, example);
+    }
+
+    @CacheEvict(value = "SalesmanInfo", allEntries = true)
+    public Integer updateSalesmanInfoByExampleStrict(SalesmanInfo salesmanInfo, SalesmanInfoExample example) {
+        return salesmanInfoMapper.updateByExample(salesmanInfo, example);
     }
 
     @CacheEvict(value = "SalesmanInfo", allEntries = true)

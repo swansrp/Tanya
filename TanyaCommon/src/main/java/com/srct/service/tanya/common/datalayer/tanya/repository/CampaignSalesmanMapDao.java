@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class CampaignSalesmanMapDao {
 
     @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
     public CampaignSalesmanMap updateCampaignSalesmanMap(CampaignSalesmanMap campaignSalesmanMap) {
+        int res = 0;
         if (campaignSalesmanMap.getId() == null) {
             campaignSalesmanMap.setCreateAt(new Date());
-            campaignSalesmanMapMapper.insertSelective(campaignSalesmanMap);
+            res = campaignSalesmanMapMapper.insertSelective(campaignSalesmanMap);
         } else {
             campaignSalesmanMap.setUpdateAt(new Date());
-            campaignSalesmanMapMapper.updateByPrimaryKeySelective(campaignSalesmanMap);
+            res = campaignSalesmanMapMapper.updateByPrimaryKeySelective(campaignSalesmanMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update CampaignSalesmanMap error");
+        }
+        return campaignSalesmanMap;
+    }
+
+    @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
+    public CampaignSalesmanMap updateCampaignSalesmanMapStrict(CampaignSalesmanMap campaignSalesmanMap) {
+        int res = 0;
+        if (campaignSalesmanMap.getId() == null) {
+            campaignSalesmanMap.setCreateAt(new Date());
+            res = campaignSalesmanMapMapper.insert(campaignSalesmanMap);
+        } else {
+            campaignSalesmanMap.setUpdateAt(new Date());
+            res = campaignSalesmanMapMapper.updateByPrimaryKey(campaignSalesmanMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update CampaignSalesmanMap error");
         }
         return campaignSalesmanMap;
     }
@@ -55,6 +75,11 @@ public class CampaignSalesmanMapDao {
     @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
     public Integer updateCampaignSalesmanMapByExample(CampaignSalesmanMap campaignSalesmanMap, CampaignSalesmanMapExample example) {
         return campaignSalesmanMapMapper.updateByExampleSelective(campaignSalesmanMap, example);
+    }
+
+    @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)
+    public Integer updateCampaignSalesmanMapByExampleStrict(CampaignSalesmanMap campaignSalesmanMap, CampaignSalesmanMapExample example) {
+        return campaignSalesmanMapMapper.updateByExample(campaignSalesmanMap, example);
     }
 
     @CacheEvict(value = "CampaignSalesmanMap", allEntries = true)

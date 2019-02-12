@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class SalesmanTraderMapDao {
 
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
     public SalesmanTraderMap updateSalesmanTraderMap(SalesmanTraderMap salesmanTraderMap) {
+        int res = 0;
         if (salesmanTraderMap.getId() == null) {
             salesmanTraderMap.setCreateAt(new Date());
-            salesmanTraderMapMapper.insertSelective(salesmanTraderMap);
+            res = salesmanTraderMapMapper.insertSelective(salesmanTraderMap);
         } else {
             salesmanTraderMap.setUpdateAt(new Date());
-            salesmanTraderMapMapper.updateByPrimaryKeySelective(salesmanTraderMap);
+            res = salesmanTraderMapMapper.updateByPrimaryKeySelective(salesmanTraderMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update SalesmanTraderMap error");
+        }
+        return salesmanTraderMap;
+    }
+
+    @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
+    public SalesmanTraderMap updateSalesmanTraderMapStrict(SalesmanTraderMap salesmanTraderMap) {
+        int res = 0;
+        if (salesmanTraderMap.getId() == null) {
+            salesmanTraderMap.setCreateAt(new Date());
+            res = salesmanTraderMapMapper.insert(salesmanTraderMap);
+        } else {
+            salesmanTraderMap.setUpdateAt(new Date());
+            res = salesmanTraderMapMapper.updateByPrimaryKey(salesmanTraderMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update SalesmanTraderMap error");
         }
         return salesmanTraderMap;
     }
@@ -55,6 +75,11 @@ public class SalesmanTraderMapDao {
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
     public Integer updateSalesmanTraderMapByExample(SalesmanTraderMap salesmanTraderMap, SalesmanTraderMapExample example) {
         return salesmanTraderMapMapper.updateByExampleSelective(salesmanTraderMap, example);
+    }
+
+    @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
+    public Integer updateSalesmanTraderMapByExampleStrict(SalesmanTraderMap salesmanTraderMap, SalesmanTraderMapExample example) {
+        return salesmanTraderMapMapper.updateByExample(salesmanTraderMap, example);
     }
 
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)

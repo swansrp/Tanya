@@ -1,10 +1,10 @@
-/**
+/**   
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
- * @author: srct
- * @date: 2019/02/03
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -25,8 +25,10 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.UserInfoMapper;
+
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+
 
 /**
  * @ClassName: UserInfoDao
@@ -40,12 +42,32 @@ public class UserInfoDao {
 
     @CacheEvict(value = "UserInfo", allEntries = true)
     public UserInfo updateUserInfo(UserInfo userInfo) {
+        int res = 0;
         if (userInfo.getId() == null) {
             userInfo.setCreateAt(new Date());
-            userInfoMapper.insertSelective(userInfo);
+            res = userInfoMapper.insertSelective(userInfo);
         } else {
             userInfo.setUpdateAt(new Date());
-            userInfoMapper.updateByPrimaryKeySelective(userInfo);
+            res = userInfoMapper.updateByPrimaryKeySelective(userInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update UserInfo error");
+        }
+        return userInfo;
+    }
+
+    @CacheEvict(value = "UserInfo", allEntries = true)
+    public UserInfo updateUserInfoStrict(UserInfo userInfo) {
+        int res = 0;
+        if (userInfo.getId() == null) {
+            userInfo.setCreateAt(new Date());
+            res = userInfoMapper.insert(userInfo);
+        } else {
+            userInfo.setUpdateAt(new Date());
+            res = userInfoMapper.updateByPrimaryKey(userInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update UserInfo error");
         }
         return userInfo;
     }
@@ -53,6 +75,11 @@ public class UserInfoDao {
     @CacheEvict(value = "UserInfo", allEntries = true)
     public Integer updateUserInfoByExample(UserInfo userInfo, UserInfoExample example) {
         return userInfoMapper.updateByExampleSelective(userInfo, example);
+    }
+
+    @CacheEvict(value = "UserInfo", allEntries = true)
+    public Integer updateUserInfoByExampleStrict(UserInfo userInfo, UserInfoExample example) {
+        return userInfoMapper.updateByExample(userInfo, example);
     }
 
     @CacheEvict(value = "UserInfo", allEntries = true)

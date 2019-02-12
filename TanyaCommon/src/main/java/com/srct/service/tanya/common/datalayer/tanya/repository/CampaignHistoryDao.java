@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class CampaignHistoryDao {
 
     @CacheEvict(value = "CampaignHistory", allEntries = true)
     public CampaignHistory updateCampaignHistory(CampaignHistory campaignHistory) {
+        int res = 0;
         if (campaignHistory.getId() == null) {
             campaignHistory.setCreateAt(new Date());
-            campaignHistoryMapper.insertSelective(campaignHistory);
+            res = campaignHistoryMapper.insertSelective(campaignHistory);
         } else {
             campaignHistory.setUpdateAt(new Date());
-            campaignHistoryMapper.updateByPrimaryKeySelective(campaignHistory);
+            res = campaignHistoryMapper.updateByPrimaryKeySelective(campaignHistory);
+        }
+        if(res == 0) {
+            throw new ServiceException("update CampaignHistory error");
+        }
+        return campaignHistory;
+    }
+
+    @CacheEvict(value = "CampaignHistory", allEntries = true)
+    public CampaignHistory updateCampaignHistoryStrict(CampaignHistory campaignHistory) {
+        int res = 0;
+        if (campaignHistory.getId() == null) {
+            campaignHistory.setCreateAt(new Date());
+            res = campaignHistoryMapper.insert(campaignHistory);
+        } else {
+            campaignHistory.setUpdateAt(new Date());
+            res = campaignHistoryMapper.updateByPrimaryKey(campaignHistory);
+        }
+        if(res == 0) {
+            throw new ServiceException("update CampaignHistory error");
         }
         return campaignHistory;
     }
@@ -55,6 +75,11 @@ public class CampaignHistoryDao {
     @CacheEvict(value = "CampaignHistory", allEntries = true)
     public Integer updateCampaignHistoryByExample(CampaignHistory campaignHistory, CampaignHistoryExample example) {
         return campaignHistoryMapper.updateByExampleSelective(campaignHistory, example);
+    }
+
+    @CacheEvict(value = "CampaignHistory", allEntries = true)
+    public Integer updateCampaignHistoryByExampleStrict(CampaignHistory campaignHistory, CampaignHistoryExample example) {
+        return campaignHistoryMapper.updateByExample(campaignHistory, example);
     }
 
     @CacheEvict(value = "CampaignHistory", allEntries = true)

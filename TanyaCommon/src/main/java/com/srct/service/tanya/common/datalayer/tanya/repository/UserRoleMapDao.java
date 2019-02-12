@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class UserRoleMapDao {
 
     @CacheEvict(value = "UserRoleMap", allEntries = true)
     public UserRoleMap updateUserRoleMap(UserRoleMap userRoleMap) {
+        int res = 0;
         if (userRoleMap.getId() == null) {
             userRoleMap.setCreateAt(new Date());
-            userRoleMapMapper.insertSelective(userRoleMap);
+            res = userRoleMapMapper.insertSelective(userRoleMap);
         } else {
             userRoleMap.setUpdateAt(new Date());
-            userRoleMapMapper.updateByPrimaryKeySelective(userRoleMap);
+            res = userRoleMapMapper.updateByPrimaryKeySelective(userRoleMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update UserRoleMap error");
+        }
+        return userRoleMap;
+    }
+
+    @CacheEvict(value = "UserRoleMap", allEntries = true)
+    public UserRoleMap updateUserRoleMapStrict(UserRoleMap userRoleMap) {
+        int res = 0;
+        if (userRoleMap.getId() == null) {
+            userRoleMap.setCreateAt(new Date());
+            res = userRoleMapMapper.insert(userRoleMap);
+        } else {
+            userRoleMap.setUpdateAt(new Date());
+            res = userRoleMapMapper.updateByPrimaryKey(userRoleMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update UserRoleMap error");
         }
         return userRoleMap;
     }
@@ -55,6 +75,11 @@ public class UserRoleMapDao {
     @CacheEvict(value = "UserRoleMap", allEntries = true)
     public Integer updateUserRoleMapByExample(UserRoleMap userRoleMap, UserRoleMapExample example) {
         return userRoleMapMapper.updateByExampleSelective(userRoleMap, example);
+    }
+
+    @CacheEvict(value = "UserRoleMap", allEntries = true)
+    public Integer updateUserRoleMapByExampleStrict(UserRoleMap userRoleMap, UserRoleMapExample example) {
+        return userRoleMapMapper.updateByExample(userRoleMap, example);
     }
 
     @CacheEvict(value = "UserRoleMap", allEntries = true)

@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class NotificationInfoDao {
 
     @CacheEvict(value = "NotificationInfo", allEntries = true)
     public NotificationInfo updateNotificationInfo(NotificationInfo notificationInfo) {
+        int res = 0;
         if (notificationInfo.getId() == null) {
             notificationInfo.setCreateAt(new Date());
-            notificationInfoMapper.insertSelective(notificationInfo);
+            res = notificationInfoMapper.insertSelective(notificationInfo);
         } else {
             notificationInfo.setUpdateAt(new Date());
-            notificationInfoMapper.updateByPrimaryKeySelective(notificationInfo);
+            res = notificationInfoMapper.updateByPrimaryKeySelective(notificationInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update NotificationInfo error");
+        }
+        return notificationInfo;
+    }
+
+    @CacheEvict(value = "NotificationInfo", allEntries = true)
+    public NotificationInfo updateNotificationInfoStrict(NotificationInfo notificationInfo) {
+        int res = 0;
+        if (notificationInfo.getId() == null) {
+            notificationInfo.setCreateAt(new Date());
+            res = notificationInfoMapper.insert(notificationInfo);
+        } else {
+            notificationInfo.setUpdateAt(new Date());
+            res = notificationInfoMapper.updateByPrimaryKey(notificationInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update NotificationInfo error");
         }
         return notificationInfo;
     }
@@ -55,6 +75,11 @@ public class NotificationInfoDao {
     @CacheEvict(value = "NotificationInfo", allEntries = true)
     public Integer updateNotificationInfoByExample(NotificationInfo notificationInfo, NotificationInfoExample example) {
         return notificationInfoMapper.updateByExampleSelective(notificationInfo, example);
+    }
+
+    @CacheEvict(value = "NotificationInfo", allEntries = true)
+    public Integer updateNotificationInfoByExampleStrict(NotificationInfo notificationInfo, NotificationInfoExample example) {
+        return notificationInfoMapper.updateByExample(notificationInfo, example);
     }
 
     @CacheEvict(value = "NotificationInfo", allEntries = true)

@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class GoodsFactoryMerchantMapDao {
 
     @CacheEvict(value = "GoodsFactoryMerchantMap", allEntries = true)
     public GoodsFactoryMerchantMap updateGoodsFactoryMerchantMap(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
+        int res = 0;
         if (goodsFactoryMerchantMap.getId() == null) {
             goodsFactoryMerchantMap.setCreateAt(new Date());
-            goodsFactoryMerchantMapMapper.insertSelective(goodsFactoryMerchantMap);
+            res = goodsFactoryMerchantMapMapper.insertSelective(goodsFactoryMerchantMap);
         } else {
             goodsFactoryMerchantMap.setUpdateAt(new Date());
-            goodsFactoryMerchantMapMapper.updateByPrimaryKeySelective(goodsFactoryMerchantMap);
+            res = goodsFactoryMerchantMapMapper.updateByPrimaryKeySelective(goodsFactoryMerchantMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update GoodsFactoryMerchantMap error");
+        }
+        return goodsFactoryMerchantMap;
+    }
+
+    @CacheEvict(value = "GoodsFactoryMerchantMap", allEntries = true)
+    public GoodsFactoryMerchantMap updateGoodsFactoryMerchantMapStrict(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
+        int res = 0;
+        if (goodsFactoryMerchantMap.getId() == null) {
+            goodsFactoryMerchantMap.setCreateAt(new Date());
+            res = goodsFactoryMerchantMapMapper.insert(goodsFactoryMerchantMap);
+        } else {
+            goodsFactoryMerchantMap.setUpdateAt(new Date());
+            res = goodsFactoryMerchantMapMapper.updateByPrimaryKey(goodsFactoryMerchantMap);
+        }
+        if(res == 0) {
+            throw new ServiceException("update GoodsFactoryMerchantMap error");
         }
         return goodsFactoryMerchantMap;
     }
@@ -55,6 +75,11 @@ public class GoodsFactoryMerchantMapDao {
     @CacheEvict(value = "GoodsFactoryMerchantMap", allEntries = true)
     public Integer updateGoodsFactoryMerchantMapByExample(GoodsFactoryMerchantMap goodsFactoryMerchantMap, GoodsFactoryMerchantMapExample example) {
         return goodsFactoryMerchantMapMapper.updateByExampleSelective(goodsFactoryMerchantMap, example);
+    }
+
+    @CacheEvict(value = "GoodsFactoryMerchantMap", allEntries = true)
+    public Integer updateGoodsFactoryMerchantMapByExampleStrict(GoodsFactoryMerchantMap goodsFactoryMerchantMap, GoodsFactoryMerchantMapExample example) {
+        return goodsFactoryMerchantMapMapper.updateByExample(goodsFactoryMerchantMap, example);
     }
 
     @CacheEvict(value = "GoodsFactoryMerchantMap", allEntries = true)

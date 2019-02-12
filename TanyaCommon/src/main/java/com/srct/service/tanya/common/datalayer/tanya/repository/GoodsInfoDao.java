@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: srct   
- * @date: 2019/02/03
+ * @author: Sharp   
+ * @date: 2019/02/12
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -42,12 +42,32 @@ public class GoodsInfoDao {
 
     @CacheEvict(value = "GoodsInfo", allEntries = true)
     public GoodsInfo updateGoodsInfo(GoodsInfo goodsInfo) {
+        int res = 0;
         if (goodsInfo.getId() == null) {
             goodsInfo.setCreateAt(new Date());
-            goodsInfoMapper.insertSelective(goodsInfo);
+            res = goodsInfoMapper.insertSelective(goodsInfo);
         } else {
             goodsInfo.setUpdateAt(new Date());
-            goodsInfoMapper.updateByPrimaryKeySelective(goodsInfo);
+            res = goodsInfoMapper.updateByPrimaryKeySelective(goodsInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update GoodsInfo error");
+        }
+        return goodsInfo;
+    }
+
+    @CacheEvict(value = "GoodsInfo", allEntries = true)
+    public GoodsInfo updateGoodsInfoStrict(GoodsInfo goodsInfo) {
+        int res = 0;
+        if (goodsInfo.getId() == null) {
+            goodsInfo.setCreateAt(new Date());
+            res = goodsInfoMapper.insert(goodsInfo);
+        } else {
+            goodsInfo.setUpdateAt(new Date());
+            res = goodsInfoMapper.updateByPrimaryKey(goodsInfo);
+        }
+        if(res == 0) {
+            throw new ServiceException("update GoodsInfo error");
         }
         return goodsInfo;
     }
@@ -55,6 +75,11 @@ public class GoodsInfoDao {
     @CacheEvict(value = "GoodsInfo", allEntries = true)
     public Integer updateGoodsInfoByExample(GoodsInfo goodsInfo, GoodsInfoExample example) {
         return goodsInfoMapper.updateByExampleSelective(goodsInfo, example);
+    }
+
+    @CacheEvict(value = "GoodsInfo", allEntries = true)
+    public Integer updateGoodsInfoByExampleStrict(GoodsInfo goodsInfo, GoodsInfoExample example) {
+        return goodsInfoMapper.updateByExample(goodsInfo, example);
     }
 
     @CacheEvict(value = "GoodsInfo", allEntries = true)
