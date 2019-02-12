@@ -13,6 +13,9 @@ package com.srct.service.tanya.role.bo;
 
 import java.util.Date;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -23,8 +26,11 @@ import lombok.Data;
 @Data
 public class CreateRoleBO {
 
-    @ApiModelProperty(value = "创建人guid")
-    private String guid;
+    @ApiModelProperty(value = "创建人信息")
+    private UserInfo createrInfo;
+
+    @ApiModelProperty(value = "创建人角色")
+    private RoleInfo createrRole;
 
     @ApiModelProperty(value = "角色类型")
     private String roleType;
@@ -34,9 +40,6 @@ public class CreateRoleBO {
 
     @ApiModelProperty(value = "角色备注")
     private String comment;
-
-    @ApiModelProperty(value = "人员信息")
-    private Integer userId;
 
     @ApiModelProperty(value = "有效期起始")
     private Date startAt;

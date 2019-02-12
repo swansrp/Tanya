@@ -25,6 +25,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
@@ -171,7 +172,7 @@ public class UserServiceImpl implements UserService {
         try {
             userInfo = userInfoList.get(0);
             userInfo.setLastAt(new Date());
-            userInfoDao.getUserInfoSelective(userInfo);
+            userInfoDao.updateUserInfo(userInfo);
         } catch (Exception e) {
             throw new NoSuchUserException(wechatId);
         }
@@ -204,7 +205,7 @@ public class UserServiceImpl implements UserService {
 
         if (MD5Util.verify(password, userInfo.getPassword())) {
             userInfo.setLastAt(new Date());
-            userInfoDao.getUserInfoSelective(userInfo);
+            userInfoDao.updateUserInfo(userInfo);
         } else {
             if (!sessionService.retry(guid)) {
                 userInfo.setState("1");
@@ -238,11 +239,17 @@ public class UserServiceImpl implements UserService {
         userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         List<UserRoleMap> userRoleList = userRoleMapDao.getUserRoleMapSelective(userRoleMap);
 
-        userRoleList.forEach(userRole -> {
-            RoleInfo roleInfo = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
-            if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
-                res.getRole().add(roleInfo);
-        });
+        if (userRoleList == null || userRoleList.size() == 0) {
+            Log.i("No Role for user {}", userInfo.getGuid());
+        } else {
+            userRoleList.forEach(userRole -> {
+                if (userRole.getRoleId() != null) {
+                    RoleInfo roleInfo = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
+                    if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
+                        res.getRole().add(roleInfo);
+                }
+            });
+        }
 
         return res;
     }
@@ -297,6 +304,89 @@ public class UserServiceImpl implements UserService {
         UserInfo info = userInfoDao.getUserInfobyId(userInfo.getId());
         info.setPassword("");
         return userInfoDao.updateUserInfo(info);
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.UserService#addRole(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
+     */
+    @Override
+    public List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo) {
+
+        UserRoleMapExample example = new UserRoleMapExample();
+        UserRoleMapExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+
+        UserRoleMap userRoleMapEx = new UserRoleMap();
+        userRoleMapEx.setUserId(userInfo.getId());
+        userRoleMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        UserRoleMap userRoleMap = null;
+        try {
+            userRoleMap = userRoleMapDao.getUserRoleMapSelective(userRoleMapEx).get(0);
+        } catch (Exception e) {
+            Log.i("user id " + userInfo.getId() + " Dont have a role map -- create");
+            userRoleMap = new UserRoleMap();
+            userRoleMap.setUserId(userInfo.getId());
+            userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        }
+        userRoleMap.setRoleId(roleInfo.getId());
+
+        userRoleMapDao.updateUserRoleMap(userRoleMap);
+
+        List<RoleInfo> res = new ArrayList<>();
+        List<UserRoleMap> userRoleList = userRoleMapDao.getUserRoleMapSelective(userRoleMapEx);
+
+        userRoleList.forEach(userRole -> {
+            if (userRole.getRoleId() != null) {
+                RoleInfo role = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
+                if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
+                    res.add(roleInfo);
+            }
+        });
+
+        return res;
+    }
+
+    /* (non-Javadoc)
+     * @see com.srct.service.tanya.common.service.UserService#removeRole(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
+     */
+    @Override
+    public List<RoleInfo> removeRole(UserInfo userInfo, RoleInfo roleInfo) {
+
+        UserRoleMapExample example = new UserRoleMapExample();
+        UserRoleMapExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+
+        UserRoleMap userRoleMapEx = new UserRoleMap();
+        userRoleMapEx.setUserId(userInfo.getId());
+        userRoleMapEx.setRoleId(roleInfo.getId());
+        userRoleMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        UserRoleMap userRoleMap = null;
+        try {
+            userRoleMap = userRoleMapDao.getUserRoleMapSelective(userRoleMapEx).get(0);
+        } catch (Exception e) {
+            Log.e("user id " + userInfo.getId() + " Dont have role " + roleInfo.getRole());
+            throw new ServiceException("user id " + userInfo.getId() + " Dont have role " + roleInfo.getRole());
+        }
+
+        userRoleMap.setRoleId(null);
+
+        userRoleMapDao.updateUserRoleMapStrict(userRoleMap);
+
+        List<RoleInfo> res = new ArrayList<>();
+        userRoleMapEx.setRoleId(null);
+        List<UserRoleMap> userRoleList = userRoleMapDao.getUserRoleMapSelective(userRoleMapEx);
+
+        userRoleList.forEach(userRole -> {
+            if (userRole.getRoleId() != null) {
+                RoleInfo role = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
+                if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
+                    res.add(roleInfo);
+            }
+        });
+
+        return res;
     }
 
 }

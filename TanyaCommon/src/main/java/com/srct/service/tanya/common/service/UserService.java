@@ -43,4 +43,8 @@ public interface UserService {
 
     public UserInfo cleanUserPassword(UserInfo userInfo);
 
+    public List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo);
+
+    public List<RoleInfo> removeRole(UserInfo userInfo, RoleInfo roleInfo);
+
 }

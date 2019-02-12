@@ -11,6 +11,9 @@
  */
 package com.srct.service.tanya.role.bo;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -21,16 +24,19 @@ import lombok.Data;
 @Data
 public class ModifyRoleBO {
 
-    @ApiModelProperty(value = "邀请人guid")
-    private String sourceGuid;
+    @ApiModelProperty(value = "邀请人信息")
+    private UserInfo createrInfo;
 
-    @ApiModelProperty(value = "角色类型")
+    @ApiModelProperty(value = "邀请人角色")
+    private RoleInfo createrRole;
+
+    @ApiModelProperty(value = "受邀人角色类型")
     private String roleType;
 
     @ApiModelProperty(value = "受邀人guid")
     private String targetGuid;
 
-    @ApiModelProperty(value = "对应角色id")
+    @ApiModelProperty(value = "受邀角色id")
     private Integer id;
 
 }

@@ -7,14 +7,29 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.srct.service.config.db.DataSourceCommonConstant;
+import com.srct.service.exception.ServiceException;
+import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.repository.AdminInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
+import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
+import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.log.Log;
 
 /**
  * @author Sharp
@@ -23,6 +38,21 @@ import com.srct.service.tanya.role.service.RoleService;
 @Service
 public class AdminRoleServiceImpl implements RoleService {
 
+    private final static int DEFAULT_PERIOD_VALUE = 5;
+    private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
+
+    @Autowired
+    private RoleInfoDao roleInfoDao;
+
+    @Autowired
+    private AdminInfoDao adminInfoDao;
+
+    @Autowired
+    private UserInfoDao userInfoDao;
+
+    @Autowired
+    private UserService userService;
+
     /*
      * (non-Javadoc)
      * 
@@ -30,7 +60,7 @@ public class AdminRoleServiceImpl implements RoleService {
      */
     @Override
     public String getRoleType() {
-        return "Admin";
+        return "admin";
     }
 
     /*
@@ -40,8 +70,31 @@ public class AdminRoleServiceImpl implements RoleService {
      */
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
-        // TODO Auto-generated method stub
-        return null;
+
+        AdminInfo adminInfo = makeAdminInfo(bo);
+
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(adminInfo, res);
+        res.setRoleType(getRoleType());
+
+        return res;
+    }
+
+    /**
+     * @param bo
+     * @return
+     */
+    private AdminInfo makeAdminInfo(CreateRoleBO bo) {
+        Date now = new Date();
+
+        AdminInfo adminInfo = new AdminInfo();
+        BeanUtil.copyProperties(bo, adminInfo);
+        adminInfo.setStartAt(now);
+        adminInfo.setEndAt(getDefaultPeriod(now, DEFAULT_PERIOD_TYPE, DEFAULT_PERIOD_VALUE));
+        adminInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        adminInfoDao.updateAdminInfo(adminInfo);
+        return adminInfo;
     }
 
     /*
@@ -50,9 +103,20 @@ public class AdminRoleServiceImpl implements RoleService {
      * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
      */
     @Override
-    public List<RoleInfoBO> getSubordinate(String guid) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
+        List<AdminInfo> adminInfoList =
+            adminInfoDao.getAllAdminInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<RoleInfoBO> boList = new ArrayList<>();
+
+        for (AdminInfo admin : adminInfoList) {
+            RoleInfoBO bo = new RoleInfoBO();
+            BeanUtil.copyProperties(admin, bo);
+            bo.setRoleType(getRoleType());
+            boList.add(bo);
+
+        }
+        return boList;
+
     }
 
     /*
@@ -61,9 +125,61 @@ public class AdminRoleServiceImpl implements RoleService {
      * @see com.srct.service.tanya.role.service.RoleService#operate(com.srct.service.tanya.role.bo.ModifyRoleBO)
      */
     @Override
-    public RoleInfoBO operate(ModifyRoleBO bo) {
-        // TODO Auto-generated method stub
-        return null;
+    public RoleInfoBO kickout(ModifyRoleBO bo) {
+
+        AdminInfo target = adminInfoDao.getAdminInfobyId(bo.getId());
+        if (target == null) {
+            Log.e("role {} id {} is not exsited", bo.getRoleType(), bo.getId());
+            throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " is not exstied");
+        }
+
+        if (target.getUserId() == null) {
+            Log.e("role {} id {} dont have user", bo.getRoleType(), bo.getId());
+            throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " Dont have user");
+        }
+
+        UserInfo targetUserInfo = userInfoDao.getUserInfobyId(target.getUserId());
+        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
+
+        if (targetRoleInfoList == null || targetRoleInfoList.size() == 0) {
+            throw new ServiceException("guid " + bo.getTargetGuid() + " dont have a role ");
+        }
+
+        target.setUserId(null);
+        adminInfoDao.updateAdminInfoStrict(target);
+
+        userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
+    }
+
+    @Override
+    public RoleInfoBO invite(ModifyRoleBO bo) {
+        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
+        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
+
+        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
+            throw new ServiceException(
+                "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+        }
+
+        AdminInfo admin = adminInfoDao.getAdminInfobyId(bo.getId());
+        admin.setUserId(targetUserInfo.getId());
+        admin.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        AdminInfo target = adminInfoDao.updateAdminInfo(admin);
+
+        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
     }
 
 }

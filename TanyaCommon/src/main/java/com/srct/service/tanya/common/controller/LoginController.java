@@ -36,14 +36,12 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.ServiceException;
-import com.srct.service.exception.UserNotLoginException;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
-import com.srct.service.tanya.common.exception.UserNotInRoleException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.common.vo.UserInfoVO;
@@ -75,20 +73,6 @@ public class LoginController {
 
     @Autowired
     UserService userService;
-
-    @ApiOperation(value = "用户未登入", notes = "返回错误,告知前台登录")
-    @RequestMapping(value = "/unlogin", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<String>.Resp> unlogin() {
-        Log.i("**********unlogin**********");
-        throw new UserNotLoginException();
-    }
-
-    @ApiOperation(value = "用户无角色", notes = "返回错误,告知前台登录")
-    @RequestMapping(value = "/norole", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<String>.Resp> noRole() {
-        Log.i("**********norole**********");
-        throw new UserNotInRoleException();
-    }
 
     @ApiOperation(value = "用户登入", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/login", method = RequestMethod.GET)

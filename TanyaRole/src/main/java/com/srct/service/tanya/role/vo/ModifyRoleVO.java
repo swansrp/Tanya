@@ -1,5 +1,5 @@
 /**
- * Title: CreateRoleVO.java
+ * Title: InviteRoleVO.java
  * Description:
  * Copyright: Copyright (c) 2019
  * Company: Sharp
@@ -7,7 +7,7 @@
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.vo
  * @author Sharp
- * @date 2019-02-10 23:17:22
+ * @date 2019-02-12 00:34:35
  */
 package com.srct.service.tanya.role.vo;
 
@@ -19,15 +19,12 @@ import lombok.Data;
  *
  */
 @Data
-public class CreateRoleVO {
+public class ModifyRoleVO {
 
-    @ApiModelProperty(value = "角色类型", notes = "only for superAdmin")
+    @ApiModelProperty(value = "邀请角色类型")
     private String roleType;
 
-    @ApiModelProperty(value = "角色名称", required = true)
-    private String title;
-
-    @ApiModelProperty(value = "角色备注")
-    private String comment;
+    @ApiModelProperty(value = "邀请角色id")
+    private Integer id;
 
 }
