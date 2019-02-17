@@ -10,8 +10,8 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: Sharp
-* @create: 2019/02/12
+* @author: Administrator
+* @create: 2019/02/17
  **/
 @Data
 public class OrderInfoEntityVO {
@@ -47,7 +47,7 @@ public class OrderInfoEntityVO {
     private Double amount;
  
     @ApiModelProperty(value = "参加活动id")
-    private Integer campaignId;
+    private Integer discountId;
  
     @ApiModelProperty(value = "有效期起始")
     private Date startAt;
