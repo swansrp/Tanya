@@ -41,6 +41,8 @@ public interface UserService {
 
     public UserInfo getUserbyEmail(String email);
 
+    public UserInfo getUserbyUserId(Integer userId);
+
     public UserInfo cleanUserPassword(UserInfo userInfo);
 
     public List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo);

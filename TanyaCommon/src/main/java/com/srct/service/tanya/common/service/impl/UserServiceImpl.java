@@ -61,8 +61,11 @@ public class UserServiceImpl implements UserService {
     @Autowired
     WechatService wechatService;
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#regUser(com.srct.service.tanya.common.vo.user.UserRegReqVO)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.srct.service.tanya.common.service.UserService#regUser(com.srct.service.tanya.common.vo.user.UserRegReqVO)
      */
     @Override
     public UserInfo updateUser(UserRegReqBO bo) {
@@ -89,7 +92,9 @@ public class UserServiceImpl implements UserService {
         return userInfo;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String)
      */
     @Override
@@ -113,7 +118,9 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.UserService#regbyOpenId(java.lang.String)
      */
     @Override
@@ -133,7 +140,9 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String, java.lang.String)
      */
     @Override
@@ -154,7 +163,9 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String)
      */
     @Override
@@ -182,7 +193,9 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String, java.lang.String)
      */
     @Override
@@ -254,15 +267,21 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#getRole(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.srct.service.tanya.common.service.UserService#getRole(com.srct.service.tanya.common.datalayer.tanya.entity.
+     * UserInfo)
      */
     @Override
     public List<RoleInfo> getRole(UserInfo userInfo) {
         return getRoleInfo(userInfo).getRole();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.common.service.UserService#getUserbyGuid(java.lang.String)
      */
     @Override
@@ -279,9 +298,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#getUserbyEmail(java.lang.String)
-     */
     @Override
     public UserInfo getUserbyEmail(String email) {
         UserInfo userInfoEx = new UserInfo();
@@ -296,9 +312,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#cleanUserPassword()
-     */
+    @Override
+    public UserInfo getUserbyUserId(Integer userId) {
+
+        UserInfo userInfo = userInfoDao.getUserInfobyId(userId);
+
+        if (userInfo == null)
+            throw new NoSuchUserException("No such user with id " + userId);
+
+        return userInfo;
+    }
+
     @Override
     public UserInfo cleanUserPassword(UserInfo userInfo) {
         UserInfo info = userInfoDao.getUserInfobyId(userInfo.getId());
@@ -306,8 +330,12 @@ public class UserServiceImpl implements UserService {
         return userInfoDao.updateUserInfo(info);
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#addRole(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.srct.service.tanya.common.service.UserService#addRole(com.srct.service.tanya.common.datalayer.tanya.entity.
+     * UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
      */
     @Override
     public List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo) {
@@ -347,8 +375,12 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.UserService#removeRole(com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.srct.service.tanya.common.service.UserService#removeRole(com.srct.service.tanya.common.datalayer.tanya.entity
+     * .UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
      */
     @Override
     public List<RoleInfo> removeRole(UserInfo userInfo, RoleInfo roleInfo) {

@@ -28,6 +28,7 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
+import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
@@ -62,6 +63,11 @@ public class MerchantRoleServiceImpl implements RoleService {
     @Override
     public String getRoleType() {
         return "merchant";
+    }
+
+    @Override
+    public String getSubordinateRoleType() {
+        return "factory";
     }
 
     /*
@@ -126,7 +132,9 @@ public class MerchantRoleServiceImpl implements RoleService {
 
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya.role.bo.ModifyRoleBO)
      */
     @Override
@@ -183,6 +191,30 @@ public class MerchantRoleServiceImpl implements RoleService {
         RoleInfoBO resBO = new RoleInfoBO();
         resBO.setRoleType(getRoleType());
         BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
+    }
+
+    @Override
+    public RoleInfoBO update(UpdateRoleInfoBO bo) {
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getTargetId());
+        BeanUtil.copyProperties(bo, merchantInfo);
+
+        merchantInfo = merchantInfoDao.updateMerchantInfo(merchantInfo);
+
+        if (bo.getStartAt() != null || bo.getEndAt() != null) {
+            UpdateRoleInfoBO updateSubRoleBO = new UpdateRoleInfoBO();
+            updateSubRoleBO.setStartAt(bo.getStartAt());
+            updateSubRoleBO.setEndAt(bo.getEndAt());
+            updateSubRoleBO.setSuperiorId(merchantInfo.getId());
+            RoleService subordinateService =
+                (RoleService)BeanUtil.getBean(getSubordinateRoleType() + "RoleServiceImpl");
+            subordinateService.update(updateSubRoleBO);
+        }
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(merchantInfo, resBO);
 
         return resBO;
     }

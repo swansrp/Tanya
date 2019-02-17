@@ -27,4 +27,7 @@ public class TanyaResponseConstant extends CommonResponseConstant {
 
     public static final CommonResponseCode USER_NOT_IN_ROLE =
         new CommonResponseCode(TAG + "1002", "USER_DONT_HAVE_ROLE", HttpStatus.OK);
+
+    public static final CommonResponseCode TOUCH_TRADER_NUMBER_LIMIT =
+        new CommonResponseCode(TAG + "1003", "TOUCH_TRADER_NUMBER_LIMIT", HttpStatus.OK);
 }

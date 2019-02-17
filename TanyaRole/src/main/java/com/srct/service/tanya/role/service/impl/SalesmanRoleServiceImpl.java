@@ -32,6 +32,7 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
+import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
@@ -72,6 +73,11 @@ public class SalesmanRoleServiceImpl implements RoleService {
     @Override
     public String getRoleType() {
         return "salesman";
+    }
+
+    @Override
+    public String getSubordinateRoleType() {
+        return null;
     }
 
     /*
@@ -201,7 +207,9 @@ public class SalesmanRoleServiceImpl implements RoleService {
         return boList;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya.role.bo.ModifyRoleBO)
      */
     @Override
@@ -243,8 +251,13 @@ public class SalesmanRoleServiceImpl implements RoleService {
         List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
 
         if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
-            throw new ServiceException(
-                "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+            for (RoleInfo targetRoleInfo : targetRoleInfoList) {
+                if (!targetRoleInfo.getRole().equals(getRoleType())) {
+                    throw new ServiceException(
+                        "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+                }
+            }
+
         }
 
         SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
@@ -258,6 +271,21 @@ public class SalesmanRoleServiceImpl implements RoleService {
         RoleInfoBO resBO = new RoleInfoBO();
         resBO.setRoleType(getRoleType());
         BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
+    }
+
+    @Override
+    public RoleInfoBO update(UpdateRoleInfoBO bo) {
+
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getTargetId());
+        BeanUtil.copyProperties(bo, salesmanInfo);
+
+        salesmanInfo = salesmanInfoDao.updateSalesmanInfo(salesmanInfo);
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(salesmanInfo, resBO);
 
         return resBO;
     }

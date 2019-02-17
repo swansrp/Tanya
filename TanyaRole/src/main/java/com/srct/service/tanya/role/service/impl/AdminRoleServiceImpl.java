@@ -27,6 +27,7 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
+import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
@@ -61,6 +62,11 @@ public class AdminRoleServiceImpl implements RoleService {
     @Override
     public String getRoleType() {
         return "admin";
+    }
+
+    @Override
+    public String getSubordinateRoleType() {
+        return "merchant";
     }
 
     /*
@@ -178,6 +184,20 @@ public class AdminRoleServiceImpl implements RoleService {
         RoleInfoBO resBO = new RoleInfoBO();
         resBO.setRoleType(getRoleType());
         BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
+    }
+
+    @Override
+    public RoleInfoBO update(UpdateRoleInfoBO bo) {
+        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getTargetId());
+        BeanUtil.copyProperties(bo, adminInfo);
+
+        adminInfo = adminInfoDao.updateAdminInfo(adminInfo);
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(adminInfo, resBO);
 
         return resBO;
     }

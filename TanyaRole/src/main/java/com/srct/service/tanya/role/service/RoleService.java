@@ -20,6 +20,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
+import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.utils.log.Log;
 
 /**
@@ -30,7 +31,11 @@ public interface RoleService {
 
     public String getRoleType();
 
+    public String getSubordinateRoleType();
+
     public RoleInfoBO create(CreateRoleBO bo);
+
+    public RoleInfoBO update(UpdateRoleInfoBO bo);
 
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo);
 
