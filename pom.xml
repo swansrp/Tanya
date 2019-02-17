@@ -46,5 +46,6 @@
         <module>TanyaPortal</module>
         <module>TanyaUser</module>
         <module>TanyaRole</module>
+        <module>TanyaProduct</module>
     </modules>
 </project>

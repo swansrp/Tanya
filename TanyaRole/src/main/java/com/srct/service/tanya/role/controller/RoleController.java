@@ -28,6 +28,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
+import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
@@ -66,7 +67,8 @@ public class RoleController {
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> createRole(@RequestBody CreateRoleVO vo) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
-        Log.i("***createRole***\nguid {} role {}", info.getGuid(), role.getRole());
+        Log.i("***createRole***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         CreateRoleBO bo = new CreateRoleBO();
         bo.setCreaterInfo(info);
@@ -96,7 +98,8 @@ public class RoleController {
         @RequestParam(value = "tradernum", required = false) Integer traderNumber) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
-        Log.i("***updateRole***\nguid {} role {}", info.getGuid(), role.getRole());
+        Log.i("***updateRole***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         UpdateRoleInfoBO bo = new UpdateRoleInfoBO();
         bo.setCreaterInfo(info);
@@ -126,6 +129,8 @@ public class RoleController {
         RoleInfo role = (RoleInfo)request.getAttribute("role");
 
         String roleType = getTargetRoleType(roletype, role);
+        Log.i("***getSubordinate***");
+        Log.i("guid {}, role type {} target type {}", info.getGuid(), role.getComment(), roleType);
 
         RoleService roleService = (RoleService)BeanUtil.getBean(roleType + "RoleServiceImpl");
         if (role.getRole().equals("superAdmin"))
@@ -181,6 +186,37 @@ public class RoleController {
         RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.kickout(bo);
 
+        RoleInfoVO resVO = convertRoleInfoVO(resBO);
+
+        return TanyaExceptionHandler.generateResponse(resVO);
+    }
+
+    @ApiOperation(value = "获取下属详细信息", notes = "根据传入人员角色获取下属信息。")
+    @RequestMapping(value = "/details", method = RequestMethod.GET)
+    @ApiImplicitParams({
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "roletype",
+            value = "角色类型 {admin, merchant, factory, trader, salesman}", required = true),
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "id", value = "角色id", required = true)})
+    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> getDetails(
+        @RequestParam(value = "roletype", required = false) String roletype,
+        @RequestParam(value = "id", required = false) Integer id) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+
+        String roleType = getTargetRoleType(roletype, role);
+        Log.i("***getDetails***");
+        Log.i("guid {}, role type {} target type {}", info.getGuid(), role.getComment(), roleType);
+
+        RoleService roleService = (RoleService)BeanUtil.getBean(roleType + "RoleServiceImpl");
+
+        GetRoleDetailsBO bo = new GetRoleDetailsBO();
+        if (role.getRole().equals("superAdmin"))
+            info = null;
+        bo.setCreaterInfo(info);
+        bo.setCreaterRole(role);
+        bo.setId(id);
+
+        RoleInfoBO resBO = roleService.getDetails(bo);
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
 
         return TanyaExceptionHandler.generateResponse(resVO);

@@ -18,6 +18,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
+import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
@@ -39,9 +40,13 @@ public interface RoleService {
 
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo);
 
+    public RoleInfoBO getDetails(GetRoleDetailsBO bo);
+
     public RoleInfoBO invite(ModifyRoleBO bo);
 
     public RoleInfoBO kickout(ModifyRoleBO bo);
+
+    public Integer getRoleIdbyUser(UserInfo userInfo);
 
     default Date getDefaultPeriod(Date date, int defaultType, int defaultValue) {
         Calendar c = Calendar.getInstance();

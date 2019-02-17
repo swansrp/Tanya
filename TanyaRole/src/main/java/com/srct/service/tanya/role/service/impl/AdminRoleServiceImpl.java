@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.AdminInfoDao;
@@ -25,6 +26,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
+import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
@@ -125,6 +127,15 @@ public class AdminRoleServiceImpl implements RoleService {
 
     }
 
+    @Override
+    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
+        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getId());
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(adminInfo, bo);
+        res.setRoleType(getRoleType());
+        return res;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -200,6 +211,23 @@ public class AdminRoleServiceImpl implements RoleService {
         BeanUtil.copyProperties(adminInfo, resBO);
 
         return resBO;
+    }
+
+    @Override
+    public Integer getRoleIdbyUser(UserInfo userInfo) {
+        AdminInfo adminInfo = null;
+        AdminInfoExample example = new AdminInfoExample();
+        AdminInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            adminInfo = adminInfoDao.getAdminInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no admin have the user " + userInfo.getName());
+        }
+        return adminInfo.getId();
     }
 
 }

@@ -19,6 +19,7 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfoExample;
@@ -30,6 +31,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.TraderInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
+import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
@@ -87,8 +89,12 @@ public class SalesmanRoleServiceImpl implements RoleService {
      */
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
-
-        TraderInfo traderInfo = getTraderInfoByCreater(bo);
+        TraderInfo traderInfo = null;
+        try {
+            traderInfo = getTraderInfoByCreater(bo.getCreaterInfo());
+        } catch (Exception e) {
+            throw new ServiceException("no such user as role " + bo.getCreaterRole().getRole());
+        }
 
         SalesmanInfo salesmanInfo = makeSalesmanInfo(bo);
 
@@ -132,9 +138,8 @@ public class SalesmanRoleServiceImpl implements RoleService {
      * @param bo
      * @return
      */
-    private TraderInfo getTraderInfoByCreater(CreateRoleBO bo) {
+    private TraderInfo getTraderInfoByCreater(UserInfo creater) {
         TraderInfo traderInfo = null;
-        UserInfo creater = bo.getCreaterInfo();
         TraderInfoExample example = new TraderInfoExample();
         TraderInfoExample.Criteria criteria = example.createCriteria();
         criteria.andUserIdEqualTo(creater.getId());
@@ -142,7 +147,7 @@ public class SalesmanRoleServiceImpl implements RoleService {
         try {
             traderInfo = traderInfoDao.getTraderInfoByExample(example).get(0);
         } catch (Exception e) {
-            throw new ServiceException("no such user as role " + bo.getCreaterRole().getRole());
+            throw new ServiceException("");
         }
         return traderInfo;
     }
@@ -158,13 +163,9 @@ public class SalesmanRoleServiceImpl implements RoleService {
             return getAllSalesman();
         }
 
-        TraderInfo traderInfoEx = new TraderInfo();
-        traderInfoEx.setUserId(userInfo.getId());
-        traderInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
         TraderInfo traderInfo = null;
         try {
-            traderInfo = traderInfoDao.getTraderInfoSelective(traderInfoEx).get(0);
+            traderInfo = getTraderInfoByCreater(userInfo);
         } catch (Exception e) {
             Log.e("dont find the user id {} for {}", userInfo.getId(), "factory");
             throw new ServiceException("dont find the user id " + userInfo.getId() + " for factory");
@@ -187,6 +188,36 @@ public class SalesmanRoleServiceImpl implements RoleService {
 
         }
         return boList;
+    }
+
+    @Override
+    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
+        UserInfo userInfo = bo.getCreaterInfo();
+        if (userInfo != null) {
+            TraderInfo traderInfo = null;
+            try {
+                traderInfo = getTraderInfoByCreater(userInfo);
+            } catch (Exception e) {
+                Log.e("dont find the user id {} for {}", userInfo.getId(), "factory");
+                throw new ServiceException("dont find the user id " + userInfo.getId() + " for factory");
+            }
+
+            SalesmanTraderMap salesmanTraderMapEx = new SalesmanTraderMap();
+            salesmanTraderMapEx.setSalesmanId(bo.getId());
+            salesmanTraderMapEx.setTraderId(traderInfo.getId());
+            salesmanTraderMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+            if (salesmanTraderMapDao.countSalesmanTraderMap(salesmanTraderMapEx) == 0) {
+                throw new ServiceException(
+                    "salesman id " + bo.getId() + " trader id " + traderInfo.getId() + "cant find the relationship");
+            }
+        }
+
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(salesmanInfo, bo);
+        res.setRoleType(getRoleType());
+        return res;
     }
 
     /**
@@ -288,6 +319,23 @@ public class SalesmanRoleServiceImpl implements RoleService {
         BeanUtil.copyProperties(salesmanInfo, resBO);
 
         return resBO;
+    }
+
+    @Override
+    public Integer getRoleIdbyUser(UserInfo userInfo) {
+        SalesmanInfo salesmanInfo = null;
+        SalesmanInfoExample example = new SalesmanInfoExample();
+        SalesmanInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            salesmanInfo = salesmanInfoDao.getSalesmanInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no salesman have the user " + userInfo.getName());
+        }
+        return salesmanInfo.getId();
     }
 
 }

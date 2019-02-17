@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.MerchantInfoDao;
@@ -26,6 +27,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
+import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
@@ -104,16 +106,6 @@ public class MerchantRoleServiceImpl implements RoleService {
         return merchantInfo;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
-     */
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
-     */
     @Override
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
 
@@ -132,11 +124,15 @@ public class MerchantRoleServiceImpl implements RoleService {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya.role.bo.ModifyRoleBO)
-     */
+    @Override
+    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getId());
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(merchantInfo, bo);
+        res.setRoleType(getRoleType());
+        return res;
+    }
+
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
 
@@ -217,6 +213,23 @@ public class MerchantRoleServiceImpl implements RoleService {
         BeanUtil.copyProperties(merchantInfo, resBO);
 
         return resBO;
+    }
+
+    @Override
+    public Integer getRoleIdbyUser(UserInfo userInfo) {
+        MerchantInfo merchantInfo = null;
+        MerchantInfoExample example = new MerchantInfoExample();
+        MerchantInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            merchantInfo = merchantInfoDao.getMerchantInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no merchant have the user " + userInfo.getName());
+        }
+        return merchantInfo.getId();
     }
 
 }

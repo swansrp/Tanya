@@ -9,8 +9,8 @@
         <artifactId>Tanya</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>TanyaPortal</artifactId>
-    <name>TanyaPortal</name>
+    <artifactId>TanyaProduct</artifactId>
+    <name>TanyaProduct</name>
     <description></description>
 
     <!--指定项目中公有的模块 -->
@@ -28,16 +28,6 @@
             <artifactId>TanyaRole</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>com.srct.service</groupId>
-            <artifactId>TanyaUser</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.srct.service</groupId>
-            <artifactId>TanyaProduct</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,7 +43,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <!-- 指定该Main Class为全局的唯一入口 -->
-                    <mainClass>com.srct.service.tanya.portal.PortalStartApplication</mainClass>
+                    <mainClass>com.srct.service.tanya.product.ProductStartApplication</mainClass>
                     <layout>ZIP</layout>
                     <classifier>exec</classifier>
                 </configuration>
