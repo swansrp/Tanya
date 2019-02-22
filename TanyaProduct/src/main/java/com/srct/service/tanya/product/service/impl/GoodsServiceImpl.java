@@ -14,8 +14,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
@@ -24,7 +22,6 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsFactoryMerchant
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsFactoryMerchantMapDao;
-import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsInfoDao;
 import com.srct.service.tanya.common.exception.GoodsNumberLimitException;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
@@ -34,7 +31,6 @@ import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
 import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.service.FactoryRoleService;
-import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.utils.BeanUtil;
 
 /**
@@ -46,12 +42,6 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
 
     @Autowired
     private FactoryRoleService factoryRoleService;
-
-    @Autowired
-    private TraderRoleService traderRoleService;
-
-    @Autowired
-    private GoodsInfoDao goodsInfoDao;
 
     @Autowired
     private GoodsFactoryMerchantMapDao goodsFactoryMerchantMapDao;
@@ -66,6 +56,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         if (goodsFactoryMerchantMapList == null
             || goodsFactoryMerchantMapList.size() < factoryMerchantMap.getGoodsNumber()) {
             BeanUtil.copyProperties(req, goodsInfo);
+            goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             goodsInfoDao.updateGoodsInfo(goodsInfo);
             makeGoodsFactoryMerchantMapRelationShip(goodsInfo, factoryMerchantMap);
         } else {
@@ -85,7 +76,8 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
      */
     private QueryRespVO<GoodsInfoRespVO> getGoodsInfoList(ProductBO<QueryReqVO> req, FactoryInfo factoryInfo) {
         QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
-        res.setInfo(new ArrayList<>());
+        super.buildRespbyReq(res, req);
+
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
         List<Integer> goodsIdList = new ArrayList<>();
         goodsFactoryMerchantMapList.forEach(map -> {
@@ -94,14 +86,11 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         GoodsInfoExample example = new GoodsInfoExample();
         GoodsInfoExample.Criteria criteria = example.createCriteria();
         criteria.andIdIn(goodsIdList);
-        Page page = PageHelper.startPage(req.getReq().getCurrentPage(), req.getReq().getPageSize());
-        List<GoodsInfo> goodsInfoList = goodsInfoDao.getGoodsInfoByExample(example);
-        PageInfo<GoodsInfo> pageInfo = new PageInfo<GoodsInfo>(goodsInfoList);
+        PageInfo<?> pageInfo = super.buildPage(req);
+        List<GoodsInfo> goodsInfoList = goodsInfoDao.getGoodsInfoByExample(example, pageInfo);
 
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
-        res.setCurrentPage(req.getReq().getCurrentPage());
-        res.setPageSize(req.getReq().getPageSize());
 
         goodsInfoList.forEach(goodsInfo -> {
             GoodsInfoRespVO goodsInfoRespVO = buidGoodInfoRespVO(goodsInfo);

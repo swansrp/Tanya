@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class SalesmanInfoDao {
 
     @Cacheable(value = "SalesmanInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<SalesmanInfo> getShopInfoSelective(SalesmanInfo salesmanInfo, PageInfo<?> pageInfo) {
+        SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
+        PageHelper.startPage(pageInfo);
+        List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<SalesmanInfo>(res);
+        return res;
+    }
+    @Cacheable(value = "SalesmanInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<SalesmanInfo> getSalesmanInfoSelective(SalesmanInfo salesmanInfo) {
         SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
         List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
         return res;
     }
 
+    public List<SalesmanInfo> getSalesmanInfoByExample(SalesmanInfoExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<SalesmanInfo>(res);
+        return res;
+    }
     public List<SalesmanInfo> getSalesmanInfoByExample(SalesmanInfoExample example) {
         List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
         return res;

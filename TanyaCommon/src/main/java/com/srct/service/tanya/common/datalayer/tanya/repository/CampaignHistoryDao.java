@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class CampaignHistoryDao {
 
     @Cacheable(value = "CampaignHistory", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<CampaignHistory> getShopInfoSelective(CampaignHistory campaignHistory, PageInfo<?> pageInfo) {
+        CampaignHistoryExample example = getCampaignHistoryExample(campaignHistory);
+        PageHelper.startPage(pageInfo);
+        List<CampaignHistory> res = campaignHistoryMapper.selectByExample(example);
+        pageInfo = new PageInfo<CampaignHistory>(res);
+        return res;
+    }
+    @Cacheable(value = "CampaignHistory", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<CampaignHistory> getCampaignHistorySelective(CampaignHistory campaignHistory) {
         CampaignHistoryExample example = getCampaignHistoryExample(campaignHistory);
         List<CampaignHistory> res = campaignHistoryMapper.selectByExample(example);
         return res;
     }
 
+    public List<CampaignHistory> getCampaignHistoryByExample(CampaignHistoryExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<CampaignHistory> res = campaignHistoryMapper.selectByExample(example);
+        pageInfo = new PageInfo<CampaignHistory>(res);
+        return res;
+    }
     public List<CampaignHistory> getCampaignHistoryByExample(CampaignHistoryExample example) {
         List<CampaignHistory> res = campaignHistoryMapper.selectByExample(example);
         return res;

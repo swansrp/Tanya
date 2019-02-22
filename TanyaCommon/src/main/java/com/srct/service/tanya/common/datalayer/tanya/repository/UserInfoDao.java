@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class UserInfoDao {
 
     @Cacheable(value = "UserInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<UserInfo> getShopInfoSelective(UserInfo userInfo, PageInfo<?> pageInfo) {
+        UserInfoExample example = getUserInfoExample(userInfo);
+        PageHelper.startPage(pageInfo);
+        List<UserInfo> res = userInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<UserInfo>(res);
+        return res;
+    }
+    @Cacheable(value = "UserInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<UserInfo> getUserInfoSelective(UserInfo userInfo) {
         UserInfoExample example = getUserInfoExample(userInfo);
         List<UserInfo> res = userInfoMapper.selectByExample(example);
         return res;
     }
 
+    public List<UserInfo> getUserInfoByExample(UserInfoExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<UserInfo> res = userInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<UserInfo>(res);
+        return res;
+    }
     public List<UserInfo> getUserInfoByExample(UserInfoExample example) {
         List<UserInfo> res = userInfoMapper.selectByExample(example);
         return res;

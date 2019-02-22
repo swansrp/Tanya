@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class MerchantInfoDao {
 
     @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<MerchantInfo> getShopInfoSelective(MerchantInfo merchantInfo, PageInfo<?> pageInfo) {
+        MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
+        PageHelper.startPage(pageInfo);
+        List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<MerchantInfo>(res);
+        return res;
+    }
+    @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo) {
         MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
         return res;
     }
 
+    public List<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<MerchantInfo>(res);
+        return res;
+    }
     public List<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example) {
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
         return res;

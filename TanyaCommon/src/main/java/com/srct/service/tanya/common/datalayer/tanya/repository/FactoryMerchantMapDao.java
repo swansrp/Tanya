@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class FactoryMerchantMapDao {
 
     @Cacheable(value = "FactoryMerchantMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<FactoryMerchantMap> getShopInfoSelective(FactoryMerchantMap factoryMerchantMap, PageInfo<?> pageInfo) {
+        FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
+        PageHelper.startPage(pageInfo);
+        List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<FactoryMerchantMap>(res);
+        return res;
+    }
+    @Cacheable(value = "FactoryMerchantMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<FactoryMerchantMap> getFactoryMerchantMapSelective(FactoryMerchantMap factoryMerchantMap) {
         FactoryMerchantMapExample example = getFactoryMerchantMapExample(factoryMerchantMap);
         List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
         return res;
     }
 
+    public List<FactoryMerchantMap> getFactoryMerchantMapByExample(FactoryMerchantMapExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<FactoryMerchantMap>(res);
+        return res;
+    }
     public List<FactoryMerchantMap> getFactoryMerchantMapByExample(FactoryMerchantMapExample example) {
         List<FactoryMerchantMap> res = factoryMerchantMapMapper.selectByExample(example);
         return res;

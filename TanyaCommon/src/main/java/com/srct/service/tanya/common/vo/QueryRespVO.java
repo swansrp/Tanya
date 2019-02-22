@@ -24,9 +24,9 @@ public class QueryRespVO<T> extends QueryReqVO {
         info = new ArrayList<>();
     }
 
-    private int totalPages;
+    private Integer totalPages;
 
-    private long totalSize;
+    private Long totalSize;
 
     List<T> info;
 }

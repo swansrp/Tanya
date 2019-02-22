@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class TraderFactoryMerchantMapDao {
 
     @Cacheable(value = "TraderFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<TraderFactoryMerchantMap> getShopInfoSelective(TraderFactoryMerchantMap traderFactoryMerchantMap, PageInfo<?> pageInfo) {
+        TraderFactoryMerchantMapExample example = getTraderFactoryMerchantMapExample(traderFactoryMerchantMap);
+        PageHelper.startPage(pageInfo);
+        List<TraderFactoryMerchantMap> res = traderFactoryMerchantMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<TraderFactoryMerchantMap>(res);
+        return res;
+    }
+    @Cacheable(value = "TraderFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapSelective(TraderFactoryMerchantMap traderFactoryMerchantMap) {
         TraderFactoryMerchantMapExample example = getTraderFactoryMerchantMapExample(traderFactoryMerchantMap);
         List<TraderFactoryMerchantMap> res = traderFactoryMerchantMapMapper.selectByExample(example);
         return res;
     }
 
+    public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapByExample(TraderFactoryMerchantMapExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<TraderFactoryMerchantMap> res = traderFactoryMerchantMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<TraderFactoryMerchantMap>(res);
+        return res;
+    }
     public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapByExample(TraderFactoryMerchantMapExample example) {
         List<TraderFactoryMerchantMap> res = traderFactoryMerchantMapMapper.selectByExample(example);
         return res;

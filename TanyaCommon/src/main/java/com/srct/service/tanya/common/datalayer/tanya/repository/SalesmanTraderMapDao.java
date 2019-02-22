@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class SalesmanTraderMapDao {
 
     @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<SalesmanTraderMap> getShopInfoSelective(SalesmanTraderMap salesmanTraderMap, PageInfo<?> pageInfo) {
+        SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
+        PageHelper.startPage(pageInfo);
+        List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<SalesmanTraderMap>(res);
+        return res;
+    }
+    @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap) {
         SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
         return res;
     }
 
+    public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<SalesmanTraderMap>(res);
+        return res;
+    }
     public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example) {
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
         return res;

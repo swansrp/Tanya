@@ -12,8 +12,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
@@ -72,15 +70,13 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
      * @return
      */
     private QueryRespVO<OrderInfoRespVO> buildResByExample(ProductBO<QueryReqVO> order, OrderInfoExample orderExample) {
-        Page page = PageHelper.startPage(order.getReq().getCurrentPage(), order.getReq().getPageSize());
-        List<OrderInfo> orderInfoList = orderInfoDao.getOrderInfoByExample(orderExample);
-        PageInfo<OrderInfo> pageInfo = new PageInfo<OrderInfo>(orderInfoList);
+        PageInfo<?> pageInfo = super.buildPage(order);
+        List<OrderInfo> orderInfoList = orderInfoDao.getOrderInfoByExample(orderExample, pageInfo);
 
         QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
+        super.buildRespbyReq(res, order);
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
-        res.setCurrentPage(order.getReq().getCurrentPage());
-        res.setPageSize(order.getReq().getPageSize());
 
         orderInfoList.forEach(orderInfo -> {
             OrderInfoRespVO info = new OrderInfoRespVO();

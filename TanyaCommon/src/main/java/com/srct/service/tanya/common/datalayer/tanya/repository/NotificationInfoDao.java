@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class NotificationInfoDao {
 
     @Cacheable(value = "NotificationInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<NotificationInfo> getShopInfoSelective(NotificationInfo notificationInfo, PageInfo<?> pageInfo) {
+        NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
+        PageHelper.startPage(pageInfo);
+        List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<NotificationInfo>(res);
+        return res;
+    }
+    @Cacheable(value = "NotificationInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<NotificationInfo> getNotificationInfoSelective(NotificationInfo notificationInfo) {
         NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
         List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
         return res;
     }
 
+    public List<NotificationInfo> getNotificationInfoByExample(NotificationInfoExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<NotificationInfo>(res);
+        return res;
+    }
     public List<NotificationInfo> getNotificationInfoByExample(NotificationInfoExample example) {
         List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
         return res;

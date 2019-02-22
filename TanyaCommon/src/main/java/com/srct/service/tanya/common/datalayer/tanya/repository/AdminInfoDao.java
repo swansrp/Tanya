@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class AdminInfoDao {
 
     @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<AdminInfo> getShopInfoSelective(AdminInfo adminInfo, PageInfo<?> pageInfo) {
+        AdminInfoExample example = getAdminInfoExample(adminInfo);
+        PageHelper.startPage(pageInfo);
+        List<AdminInfo> res = adminInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<AdminInfo>(res);
+        return res;
+    }
+    @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo) {
         AdminInfoExample example = getAdminInfoExample(adminInfo);
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
         return res;
     }
 
+    public List<AdminInfo> getAdminInfoByExample(AdminInfoExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<AdminInfo> res = adminInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<AdminInfo>(res);
+        return res;
+    }
     public List<AdminInfo> getAdminInfoByExample(AdminInfoExample example) {
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
         return res;

@@ -10,8 +10,8 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: Sharp
-* @create: 2019/02/12
+* @author: sharuopeng
+* @create: 2019/02/23
  **/
 @Data
 public class CampaignHistoryEntityVO {

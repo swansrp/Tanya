@@ -94,6 +94,7 @@ public class ShopController {
         shop.setReq(req);
         shop.setFactoryId(factoryId);
         shop.setProductId(shopId);
+
         QueryRespVO<ShopInfoRespVO> shopInfoVO = shopService.getShopInfo(shop);
 
         return TanyaExceptionHandler.generateResponse(shopInfoVO);

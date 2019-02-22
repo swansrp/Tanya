@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfo;
@@ -37,6 +38,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.ShopInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderInfoDao;
 import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
@@ -256,6 +258,24 @@ public class ProductServiceBaseImpl {
         roleInfoVO.setRoleType(roleType);
         return roleInfoVO;
 
+    }
+
+    public void buildRespbyReq(QueryRespVO<?> resp, ProductBO<?> req) {
+        resp.setCurrentPage(req.getReq().getCurrentPage());
+        resp.setPageSize(req.getReq().getPageSize());
+        resp.setQueryStartAt(req.getReq().getQueryStartAt());
+        resp.setQueryEndAt(req.getReq().getQueryEndAt());
+    }
+
+    /**
+     * @param shop
+     * @return
+     */
+    public PageInfo<?> buildPage(ProductBO<QueryReqVO> req) {
+        PageInfo<?> pageInfo = new PageInfo<>();
+        pageInfo.setPageNum(req.getReq().getCurrentPage());
+        pageInfo.setPageSize(req.getReq().getPageSize());
+        return pageInfo;
     }
 
 }

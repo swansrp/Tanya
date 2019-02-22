@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class RolePermissionMapDao {
 
     @Cacheable(value = "RolePermissionMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<RolePermissionMap> getShopInfoSelective(RolePermissionMap rolePermissionMap, PageInfo<?> pageInfo) {
+        RolePermissionMapExample example = getRolePermissionMapExample(rolePermissionMap);
+        PageHelper.startPage(pageInfo);
+        List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<RolePermissionMap>(res);
+        return res;
+    }
+    @Cacheable(value = "RolePermissionMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<RolePermissionMap> getRolePermissionMapSelective(RolePermissionMap rolePermissionMap) {
         RolePermissionMapExample example = getRolePermissionMapExample(rolePermissionMap);
         List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
         return res;
     }
 
+    public List<RolePermissionMap> getRolePermissionMapByExample(RolePermissionMapExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<RolePermissionMap>(res);
+        return res;
+    }
     public List<RolePermissionMap> getRolePermissionMapByExample(RolePermissionMapExample example) {
         List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
         return res;

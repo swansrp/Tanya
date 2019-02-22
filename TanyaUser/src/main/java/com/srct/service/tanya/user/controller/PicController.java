@@ -83,17 +83,18 @@ public class PicController {
         BufferedImage image = new BufferedImage(imageW, imageH, BufferedImage.TYPE_INT_RGB);
         Graphics g = image.createGraphics();
         g.drawImage(input, 0, 0, imageW, imageH, null);
-        g.setColor(new Color(137, 102, 59));
+        g.setColor(new Color(122, 79, 27));
         ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        drawTitle(pressText, 98 + 6, 412 + 37, g);
-        drawContentAutoNewline(CONTENT, 98 + 6, 482 + 33, g, 553);
+        drawTitle(pressText, 98, 412 + 37, g);
+        // drawContentAutoNewline(CONTENT, 98 + 6, 482 + 33, g, 553);
         drawTimeAlignRight(new Date(), 99, 980 + 29, g, imageW);
         g.dispose();
         return image;
     }
 
     private void drawTitle(String name, int x, int y, Graphics g) {
-        g.setFont(getHanSansFont(Font.PLAIN, 34));
+        g.setColor(new Color(122, 79, 27));
+        g.setFont(getHanSansFont(Font.PLAIN, 36));
         g.drawString(name + " 先生/女士", x, y);
     }
 
@@ -131,6 +132,7 @@ public class PicController {
     private void drawTimeAlignRight(Date date, int xx, int yy, Graphics g, int width) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
         String time = sdf.format(date);
+        g.setColor(new Color(137, 102, 59));
         g.setFont(getHanSansFont(Font.PLAIN, 27));
         int x = width - g.getFontMetrics().stringWidth(time) - xx;
         int y = yy;

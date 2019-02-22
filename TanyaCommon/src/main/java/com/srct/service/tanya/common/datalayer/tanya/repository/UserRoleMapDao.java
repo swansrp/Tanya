@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class UserRoleMapDao {
 
     @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<UserRoleMap> getShopInfoSelective(UserRoleMap userRoleMap, PageInfo<?> pageInfo) {
+        UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
+        PageHelper.startPage(pageInfo);
+        List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<UserRoleMap>(res);
+        return res;
+    }
+    @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap) {
         UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
         return res;
     }
 
+    public List<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<UserRoleMap>(res);
+        return res;
+    }
     public List<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example) {
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
         return res;

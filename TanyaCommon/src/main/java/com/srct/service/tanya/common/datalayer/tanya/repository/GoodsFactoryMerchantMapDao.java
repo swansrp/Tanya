@@ -3,8 +3,8 @@
  * 
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: Sharp   
- * @date: 2019/02/12
+ * @author: sharuopeng   
+ * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.redis.CacheExpire;
 import com.srct.service.exception.ServiceException;
@@ -129,12 +131,27 @@ public class GoodsFactoryMerchantMapDao {
 
     @Cacheable(value = "GoodsFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
+    public List<GoodsFactoryMerchantMap> getShopInfoSelective(GoodsFactoryMerchantMap goodsFactoryMerchantMap, PageInfo<?> pageInfo) {
+        GoodsFactoryMerchantMapExample example = getGoodsFactoryMerchantMapExample(goodsFactoryMerchantMap);
+        PageHelper.startPage(pageInfo);
+        List<GoodsFactoryMerchantMap> res = goodsFactoryMerchantMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<GoodsFactoryMerchantMap>(res);
+        return res;
+    }
+    @Cacheable(value = "GoodsFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
     public List<GoodsFactoryMerchantMap> getGoodsFactoryMerchantMapSelective(GoodsFactoryMerchantMap goodsFactoryMerchantMap) {
         GoodsFactoryMerchantMapExample example = getGoodsFactoryMerchantMapExample(goodsFactoryMerchantMap);
         List<GoodsFactoryMerchantMap> res = goodsFactoryMerchantMapMapper.selectByExample(example);
         return res;
     }
 
+    public List<GoodsFactoryMerchantMap> getGoodsFactoryMerchantMapByExample(GoodsFactoryMerchantMapExample example, PageInfo<?> pageInfo) {
+        PageHelper.startPage(pageInfo);
+        List<GoodsFactoryMerchantMap> res = goodsFactoryMerchantMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<GoodsFactoryMerchantMap>(res);
+        return res;
+    }
     public List<GoodsFactoryMerchantMap> getGoodsFactoryMerchantMapByExample(GoodsFactoryMerchantMapExample example) {
         List<GoodsFactoryMerchantMap> res = goodsFactoryMerchantMapMapper.selectByExample(example);
         return res;
