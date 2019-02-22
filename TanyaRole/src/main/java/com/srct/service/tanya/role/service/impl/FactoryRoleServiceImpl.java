@@ -36,6 +36,7 @@ import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
+import com.srct.service.tanya.role.service.FactoryRoleService;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
@@ -45,7 +46,7 @@ import com.srct.service.utils.log.Log;
  *
  */
 @Service
-public class FactoryRoleServiceImpl implements RoleService {
+public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
     private final static int DEFAULT_PERIOD_VALUE = 1;
     private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
@@ -159,7 +160,9 @@ public class FactoryRoleServiceImpl implements RoleService {
     /*
      * (non-Javadoc)
      * 
-     * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
+     * @see
+     * com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.
+     * String)
      */
     @Override
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
@@ -224,7 +227,7 @@ public class FactoryRoleServiceImpl implements RoleService {
 
         FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfobyId(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(factoryInfo, bo);
+        BeanUtil.copyProperties(factoryInfo, res);
         res.setRoleType(getRoleType());
         if (factoryMerchantMap != null) {
             res.setGoodsNumber(factoryMerchantMap.getGoodsNumber());
@@ -251,7 +254,9 @@ public class FactoryRoleServiceImpl implements RoleService {
     /*
      * (non-Javadoc)
      * 
-     * @see com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya.role.bo.ModifyRoleBO)
+     * @see
+     * com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya
+     * .role.bo.ModifyRoleBO)
      */
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
@@ -439,6 +444,7 @@ public class FactoryRoleServiceImpl implements RoleService {
         return getFactoryInfoByUser(userInfo).getId();
     }
 
+    @Override
     public FactoryInfo getFactoryInfoByUser(UserInfo userInfo) {
         FactoryInfo factoryInfo = null;
         FactoryInfoExample example = new FactoryInfoExample();
@@ -454,6 +460,7 @@ public class FactoryRoleServiceImpl implements RoleService {
         }
     }
 
+    @Override
     public FactoryMerchantMap getFactoryMerchantMapByFactoryInfo(FactoryInfo factoryInfo) {
         Date now = new Date();
         FactoryMerchantMapExample example = new FactoryMerchantMapExample();

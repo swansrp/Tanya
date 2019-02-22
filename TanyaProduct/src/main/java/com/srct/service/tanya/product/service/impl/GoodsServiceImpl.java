@@ -1,8 +1,5 @@
 /**
- * Title: GoodsServiceImpl.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: GoodsServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service.impl
@@ -17,20 +14,27 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
-import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsInfoDao;
-import com.srct.service.tanya.product.bo.GoodsInfoBO;
+import com.srct.service.tanya.common.exception.GoodsNumberLimitException;
+import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.tanya.common.vo.QueryRespVO;
+import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.GoodsService;
+import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
+import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
-import com.srct.service.tanya.role.service.impl.FactoryRoleServiceImpl;
-import com.srct.service.tanya.role.service.impl.TraderRoleServiceImpl;
+import com.srct.service.tanya.role.service.FactoryRoleService;
+import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.utils.BeanUtil;
 
 /**
@@ -38,13 +42,13 @@ import com.srct.service.utils.BeanUtil;
  *
  */
 @Service
-public class GoodsServiceImpl implements GoodsService {
+public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsService {
 
     @Autowired
-    private FactoryRoleServiceImpl factoryRoleService;
+    private FactoryRoleService factoryRoleService;
 
     @Autowired
-    private TraderRoleServiceImpl traderRoleService;
+    private TraderRoleService traderRoleService;
 
     @Autowired
     private GoodsInfoDao goodsInfoDao;
@@ -53,49 +57,58 @@ public class GoodsServiceImpl implements GoodsService {
     private GoodsFactoryMerchantMapDao goodsFactoryMerchantMapDao;
 
     @Override
-    public List<GoodsInfoVO> updateGoodsInfo(GoodsInfoBO goods) {
+    public QueryRespVO<GoodsInfoRespVO> updateGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
 
-        UserInfo userInfo = goods.getCreaterInfo();
-        String roleType = goods.getCreaterRole().getRole();
-        FactoryInfo factoryInfo = null;
-        if (roleType.equals("trader")) {
-            factoryInfo = traderRoleService.getFactoryInfoByUser(userInfo);
-        } else if (roleType.equals("factory")) {
-            factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
-        } else {
-            throw new ServiceException("no permission to update goods info");
-        }
-
+        FactoryInfo factoryInfo = super.getFactoryInfo(req);
         FactoryMerchantMap factoryMerchantMap = factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
         GoodsInfo goodsInfo = new GoodsInfo();
         if (goodsFactoryMerchantMapList == null
             || goodsFactoryMerchantMapList.size() < factoryMerchantMap.getGoodsNumber()) {
-            BeanUtil.copyProperties(goods, goodsInfo);
+            BeanUtil.copyProperties(req, goodsInfo);
             goodsInfoDao.updateGoodsInfo(goodsInfo);
-            makeGoodsFactoryMerchantMapRelationShip(goodsInfo, factoryInfo, factoryMerchantMap);
+            makeGoodsFactoryMerchantMapRelationShip(goodsInfo, factoryMerchantMap);
         } else {
-            throw new ServiceException();
+            throw new GoodsNumberLimitException();
         }
 
-        return getGoodsInfoList(factoryInfo);
+        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
+        res.setInfo(new ArrayList<>());
+        GoodsInfoRespVO goodsInfoRespVO = buidGoodInfoRespVO(goodsInfo);
+        res.getInfo().add(goodsInfoRespVO);
+        return res;
     }
 
     /**
      * @param factoryInfo
      * @return
      */
-    private List<GoodsInfoVO> getGoodsInfoList(FactoryInfo factoryInfo) {
-        List<GoodsInfoVO> resList = new ArrayList<>();
+    private QueryRespVO<GoodsInfoRespVO> getGoodsInfoList(ProductBO<QueryReqVO> req, FactoryInfo factoryInfo) {
+        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
+        res.setInfo(new ArrayList<>());
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
-        for (GoodsFactoryMerchantMap relationship : goodsFactoryMerchantMapList) {
-            GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfobyId(relationship.getGoodsId());
-            GoodsInfoVO res = new GoodsInfoVO();
-            BeanUtil.copyProperties(goodsInfo, res);
-            resList.add(res);
-        }
+        List<Integer> goodsIdList = new ArrayList<>();
+        goodsFactoryMerchantMapList.forEach(map -> {
+            goodsIdList.add(map.getGoodsId());
+        });
+        GoodsInfoExample example = new GoodsInfoExample();
+        GoodsInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdIn(goodsIdList);
+        Page page = PageHelper.startPage(req.getReq().getCurrentPage(), req.getReq().getPageSize());
+        List<GoodsInfo> goodsInfoList = goodsInfoDao.getGoodsInfoByExample(example);
+        PageInfo<GoodsInfo> pageInfo = new PageInfo<GoodsInfo>(goodsInfoList);
+
+        res.setPageSize(pageInfo.getPages());
+        res.setTotalSize(pageInfo.getTotal());
+        res.setCurrentPage(req.getReq().getCurrentPage());
+        res.setPageSize(req.getReq().getPageSize());
+
+        goodsInfoList.forEach(goodsInfo -> {
+            GoodsInfoRespVO goodsInfoRespVO = buidGoodInfoRespVO(goodsInfo);
+            res.getInfo().add(goodsInfoRespVO);
+        });
         // TODO Auto-generated method stub
-        return resList;
+        return res;
     }
 
     /**
@@ -103,14 +116,10 @@ public class GoodsServiceImpl implements GoodsService {
      * @param factoryInfo
      * @param factoryMerchantMap
      */
-    private void makeGoodsFactoryMerchantMapRelationShip(
-        GoodsInfo goodsInfo,
-        FactoryInfo factoryInfo,
-        FactoryMerchantMap factoryMerchantMap) {
+    private void makeGoodsFactoryMerchantMapRelationShip(GoodsInfo goodsInfo, FactoryMerchantMap factoryMerchantMap) {
 
         GoodsFactoryMerchantMap goodsFactoryMerchantMap = new GoodsFactoryMerchantMap();
         goodsFactoryMerchantMap.setGoodsId(goodsInfo.getId());
-        goodsFactoryMerchantMap.setFactoryId(factoryInfo.getId());
         goodsFactoryMerchantMap.setFactoryMetchatMapId(factoryMerchantMap.getId());
         goodsFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         goodsFactoryMerchantMapDao.updateGoodsFactoryMerchantMap(goodsFactoryMerchantMap);
@@ -121,10 +130,49 @@ public class GoodsServiceImpl implements GoodsService {
      * @return
      */
     private List<GoodsFactoryMerchantMap> getGoodsFactoryMerchantMapList(FactoryInfo factoryInfo) {
+        FactoryMerchantMap factoryMerchantMap = factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         GoodsFactoryMerchantMap goodsFactoryMerchantMap = new GoodsFactoryMerchantMap();
-        goodsFactoryMerchantMap.setFactoryId(factoryInfo.getId());
+        goodsFactoryMerchantMap.setFactoryMetchatMapId(factoryMerchantMap.getId());
         goodsFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         return goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap);
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> goods) {
+
+        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
+        res.setInfo(new ArrayList<>());
+
+        FactoryInfo factoryInfo = super.getFactoryInfo(goods);
+        if (goods.getProductId() == null) {
+            res = getGoodsInfoList(goods, factoryInfo);
+        } else {
+
+            List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
+            for (GoodsFactoryMerchantMap relationship : goodsFactoryMerchantMapList) {
+                if (relationship.getGoodsId().equals(goods.getProductId())) {
+                    GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfobyId(relationship.getGoodsId());
+                    GoodsInfoRespVO goodsInfoRespVO = buidGoodInfoRespVO(goodsInfo);
+                    res.getInfo().add(goodsInfoRespVO);
+                }
+
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * @param goodsInfo
+     * @return
+     */
+    private GoodsInfoRespVO buidGoodInfoRespVO(GoodsInfo goodsInfo) {
+        GoodsInfoRespVO goodsInfoRespVO = new GoodsInfoRespVO();
+        GoodsInfoVO vo = new GoodsInfoVO();
+        BeanUtil.copyProperties(goodsInfo, vo);
+        BeanUtil.copyProperties(goodsInfo, goodsInfoRespVO);
+        goodsInfoRespVO.setGoodsInfoVO(vo);
+        return goodsInfoRespVO;
     }
 
 }

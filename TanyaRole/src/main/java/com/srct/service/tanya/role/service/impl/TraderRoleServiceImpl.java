@@ -42,6 +42,7 @@ import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
+import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
@@ -50,7 +51,7 @@ import com.srct.service.utils.log.Log;
  *
  */
 @Service
-public class TraderRoleServiceImpl implements RoleService {
+public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
 
     private final static int DEFAULT_PERIOD_VALUE = 1;
     private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
@@ -94,7 +95,9 @@ public class TraderRoleServiceImpl implements RoleService {
     /*
      * (non-Javadoc)
      * 
-     * @see com.srct.service.tanya.role.service.RoleService#create(com.srct.service.tanya.role.bo.CreateRoleBO)
+     * @see
+     * com.srct.service.tanya.role.service.RoleService#create(com.srct.service.tanya
+     * .role.bo.CreateRoleBO)
      */
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
@@ -208,7 +211,9 @@ public class TraderRoleServiceImpl implements RoleService {
     /*
      * (non-Javadoc)
      * 
-     * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
+     * @see
+     * com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.
+     * String)
      */
     @Override
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
@@ -272,7 +277,7 @@ public class TraderRoleServiceImpl implements RoleService {
 
         TraderInfo traderInfo = traderInfoDao.getTraderInfobyId(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(traderInfo, bo);
+        BeanUtil.copyProperties(traderInfo, res);
         res.setRoleType(getRoleType());
         return res;
     }
@@ -312,7 +317,9 @@ public class TraderRoleServiceImpl implements RoleService {
     /*
      * (non-Javadoc)
      * 
-     * @see com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya.role.bo.ModifyRoleBO)
+     * @see
+     * com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya
+     * .role.bo.ModifyRoleBO)
      */
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
@@ -489,7 +496,14 @@ public class TraderRoleServiceImpl implements RoleService {
         return traderInfo.getId();
     }
 
+    @Override
     public FactoryInfo getFactoryInfoByUser(UserInfo userInfo) {
+        Integer factoryId = getTraderFactoryMerchantMap(userInfo).getFactoryId();
+        return factoryInfoDao.getFactoryInfobyId(factoryId);
+    }
+
+    @Override
+    public TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo) {
         Date now = new Date();
         Integer traderId = getRoleIdbyUser(userInfo);
 
@@ -500,9 +514,7 @@ public class TraderRoleServiceImpl implements RoleService {
         criteria.andTraderIdEqualTo(traderId);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            Integer factoryId =
-                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0).getFactoryId();
-            return factoryInfoDao.getFactoryInfobyId(factoryId);
+            return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0);
         } catch (Exception e) {
             throw new ServiceException("no valid Factory Merchant relationship for the user " + userInfo.getName());
         }

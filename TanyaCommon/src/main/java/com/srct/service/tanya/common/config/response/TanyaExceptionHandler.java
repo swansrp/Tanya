@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.UserNotLoginException;
+import com.srct.service.tanya.common.exception.GoodsNumberLimitException;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.tanya.common.exception.TraderNumberLimitException;
 import com.srct.service.tanya.common.exception.UserAccountLockedException;
@@ -89,6 +90,15 @@ public class TanyaExceptionHandler {
         mLogger.info("UserAccountLocked {}", ex.getMessage());
         CommonResponse<String> res =
             new CommonResponse<String>(TanyaResponseConstant.TOUCH_TRADER_NUMBER_LIMIT, ex.getMessage());
+        return res.getEntity();
+    }
+    
+    @ResponseBody
+    @ExceptionHandler(value = GoodsNumberLimitException.class)
+    public ResponseEntity<CommonResponse<String>.Resp> errorHandler(GoodsNumberLimitException ex) {
+        mLogger.info("UserAccountLocked {}", ex.getMessage());
+        CommonResponse<String> res =
+            new CommonResponse<String>(TanyaResponseConstant.TOUCH_GOODS_NUMBER_LIMIT, ex.getMessage());
         return res.getEntity();
     }
 

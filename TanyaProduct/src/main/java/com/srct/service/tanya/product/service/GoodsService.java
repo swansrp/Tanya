@@ -1,8 +1,5 @@
 /**
- * Title: GoodsService.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: GoodsService.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service
@@ -11,10 +8,11 @@
  */
 package com.srct.service.tanya.product.service;
 
-import java.util.List;
-
-import com.srct.service.tanya.product.bo.GoodsInfoBO;
-import com.srct.service.tanya.product.vo.GoodsInfoVO;
+import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.tanya.common.vo.QueryRespVO;
+import com.srct.service.tanya.product.bo.ProductBO;
+import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
+import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
 
 /**
  * @author Sharp
@@ -22,5 +20,7 @@ import com.srct.service.tanya.product.vo.GoodsInfoVO;
  */
 public interface GoodsService {
 
-    public List<GoodsInfoVO> updateGoodsInfo(GoodsInfoBO goods);
+    public QueryRespVO<GoodsInfoRespVO> updateGoodsInfo(ProductBO<GoodsInfoReqVO> goods);
+
+    public QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> goods);
 }

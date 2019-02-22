@@ -30,4 +30,7 @@ public class TanyaResponseConstant extends CommonResponseConstant {
 
     public static final CommonResponseCode TOUCH_TRADER_NUMBER_LIMIT =
         new CommonResponseCode(TAG + "1003", "TOUCH_TRADER_NUMBER_LIMIT", HttpStatus.OK);
+    
+    public static final CommonResponseCode TOUCH_GOODS_NUMBER_LIMIT =
+            new CommonResponseCode(TAG + "1003", "TOUCH_GODDS_NUMBER_LIMIT", HttpStatus.OK);
 }

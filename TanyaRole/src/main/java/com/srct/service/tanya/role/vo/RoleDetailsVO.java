@@ -1,8 +1,5 @@
 /**
- * Title: RoleDetailsVO.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: RoleDetailsVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.vo
@@ -40,13 +37,13 @@ public class RoleDetailsVO {
     private String comment;
 
     @ApiModelProperty(value = "修改角色起始有效期")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date startAt;
 
     @ApiModelProperty(value = "修改角色结束有效期")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endAt;
 
 }

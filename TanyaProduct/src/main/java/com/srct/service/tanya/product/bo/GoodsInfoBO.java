@@ -1,8 +1,5 @@
 /**
- * Title: CreaterGoodsInfoBO.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: CreaterGoodsInfoBO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.bo
@@ -10,9 +7,6 @@
  * @date 2019-02-17 21:23:34
  */
 package com.srct.service.tanya.product.bo;
-
-import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,13 +16,7 @@ import lombok.Data;
  *
  */
 @Data
-public class GoodsInfoBO {
-
-    @ApiModelProperty(value = "录入人信息")
-    private UserInfo createrInfo;
-
-    @ApiModelProperty(value = "录入人角色")
-    private RoleInfo createrRole;
+public class GoodsInfoBO extends BaseBO {
 
     @ApiModelProperty(value = "药品Id")
     private Integer id;
@@ -50,5 +38,4 @@ public class GoodsInfoBO {
 
     @ApiModelProperty(value = "药品价格")
     private Double amount;
-
 }

@@ -10,8 +10,8 @@ import java.util.Date;
 * 实体类
 * 根据需要删减无效参数
  * 
-* @author: Sharp
-* @create: 2019/02/12
+* @author: sharuopeng
+* @create: 2019/02/18
  **/
 @Data
 public class DiscountInfoEntityVO {
@@ -25,11 +25,8 @@ public class DiscountInfoEntityVO {
     @ApiModelProperty(value = "角色备注")
     private String comment;
  
-    @ApiModelProperty(value = "药厂id")
-    private Integer factoryId;
- 
-    @ApiModelProperty(value = "渠道商id")
-    private Integer merchantId;
+    @ApiModelProperty(value = "药厂渠道关系id")
+    private Integer factoryMetchatMapId;
  
     @ApiModelProperty(value = "商品id")
     private Integer goodsId;
