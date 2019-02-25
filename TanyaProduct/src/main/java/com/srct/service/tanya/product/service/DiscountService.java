@@ -32,4 +32,10 @@ public interface DiscountService {
      */
     QueryRespVO<DiscountInfoRespVO> updateDiscountInfo(ProductBO<DiscountInfoReqVO> discount);
 
+    /**
+     * @param discount
+     * @return
+     */
+    QueryRespVO<DiscountInfoRespVO> confirmDiscountInfo(ProductBO<QueryReqVO> discount);
+
 }

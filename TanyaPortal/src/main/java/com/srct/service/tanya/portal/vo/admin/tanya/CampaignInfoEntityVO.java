@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: sharuopeng
-* @create: 2019/02/23
+* @create: 2019/02/24
  **/
 @Data
 public class CampaignInfoEntityVO {
@@ -42,6 +42,9 @@ public class CampaignInfoEntityVO {
  
     @ApiModelProperty(value = "最后修改时间")
     private Date updateAt;
+ 
+    @ApiModelProperty(value = "确认状态")
+    private Byte confirmStatus;
  
     @ApiModelProperty(value = "确认时间")
     private Date confirmAt;

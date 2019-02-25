@@ -72,7 +72,7 @@ public class DiscountController {
     }
 
     @ApiOperation(value = "获取折扣活动", notes = "获取折扣活动详情,无id则返回渠道折扣活动列表")
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountid", value = "折扣活动id",
             required = false),
@@ -96,5 +96,31 @@ public class DiscountController {
         QueryRespVO<DiscountInfoRespVO> discountInfoVOList = discountService.getDiscountInfo(discount);
 
         return TanyaExceptionHandler.generateResponse(discountInfoVOList);
+    }
+
+    @ApiOperation(value = "审批折扣活动", notes = "审批折扣活动 同意或拒绝")
+    @RequestMapping(value = "/confirm", method = RequestMethod.GET)
+    @ApiImplicitParams({
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountid", value = "订单id",
+            required = true),
+        @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "confirmed", value = "true/false",
+            required = true)})
+    public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp> confirm(
+        @RequestParam(value = "discountid", required = true) Integer discountId,
+        @RequestParam(value = "confirmed", required = true) boolean confirmed) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***confirmDiscount***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<QueryReqVO> discount = new ProductBO<QueryReqVO>();
+        discount.setProductType("discount");
+        discount.setCreaterInfo(info);
+        discount.setCreaterRole(role);
+        discount.setProductId(discountId);
+        discount.setApproved(confirmed);
+        QueryRespVO<DiscountInfoRespVO> discountInfoVO = discountService.confirmDiscountInfo(discount);
+
+        return TanyaExceptionHandler.generateResponse(discountInfoVO);
     }
 }

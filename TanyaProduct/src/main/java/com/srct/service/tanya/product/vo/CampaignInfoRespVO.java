@@ -8,6 +8,8 @@
  */
 package com.srct.service.tanya.product.vo;
 
+import java.util.Date;
+
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -23,8 +25,14 @@ public class CampaignInfoRespVO {
     private CampaignInfoVO campaignInfoVO;
 
     @ApiModelProperty(value = "发起销售人员信息")
-    private RoleInfoVO traderInfo;
+    private RoleInfoVO traderInfoVO;
 
     @ApiModelProperty(value = "促销商品信息")
-    private GoodsInfoVO goodsInfo;
+    private GoodsInfoVO goodsInfoVO;
+
+    @ApiModelProperty(value = "确认状态")
+    private Byte confirmStatus;
+
+    @ApiModelProperty(value = "确认时间")
+    private Date confirmAt;
 }

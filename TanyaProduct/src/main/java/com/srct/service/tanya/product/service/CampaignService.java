@@ -24,12 +24,18 @@ public interface CampaignService {
      * @param order
      * @return
      */
-    QueryRespVO<CampaignInfoRespVO> getCampaignInfo(ProductBO<QueryReqVO> camapaign);
+    QueryRespVO<CampaignInfoRespVO> getCampaignInfo(ProductBO<QueryReqVO> campaign);
 
     /**
      * @param order
      * @return
      */
-    QueryRespVO<CampaignInfoRespVO> updateCampaignInfo(ProductBO<CampaignInfoReqVO> camapaign);
+    QueryRespVO<CampaignInfoRespVO> updateCampaignInfo(ProductBO<CampaignInfoReqVO> campaign);
+
+    /**
+     * @param campaign
+     * @return
+     */
+    QueryRespVO<CampaignInfoRespVO> confirmCampaignInfo(ProductBO<QueryReqVO> campaign);
 
 }

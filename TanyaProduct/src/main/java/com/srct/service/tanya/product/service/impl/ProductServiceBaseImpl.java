@@ -22,10 +22,15 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMapExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.DiscountInfoDao;
@@ -34,6 +39,7 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.FactoryMerchantM
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.MerchantInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.OrderInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.SalesmanTraderMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.ShopInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderInfoDao;
@@ -45,6 +51,8 @@ import com.srct.service.tanya.product.vo.DiscountInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.product.vo.ShopInfoVO;
 import com.srct.service.tanya.role.service.FactoryRoleService;
+import com.srct.service.tanya.role.service.MerchantRoleService;
+import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 
@@ -54,7 +62,10 @@ import cn.hutool.core.bean.BeanUtil;
  * @author sharuopeng
  *
  */
-public class ProductServiceBaseImpl {
+public abstract class ProductServiceBaseImpl {
+
+    @Autowired
+    protected MerchantRoleService merchantRoleService;
 
     @Autowired
     protected FactoryRoleService factoryRoleService;
@@ -63,10 +74,16 @@ public class ProductServiceBaseImpl {
     protected TraderRoleService traderRoleService;
 
     @Autowired
+    protected SalesmanRoleService salesmanRoleService;
+
+    @Autowired
     protected TraderFactoryMerchantMapDao traderFactoryMerchantMapDao;
 
     @Autowired
     protected FactoryMerchantMapDao factoryMerchantMapDao;
+
+    @Autowired
+    protected SalesmanTraderMapDao salesmanTraderMapDao;
 
     @Autowired
     protected OrderInfoDao orderInfoDao;
@@ -125,6 +142,26 @@ public class ProductServiceBaseImpl {
         return factoryInfo;
     }
 
+    /**
+     * @param order
+     * @return
+     */
+    public TraderInfo getTraderInfo(ProductBO<?> bo) {
+        UserInfo userInfo = bo.getCreaterInfo();
+        String roleType = bo.getCreaterRole().getRole();
+        TraderInfo traderInfo = null;
+        if (roleType.equals("trader")) {
+            traderInfo = traderRoleService.getTraderInfoByUser(userInfo);
+        } else if (roleType.equals("salesman")) {
+            traderInfo = salesmanRoleService.getTraderInfoByUser(userInfo);
+        } else {
+            throw new ServiceException(
+                "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
+        }
+
+        return traderInfo;
+    }
+
     public TraderFactoryMerchantMap getTraderFactoryMerchantMap(ProductBO<?> bo) {
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
@@ -137,14 +174,27 @@ public class ProductServiceBaseImpl {
         }
     }
 
+    public FactoryMerchantMap getFactoryMerchantMap(ProductBO<?> bo) {
+        UserInfo userInfo = bo.getCreaterInfo();
+        String roleType = bo.getCreaterRole().getRole();
+
+        if (roleType.equals("factory")) {
+            FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
+            return factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
+        } else {
+            throw new ServiceException("cant get trader-factory-merchantMap info for " + bo.getProductType()
+                + " by role " + bo.getCreaterRole().getRole());
+        }
+    }
+
     /**
      * @param order
      * @param factoryInfo
      * @return
      */
-    public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> order, FactoryInfo factoryInfo) {
+    public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> req, FactoryInfo factoryInfo) {
         TraderFactoryMerchantMapExample mapExample =
-            (TraderFactoryMerchantMapExample)makeQueryExample(order, TraderFactoryMerchantMapExample.class);
+            (TraderFactoryMerchantMapExample)makeQueryExample(req, TraderFactoryMerchantMapExample.class);
         TraderFactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
         mapCriteria.andFactoryIdEqualTo(factoryInfo.getId());
         List<TraderFactoryMerchantMap> maps =
@@ -154,6 +204,42 @@ public class ProductServiceBaseImpl {
             traderFactoryMerchantMapIdList.add(map.getId());
         });
         return traderFactoryMerchantMapIdList;
+    }
+
+    /**
+     * @param discount
+     * @param factoryInfo
+     * @return
+     */
+    public List<Integer> buildFactoryMerchantMapIdList(ProductBO<?> req, FactoryInfo factoryInfo) {
+        FactoryMerchantMapExample mapExample =
+            (FactoryMerchantMapExample)makeQueryExample(req, FactoryMerchantMapExample.class);
+        FactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
+        mapCriteria.andFactoryIdEqualTo(factoryInfo.getId());
+        List<FactoryMerchantMap> maps = factoryMerchantMapDao.getFactoryMerchantMapByExample(mapExample);
+        List<Integer> factoryMerchantMapIdList = new ArrayList<>();
+        maps.forEach(map -> {
+            factoryMerchantMapIdList.add(map.getId());
+        });
+        return factoryMerchantMapIdList;
+    }
+
+    /**
+     * @param campaign
+     * @param traderInfo
+     * @return
+     */
+    public List<Integer> buildSalesmanTraderMapTraderIdList(ProductBO<?> req, TraderInfo traderInfo) {
+        SalesmanTraderMapExample mapExample =
+            (SalesmanTraderMapExample)makeQueryExample(req, SalesmanTraderMapExample.class);
+        SalesmanTraderMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
+        mapCriteria.andTraderIdEqualTo(traderInfo.getId());
+        List<SalesmanTraderMap> maps = salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
+        List<Integer> salesTraderMapIdList = new ArrayList<>();
+        maps.forEach(map -> {
+            salesTraderMapIdList.add(map.getTraderId());
+        });
+        return salesTraderMapIdList;
     }
 
     /**
@@ -277,5 +363,9 @@ public class ProductServiceBaseImpl {
         pageInfo.setPageSize(req.getReq().getPageSize());
         return pageInfo;
     }
+
+    protected abstract void validateUpdate(ProductBO<?> req);
+
+    protected abstract void validateConfirm(ProductBO<?> req);
 
 }

@@ -32,4 +32,10 @@ public interface OrderService {
      */
     QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
 
+    /**
+     * @param order
+     * @return
+     */
+    QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order);
+
 }

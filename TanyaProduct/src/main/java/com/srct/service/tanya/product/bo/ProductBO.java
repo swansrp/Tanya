@@ -27,4 +27,6 @@ public class ProductBO<T extends QueryReqVO> extends BaseBO {
 
     private Integer productId;
 
+    private boolean approved;
+
 }

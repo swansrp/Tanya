@@ -58,7 +58,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
 
     @Override
     public QueryRespVO<ShopInfoRespVO> updateShopInfo(ProductBO<ShopInfoReqVO> shop) {
-        checkRoleForShopUpdate(shop);
+        validateUpdate(shop);
         ShopInfo shopInfo = new ShopInfo();
         BeanUtil.copyProperties(shop.getReq().getShop(), shopInfo);
         shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -83,14 +83,17 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         return shopInfoResp;
     }
 
-    /**
-     * @param shop
-     */
-    private void checkRoleForShopUpdate(ProductBO<ShopInfoReqVO> bo) {
-        String roleType = bo.getCreaterRole().getRole();
+    @Override
+    protected void validateUpdate(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
         if (roleType.equals("salesman")) {
             throw new ServiceException("dont allow to update shop by role " + roleType);
         }
+    }
+
+    @Override
+    protected void validateConfirm(ProductBO<?> req) {
+        throw new ServiceException("dont support confirm shop ");
     }
 
 }

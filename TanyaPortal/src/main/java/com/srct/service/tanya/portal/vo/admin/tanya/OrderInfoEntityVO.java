@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: sharuopeng
-* @create: 2019/02/23
+* @create: 2019/02/24
  **/
 @Data
 public class OrderInfoEntityVO {
@@ -55,8 +55,14 @@ public class OrderInfoEntityVO {
     @ApiModelProperty(value = "最后修改时间")
     private Date updateAt;
  
+    @ApiModelProperty(value = "药厂确认状态")
+    private Byte factoryConfirmStatus;
+ 
     @ApiModelProperty(value = "药厂确认时间")
     private Date factoryConfirmAt;
+ 
+    @ApiModelProperty(value = "渠道确认状态")
+    private Byte merchantConfirmStatus;
  
     @ApiModelProperty(value = "渠道确认时间")
     private Date merchantConfirmAt;

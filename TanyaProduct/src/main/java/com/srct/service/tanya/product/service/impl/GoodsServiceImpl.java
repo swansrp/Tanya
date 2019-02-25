@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
+import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsFactoryMerchantMap;
@@ -48,7 +49,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
 
     @Override
     public QueryRespVO<GoodsInfoRespVO> updateGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
-
+        validateUpdate(req);
         FactoryInfo factoryInfo = super.getFactoryInfo(req);
         FactoryMerchantMap factoryMerchantMap = factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
@@ -162,6 +163,19 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         BeanUtil.copyProperties(goodsInfo, goodsInfoRespVO);
         goodsInfoRespVO.setGoodsInfoVO(vo);
         return goodsInfoRespVO;
+    }
+
+    @Override
+    protected void validateUpdate(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("dont allow to update goods by role " + roleType);
+        }
+    }
+
+    @Override
+    protected void validateConfirm(ProductBO<?> req) {
+        throw new ServiceException("dont support confirm goods ");
     }
 
 }

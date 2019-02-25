@@ -26,8 +26,14 @@ public class OrderInfoRespVO {
 
     private OrderInfoVO orderInfoVO;
 
+    @ApiModelProperty(value = "药厂确认状态")
+    private Date factoryConfirmStatus;
+
     @ApiModelProperty(value = "药厂确认时间")
     private Date factoryConfirmAt;
+
+    @ApiModelProperty(value = "渠道确认状态")
+    private Date merchantConfirmStatus;
 
     @ApiModelProperty(value = "渠道确认时间")
     private Date merchantConfirmAt;

@@ -1,0 +1,2114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.0 r1840935">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="测试计划" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="线程组" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">0</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="appId" elementType="Argument">
+              <stringProp name="Argument.name">appId</stringProp>
+              <stringProp name="Argument.value">portaltest</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="charset" elementType="Argument">
+              <stringProp name="Argument.name">charset</stringProp>
+              <stringProp name="Argument.value">UTF-8</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="timestamp" elementType="Argument">
+              <stringProp name="Argument.name">timestamp</stringProp>
+              <stringProp name="Argument.value">3242425453</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="cpPublicKey" elementType="Argument">
+              <stringProp name="Argument.name">cpPublicKey</stringProp>
+              <stringProp name="Argument.value">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjq61aw7jLcsAAqQU/fmE62I3BfmcynzLj60734prODZzLqGDcYsnYPKPWdAKQmK/1aRt5aR5EU9fa7A2BFchMdP0Myw7hVcLXzu0Z2L7BnVhEuPUf0phj6DeKLQ/bBNegI8GdB/ubZMwvdttJUG5pMtfRb1oPAM4thrzf+W3m2PQY8h1eRf2wRCx5yhlDfkzDbsM2cuFX9ciP29alEHTwpJZTsLzR4I6yzNQ4v+txCMsnwnSbNuRsKZg5xBQy1dwW4/vlDp7Rhe2NLzWHgKIXlqC3+mydkFZfleVCIZG7eqn60Q0gC9OGves7yDedycR8a1ij9sBIMGbrwdJrRzrkwIDAQAB</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="cpPrivateKey" elementType="Argument">
+              <stringProp name="Argument.name">cpPrivateKey</stringProp>
+              <stringProp name="Argument.value">MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOrrVrDuMtywACpBT9+YTrYjcF+ZzKfMuPrTvfims4NnMuoYNxiydg8o9Z0ApCYr/VpG3lpHkRT19rsDYEVyEx0/QzLDuFVwtfO7RnYvsGdWES49R/SmGPoN4otD9sE16AjwZ0H+5tkzC9220lQbmky19FvWg8Azi2GvN/5bebY9BjyHV5F/bBELHnKGUN+TMNuwzZy4Vf1yI/b1qUQdPCkllOwvNHgjrLM1Di/63EIyyfCdJs25GwpmDnEFDLV3Bbj++UOntGF7Y0vNYeAoheWoLf6bJ2QVl+V5UIhkbt6qfrRDSAL04a96zvIN53JxHxrWKP2wEgwZuvB0mtHOuTAgMBAAECggEAa269BwlEoTxSm6p0a+8u2BUxnPwfxI9Grr4fcOfGZ6MIAzp1wE6oreS1b0ioEOhNzU1ruhenWRNMo8cgRRBd3CjdnJJXlsS9uU05PwdWP7yuBQ0q+VVGNGFKJZfikTvcUixfDZzlZ/gGIU5Q1laws5a1+8rr6xP55ZRReCG9p+/V5uJxaVQct83imk0UUPeYLk9Ji1Ylg8e4A5uuhNHNZ3hxsdEVwZt+yUljEq8B0uRaUnUPGRALLe0RZa3YMrNgzpWB5L9pvoQNXenbgMJkxLSUz/ur192RRs+Ct7chd5RUN5zXnKnlKmBTFflhTPFMzqGK1clmUbUHQ5bwAYDtQQKBgQDHyNAuiLgh04ctpIUdyc6aQVn9ELJ/+nSt2Z0zoXfB8v3BtcrnU5kHctpMQ+AX5BYq2reQArWWZ1VMCs5DVdHN443Jn+MbgbMTf2NM+VMhAQq1RBnMbjHgh5t5b0Y6xC0iRSc00zsSGeVD+axcf7mdfKYaRhp1Q5+orIjhA3qsowKBgQC21KLiKSxo0uD7V2a49o53sKB6kbQSQyYRr8p73FMB0LZRTPvIvuUZoUnA5h+9C0ZuIGtcT9G6wo4/9QyuN7IA9eqCiR9NGgO6Hb5r+/3967jG2eMywyXjdUsuVLAxRfacPLNuC21vGml8XB7Rg/P/g0hp22US0KIdjAXYWttEUQKBgH2pe/ipGlh8enxlDS3Nb9xq2rVouT3yRU3MoSqGl5Mwyhf7xuJ2HL0oqtJppxyf5KmT5P36FknCOU6ZRV/pLQw540c9AFae4AqVh9o0wOrzgs69RRTnAwxdf5eEPEJefp0dril166PZEfINqzKLTC8Y5kmEasPzgwtPatFNpO3NAoGAALKK9IXnr3aueQb6U1ZNcNNxqUYJA9DRwluDUDmk72rWZzT9+OQRh6l/2IaINHZojF7/SdjcGfRICqJqq/d2bF6DyH+xaN/ih8E5SrwpWeCeUdPe9ACekmGOKd0U1vtHV407uf29KyFUqa7IR1BTi/P6QL0fg5TcKXSxSQP/tiECgYEAr1mbIUFfQKbQuO3s6kwBfRO/2kiNlD84Lb55wSDt16HaXA2NQ0oJWhX9JBe60F2fEY7+7b91BtYz1C0ew+5cJfHRBra77efYawHOM2sM4cyebz6gy1QZv6iwRG+LXoqp8+l/sFJt2zsr8WuPIsBkBHw1JPP75m2zI1xUUXPBIWA=</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="samsungPublicKey" elementType="Argument">
+              <stringProp name="Argument.name">samsungPublicKey</stringProp>
+              <stringProp name="Argument.value">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5uk4UrRYvlyYbtwcybAGOxcRs/cnM6J/Ck7Dk630L9Ca1tlxo7jGK8q1QO37PZKCeQqFJUGV5P0GNrDk1rOA08455rj1I2Ijbnc41auM3UuHO6Lr/GwmPx1Fnfu5+7E6LnjObwc05lJ5x/r5Gznf5wZMhG0/gRjOyJuOs3G1DXoCXJMp9y97upuZvf6peRGgfeE9nDYPMjG/UUNceHmAAj9Sgh0G/4XPeWGk/hTcIa/wp7jieEiBZNwlykxQ+F859xpe4epSgHKzCTcHimSnYoDEPW4SEiO+P0A4wffHMUGUiwSjs/bTO9QXw17LkxY0VPDBO2zwFC/bbKBYWXoVsQIDAQAB</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="aesKeyEncrypted" elementType="Argument">
+              <stringProp name="Argument.name">aesKeyEncrypted</stringProp>
+              <stringProp name="Argument.value">SvupBRMOnJwEVrcTHYZMEHaND3CilRKlz6EGaq67JIHgvGjaijlYh6NhoaF/dOS/c/aGQupUvgtHZOvoicg/aBWki93PRIIB4J8X5vkBRW4opDw4qry5Ev3YNo3U2x5DPlA20bGgcRd8WbGril86E8WAysDQB6ORs79aigdGoSJKB7oD+hTTUfaoVyZGwz61sfz7+clMbFl4AwfUHxtTuLV0AKnehufB+cKNC9yHYdNZ7W8DGH4hTmSnHpymS+sdQhikhm81c21wNpZGttxBC+3ukTAz3sVGZjeagvkv887L5myJGWc8RH7Cn0uNMynZfaA0g25sszfnnaOV8flQeQ==</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="guid" elementType="Argument">
+              <stringProp name="Argument.name">guid</stringProp>
+              <stringProp name="Argument.value">hzrvxzbpg7</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="authToken" elementType="Argument">
+              <stringProp name="Argument.name">authToken</stringProp>
+              <stringProp name="Argument.value">error</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="ssoToken" elementType="Argument">
+              <stringProp name="Argument.name">ssoToken</stringProp>
+              <stringProp name="Argument.value">error</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="bizContent" elementType="Argument">
+              <stringProp name="Argument.name">bizContent</stringProp>
+              <stringProp name="Argument.value">error</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="sign" elementType="Argument">
+              <stringProp name="Argument.name">sign</stringProp>
+              <stringProp name="Argument.value">error</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="signType" elementType="Argument">
+              <stringProp name="Argument.name">signType</stringProp>
+              <stringProp name="Argument.value">RSA2</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="rewardsURL" elementType="Argument">
+              <stringProp name="Argument.name">rewardsURL</stringProp>
+              <stringProp name="Argument.value">dev.rewards.samsung.com.cn</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="refundAmount" elementType="Argument">
+              <stringProp name="Argument.name">refundAmount</stringProp>
+              <stringProp name="Argument.value">100</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="1.Get user point info" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/users/info?appId=${appId}&amp;charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+
+String bizContent = new String(&quot;{\&quot;guid\&quot;:\&quot;&quot; + guid + &quot;\&quot;}&quot;);
+//log.info(bizContent);
+
+String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.warn(aesKey);
+String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContentEncrypted);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContentEncrypted, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContentEncrypted);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="sign提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respSign</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.sign</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="resp提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respEncrypted</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.resp</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+String charset  = vars.get(&quot;charset&quot;);
+//log.warn(&quot;respSign: &quot; + vars.get(&quot;respSign&quot;));
+//log.warn(&quot;respEncrypted: &quot; + vars.get(&quot;respEncrypted&quot;));
+Boolean a = false;
+
+a = SignatureUtil.checkContentSign(vars.get(&quot;respEncrypted&quot;), vars.get(&quot;respSign&quot;), vars.get(&quot;samsungPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+if(a)
+{
+	//log.info(&quot;Verify Signature Successed&quot;);
+	String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+	String respBody = EncryptUtil.decryptContent(vars.get(&quot;respEncrypted&quot;), &quot;AES&quot;, aesKey, charset);
+	log.warn(&quot;1. users/info: SUCCESS, respBody: &quot; + respBody);
+}
+else
+{
+	log.warn(&quot;1. users/info: FAIL, Verify Signature Failed&quot;);
+}
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="2.Get user point redeem history" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/users/history?charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+
+String bizContent = new String(&quot;{\&quot;guid\&quot;:\&quot;&quot; + guid + &quot;\&quot;,\&quot;pageSize\&quot;:10,\&quot;pageNum\&quot;:1}&quot;);
+//log.warn(bizContent);
+
+//String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKey&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.info(aesKey);
+//String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+//sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContent);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContent, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContent);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="trackingNo提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">trackingNo</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.history[0].trackingNo</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">error</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="historyType提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">historyType</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.history[0].historyType</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">error</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">log.warn(&quot;2. users/history: respBody: &quot; + prev.getResponseDataAsString());</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="3.Get redeem history details" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/users/history/details?charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+String trackingNo = vars.get(&quot;trackingNo&quot;);
+
+String bizContent = new String(&quot;{\&quot;guid\&quot;:\&quot;hzrvxzbpg7\&quot;,\&quot;trackingNo\&quot;:\&quot;&quot; + trackingNo + &quot;\&quot;,\&quot;trackingType\&quot;:\&quot;&quot; + vars.get(&quot;historyType&quot;) + &quot;\&quot;}&quot;);
+//log.warn(bizContent);
+
+//String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKey&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.info(aesKey);
+//String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+//sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContent);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContent, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContent);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">log.warn(&quot;3. users/history/details: respBody: &quot; + prev.getResponseDataAsString());
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="4.Request point settlement" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/trade?appId=${appId}&amp;charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RandomVariableConfig guiclass="TestBeanGUI" testclass="RandomVariableConfig" testname="随机tradeNo" enabled="true">
+            <stringProp name="maximumValue">999999999</stringProp>
+            <stringProp name="minimumValue">100000000</stringProp>
+            <stringProp name="outputFormat">000000000</stringProp>
+            <boolProp name="perThread">true</boolProp>
+            <stringProp name="randomSeed"></stringProp>
+            <stringProp name="variableName">tradeNo</stringProp>
+          </RandomVariableConfig>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+
+
+String bizContent = new String(&quot;{\&quot;description\&quot;:\&quot;100元充值卡\&quot;,\&quot;subject\&quot;:\&quot;手机话费充值\&quot;,\&quot;merchantTradeNo\&quot;:\&quot;&quot; + ${tradeNo} + &quot;\&quot;,\&quot;category\&quot;:1,\&quot;pointAmount\&quot; : 100,\&quot;timeExpire\&quot;:\&quot;2019-09-17 12:00:00\&quot;,\&quot;guid\&quot;:\&quot;&quot;+ guid + &quot;\&quot;,\&quot;cashExisted\&quot;:1,\&quot;notifyUrl\&quot;:\&quot;http://192.168.5.88/notify\&quot;,\&quot;returnUrl\&quot;:\&quot;http://192.168.5.88/sccuessful\&quot;,\&quot;gobackUrl\&quot;:\&quot;http://192.168.5.88/failed\&quot;,\&quot;queryUrl\&quot;:\&quot;http://192.168.5.88/query\&quot;}&quot;);
+//log.warn(bizContent);
+
+String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.info(aesKey);
+String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContentEncrypted);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContentEncrypted, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContentEncrypted);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">URL</stringProp>
+            <stringProp name="RegexExtractor.refname">confirmToken</stringProp>
+            <stringProp name="RegexExtractor.regex">orderpaying/(\d*)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">error</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="Sample.scope">all</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">URL</stringProp>
+            <stringProp name="RegexExtractor.refname">trackingNo</stringProp>
+            <stringProp name="RegexExtractor.regex">orderpaying/(\d{20})</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">error</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="Sample.scope">all</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+String charset  = vars.get(&quot;charset&quot;);
+//log.warn(&quot;respSign: &quot; + vars.get(&quot;respSign&quot;));
+//log.warn(&quot;respEncrypted: &quot; + vars.get(&quot;respEncrypted&quot;));
+log.warn(&quot;4. trade: confirmToken: &quot; + vars.get(&quot;confirmToken&quot;) + &quot;; trackingNo: &quot; + vars.get(&quot;trackingNo&quot;));
+
+
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="5.Confirm point settlement" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/users/confirm/${confirmToken}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">log.warn(&quot;5. users/confirm: respBody: &quot; + prev.getResponseDataAsString());</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <ResultAction guiclass="ResultActionGui" testclass="ResultAction" testname="结果状态处理器" enabled="true">
+            <intProp name="OnError.action">4</intProp>
+          </ResultAction>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="6.Query point settlement Status" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/trade/query?appId=${appId}&amp;charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+String trackingNo = vars.get(&quot;trackingNo&quot;);
+
+String bizContent = new String(&quot;{\&quot;merchantTradeNo\&quot;:\&quot;&quot; + ${tradeNo} + &quot;\&quot;,\&quot;trackingNo\&quot;:\&quot;&quot; + trackingNo + &quot;\&quot;}&quot;);
+//log.warn(bizContent);
+
+String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.warn(aesKey);
+String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContentEncrypted);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContentEncrypted, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContentEncrypted);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="sign提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respSign</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.sign</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="resp提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respEncrypted</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.resp</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+String charset  = vars.get(&quot;charset&quot;);
+//log.warn(&quot;respSign: &quot; + vars.get(&quot;respSign&quot;));
+//log.warn(&quot;respEncrypted: &quot; + vars.get(&quot;respEncrypted&quot;));
+
+Boolean a = SignatureUtil.checkContentSign(vars.get(&quot;respEncrypted&quot;), vars.get(&quot;respSign&quot;), vars.get(&quot;samsungPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+if(a)
+{
+	//log.info(&quot;Verify Signature Successed&quot;);
+	String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+	String respBody = EncryptUtil.decryptContent(vars.get(&quot;respEncrypted&quot;), &quot;AES&quot;, aesKey, charset);
+	log.warn(&quot;6. trade/qruey: SUCCESS, respBody: &quot; + respBody);
+}
+else
+{
+	log.warn(&quot;Verify Signature Failed&quot;);
+}
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="7.Refund point settlement" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/refund?appId=${appId}&amp;charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RandomVariableConfig guiclass="TestBeanGUI" testclass="RandomVariableConfig" testname="随机refundNo" enabled="true">
+            <stringProp name="maximumValue">999999999</stringProp>
+            <stringProp name="minimumValue">100000000</stringProp>
+            <stringProp name="outputFormat">000000000</stringProp>
+            <boolProp name="perThread">true</boolProp>
+            <stringProp name="randomSeed"></stringProp>
+            <stringProp name="variableName">refundNo</stringProp>
+          </RandomVariableConfig>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+String trackingNo = vars.get(&quot;trackingNo&quot;);
+
+String bizContent = new String(&quot;{\&quot;guid\&quot;:\&quot;&quot; + guid +&quot;\&quot;,\&quot;merchantTradeNo\&quot;:\&quot;&quot; + ${tradeNo} + &quot;\&quot;,\&quot;merchantRefundNo\&quot;:\&quot;&quot; + ${refundNo} + &quot;\&quot;,\&quot;trackingNo\&quot;:\&quot;&quot; + trackingNo + &quot;\&quot;,\&quot;refundAmount\&quot;:\&quot;&quot; + ${refundAmount} + &quot;\&quot;,\&quot;refundReason\&quot;:\&quot;MyrefundReason\&quot;}&quot;);
+//log.warn(bizContent);
+
+String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.warn(aesKey);
+String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContentEncrypted);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContentEncrypted, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContentEncrypted);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="sign提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respSign</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.sign</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="resp提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respEncrypted</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.resp</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+String charset  = vars.get(&quot;charset&quot;);
+//log.warn(&quot;respSign: &quot; + vars.get(&quot;respSign&quot;));
+//log.warn(&quot;respEncrypted: &quot; + vars.get(&quot;respEncrypted&quot;));
+
+Boolean a = SignatureUtil.checkContentSign(vars.get(&quot;respEncrypted&quot;), vars.get(&quot;respSign&quot;), vars.get(&quot;samsungPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+if(a)
+{
+	//log.info(&quot;Verify Signature Successed&quot;);
+	String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+	String respBody = EncryptUtil.decryptContent(vars.get(&quot;respEncrypted&quot;), &quot;AES&quot;, aesKey, charset);
+	log.warn(&quot;7. trade/refund: SUCCESS, respBody: &quot; + respBody);
+}
+else
+{
+	log.warn(&quot;Verify Signature Failed&quot;);
+}
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="8.Query refund point settlement status" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/refund/query?appId=${appId}&amp;charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+String trackingNo = vars.get(&quot;trackingNo&quot;);
+
+String bizContent = new String(&quot;{\&quot;merchantTradeNo\&quot;:\&quot;&quot; + ${tradeNo} + &quot;\&quot;,\&quot;merchantRefundNo\&quot;:\&quot;&quot; + ${refundNo} + &quot;\&quot;}&quot;);
+//log.warn(bizContent);
+
+String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.warn(aesKey);
+String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContentEncrypted);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContentEncrypted, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContentEncrypted);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="sign提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respSign</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.sign</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="resp提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respEncrypted</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.resp</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+String charset  = vars.get(&quot;charset&quot;);
+//log.warn(&quot;respSign: &quot; + vars.get(&quot;respSign&quot;));
+//log.warn(&quot;respEncrypted: &quot; + vars.get(&quot;respEncrypted&quot;));
+
+Boolean a = SignatureUtil.checkContentSign(vars.get(&quot;respEncrypted&quot;), vars.get(&quot;respSign&quot;), vars.get(&quot;samsungPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+if(a)
+{
+	//log.info(&quot;Verify Signature Successed&quot;);
+	String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+	String respBody = EncryptUtil.decryptContent(vars.get(&quot;respEncrypted&quot;), &quot;AES&quot;, aesKey, charset);
+	log.warn(&quot;8. refund/qruey: SUCCESS, respBody: &quot; + respBody);
+}
+else
+{
+	log.warn(&quot;Verify Signature Failed&quot;);
+}
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="9.Update order status" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">bizContent=${bizContent}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${rewardsURL}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">settlement/order?appId=${appId}&amp;charset=${charset}&amp;sign=${sign}&amp;signType=${signType}&amp;timestamp=${timestamp}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+
+String guid = vars.get(&quot;guid&quot;);
+String authToken = vars.get(&quot;authToken&quot;);
+String ssoToken = vars.get(&quot;ssoToken&quot;);
+String charset  = vars.get(&quot;charset&quot;);
+String trackingNo = vars.get(&quot;trackingNo&quot;);
+
+String bizContent = new String(&quot;{\&quot;merchantTradeNo\&quot;:\&quot;&quot; + ${tradeNo} + &quot;\&quot;,\&quot;settlementStatus\&quot;:\&quot;SETTLEMENT_CASH_SUCCESS\&quot;}&quot;);
+//log.warn(bizContent);
+
+String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+//log.warn(aesKey);
+String bizContentEncrypted = EncryptUtil.encryptContent(bizContent, &quot;AES&quot;, aesKey, charset);
+
+//log.info(EncryptUtil.decryptContent(bizContentEncrypted, &quot;AES&quot;, aesKey, charset));
+
+
+
+Map sortedParams = new TreeMap();
+
+sortedParams.put(&quot;appId&quot;, vars.get(&quot;appId&quot;));
+sortedParams.put(&quot;charset&quot;, vars.get(&quot;charset&quot;));
+sortedParams.put(&quot;signType&quot;, vars.get(&quot;signType&quot;));
+sortedParams.put(&quot;timestamp&quot;, vars.get(&quot;timestamp&quot;));
+sortedParams.put(&quot;bizContent&quot;, bizContentEncrypted);
+
+StringBuilder content = new StringBuilder();
+
+List keys = new ArrayList(sortedParams.keySet());
+Collections.sort(keys);
+int index = 0;
+for (int i = 0; i &lt; keys.size(); i++) {
+  String key = keys.get(i);
+  String value = sortedParams.get(key) != null ? sortedParams.get(key) : null;
+  content.append((index == 0 ? &quot;&quot; : &quot;&amp;&quot;) + key + &quot;=&quot; + value);
+  index++;
+  }
+//log.info(content.toString());
+
+String signBace64 = SignatureUtil.rsaSign(content.toString(), vars.get(&quot;cpPrivateKey&quot;), charset, &quot;RSA2&quot;);
+
+//Boolean e = SignatureUtil.checkContentSign(content.toString(), signBace64, vars.get(&quot;cpPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+//log.info(e.toString());
+//log.info(signBace64);
+
+bizContentEncrypted = URLEncoder.encode(bizContentEncrypted, &quot;utf-8&quot;);
+
+vars.put(&quot;bizContent&quot;,bizContentEncrypted);
+
+
+String sign = URLEncoder.encode(signBace64, &quot;utf-8&quot;);
+//log.info(sign);
+vars.put(&quot;sign&quot;,sign);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="sign提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respSign</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.sign</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="resp提取器" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">respEncrypted</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.resp</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.srct.security.EncryptUtil;
+import com.srct.security.SignatureUtil;
+
+String charset  = vars.get(&quot;charset&quot;);
+//log.warn(&quot;respSign: &quot; + vars.get(&quot;respSign&quot;));
+//log.warn(&quot;respEncrypted: &quot; + vars.get(&quot;respEncrypted&quot;));
+
+Boolean a = SignatureUtil.checkContentSign(vars.get(&quot;respEncrypted&quot;), vars.get(&quot;respSign&quot;), vars.get(&quot;samsungPublicKey&quot;), charset, &quot;RSA2&quot;);
+
+if(a)
+{
+	//log.info(&quot;Verify Signature Successed&quot;);
+	String aesKey = EncryptUtil.decryptContent(vars.get(&quot;aesKeyEncrypted&quot;), &quot;RSA&quot;, vars.get(&quot;cpPrivateKey&quot;), charset);
+	String respBody = EncryptUtil.decryptContent(vars.get(&quot;respEncrypted&quot;), &quot;AES&quot;, aesKey, charset);
+	log.warn(&quot;9. order: SUCCESS, respBody: &quot; + respBody);
+}
+else
+{
+	log.warn(&quot;Verify Signature Failed&quot;);
+}
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+            <longProp name="interval_grouping">1000</longProp>
+            <boolProp name="graph_aggregated">false</boolProp>
+            <stringProp name="include_sample_labels"></stringProp>
+            <stringProp name="exclude_sample_labels"></stringProp>
+            <stringProp name="start_offset"></stringProp>
+            <stringProp name="end_offset"></stringProp>
+            <boolProp name="include_checkbox_state">false</boolProp>
+            <boolProp name="exclude_checkbox_state">false</boolProp>
+          </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="汇总报告" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="聚合报告" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+          <longProp name="interval_grouping">1000</longProp>
+          <boolProp name="graph_aggregated">false</boolProp>
+          <stringProp name="include_sample_labels"></stringProp>
+          <stringProp name="exclude_sample_labels"></stringProp>
+          <stringProp name="start_offset"></stringProp>
+          <stringProp name="end_offset"></stringProp>
+          <boolProp name="include_checkbox_state">false</boolProp>
+          <boolProp name="exclude_checkbox_state">false</boolProp>
+        </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

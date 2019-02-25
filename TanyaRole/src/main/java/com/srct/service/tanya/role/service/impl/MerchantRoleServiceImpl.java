@@ -1,6 +1,5 @@
 /**
- * @Title: MerchantRoleServiceImpl.java
- *         Copyright (c) 2019 Sharp. All rights reserved.
+ * @Title: MerchantRoleServiceImpl.java Copyright (c) 2019 Sharp. All rights reserved.
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.service.impl
  * @author Sharp
@@ -31,6 +30,7 @@ import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
+import com.srct.service.tanya.role.service.MerchantRoleService;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
@@ -40,7 +40,7 @@ import com.srct.service.utils.log.Log;
  *
  */
 @Service
-public class MerchantRoleServiceImpl implements RoleService {
+public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService {
 
     private final static int DEFAULT_PERIOD_VALUE = 1;
     private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
@@ -217,6 +217,11 @@ public class MerchantRoleServiceImpl implements RoleService {
 
     @Override
     public Integer getRoleIdbyUser(UserInfo userInfo) {
+        return getMerchantInfoByUser(userInfo).getId();
+    }
+
+    @Override
+    public MerchantInfo getMerchantInfoByUser(UserInfo userInfo) {
         MerchantInfo merchantInfo = null;
         MerchantInfoExample example = new MerchantInfoExample();
         MerchantInfoExample.Criteria criteria = example.createCriteria();
@@ -229,7 +234,7 @@ public class MerchantRoleServiceImpl implements RoleService {
         } catch (Exception e) {
             throw new ServiceException("no merchant have the user " + userInfo.getName());
         }
-        return merchantInfo.getId();
+        return merchantInfo;
     }
 
 }

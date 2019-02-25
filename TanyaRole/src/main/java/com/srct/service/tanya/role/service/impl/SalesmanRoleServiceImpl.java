@@ -21,6 +21,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
@@ -36,6 +37,7 @@ import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
+import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
@@ -44,7 +46,7 @@ import com.srct.service.utils.log.Log;
  *
  */
 @Service
-public class SalesmanRoleServiceImpl implements RoleService {
+public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService {
 
     private final static int DEFAULT_PERIOD_VALUE = 1;
     private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
@@ -323,6 +325,11 @@ public class SalesmanRoleServiceImpl implements RoleService {
 
     @Override
     public Integer getRoleIdbyUser(UserInfo userInfo) {
+        return getSalesmanInfoByUser(userInfo).getId();
+    }
+
+    @Override
+    public SalesmanInfo getSalesmanInfoByUser(UserInfo userInfo) {
         SalesmanInfo salesmanInfo = null;
         SalesmanInfoExample example = new SalesmanInfoExample();
         SalesmanInfoExample.Criteria criteria = example.createCriteria();
@@ -335,7 +342,31 @@ public class SalesmanRoleServiceImpl implements RoleService {
         } catch (Exception e) {
             throw new ServiceException("no salesman have the user " + userInfo.getName());
         }
-        return salesmanInfo.getId();
+        return salesmanInfo;
+    }
+
+    @Override
+    public TraderInfo getTraderInfoByUser(UserInfo userInfo) {
+        Integer traderId = getSalesmanTraderMap(userInfo).getTraderId();
+        return traderInfoDao.getTraderInfobyId(traderId);
+    }
+
+    @Override
+    public SalesmanTraderMap getSalesmanTraderMap(UserInfo userInfo) {
+        Date now = new Date();
+        Integer salesmanId = getRoleIdbyUser(userInfo);
+
+        SalesmanTraderMapExample example = new SalesmanTraderMapExample();
+        SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
+        criteria.andEndAtGreaterThanOrEqualTo(now);
+        criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andSalesmanIdEqualTo(salesmanId);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            return salesmanTraderMapDao.getSalesmanTraderMapByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no valid Factory Merchant relationship for the user " + userInfo.getName());
+        }
     }
 
 }

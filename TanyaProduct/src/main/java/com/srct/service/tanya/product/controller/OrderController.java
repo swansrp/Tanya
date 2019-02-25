@@ -72,7 +72,7 @@ public class OrderController {
     }
 
     @ApiOperation(value = "获取订单", notes = "获取订单详情,无id则返回渠道订单列表")
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
         @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = true),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "orderid", value = "订单id",
@@ -96,6 +96,32 @@ public class OrderController {
         order.setFactoryId(factoryId);
         order.setProductId(orderId);
         QueryRespVO<OrderInfoRespVO> orderInfoVO = orderService.getOrderInfo(order);
+
+        return TanyaExceptionHandler.generateResponse(orderInfoVO);
+    }
+
+    @ApiOperation(value = "审批订单", notes = "审批订单 同意或拒绝")
+    @RequestMapping(value = "/confirm", method = RequestMethod.GET)
+    @ApiImplicitParams({
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "orderid", value = "订单id",
+            required = true),
+        @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "confirmed", value = "true/false",
+            required = true)})
+    public ResponseEntity<CommonResponse<QueryRespVO<OrderInfoRespVO>>.Resp> confirm(
+        @RequestParam(value = "orderid", required = true) Integer orderId,
+        @RequestParam(value = "confirmed", required = true) boolean confirmed) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***confirmOrder***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<QueryReqVO> order = new ProductBO<QueryReqVO>();
+        order.setProductType("order");
+        order.setCreaterInfo(info);
+        order.setCreaterRole(role);
+        order.setProductId(orderId);
+        order.setApproved(confirmed);
+        QueryRespVO<OrderInfoRespVO> orderInfoVO = orderService.confirmOrderInfo(order);
 
         return TanyaExceptionHandler.generateResponse(orderInfoVO);
     }

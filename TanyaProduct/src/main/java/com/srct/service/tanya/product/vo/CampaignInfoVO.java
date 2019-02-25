@@ -28,6 +28,9 @@ public class CampaignInfoVO {
     @ApiModelProperty(value = "促销活动备注")
     private String comment;
 
+    @ApiModelProperty(value = "商品id")
+    private String goodsId;
+
     @ApiModelProperty(value = "有效期起始")
     private Date startAt;
 

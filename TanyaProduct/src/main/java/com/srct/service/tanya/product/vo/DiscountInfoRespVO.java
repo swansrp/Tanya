@@ -33,6 +33,9 @@ public class DiscountInfoRespVO {
     @ApiModelProperty(value = "商品信息")
     private GoodsInfoVO goodsInfoVO;
 
+    @ApiModelProperty(value = "确认状态")
+    private Byte confirmStatus;
+
     @ApiModelProperty(value = "确认时间")
     private Date confirmAt;
 }

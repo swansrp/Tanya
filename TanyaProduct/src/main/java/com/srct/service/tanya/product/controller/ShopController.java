@@ -71,7 +71,7 @@ public class ShopController {
     }
 
     @ApiOperation(value = "获取订单", notes = "获取订单详情,无id则返回渠道订单列表")
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
         @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = true),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "订单id",

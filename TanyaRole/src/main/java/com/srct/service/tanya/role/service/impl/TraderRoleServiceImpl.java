@@ -481,19 +481,7 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
 
     @Override
     public Integer getRoleIdbyUser(UserInfo userInfo) {
-        TraderInfo traderInfo = null;
-        TraderInfoExample example = new TraderInfoExample();
-        TraderInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userInfo.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            traderInfo = traderInfoDao.getTraderInfoByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException("no trader have the user " + userInfo.getName());
-        }
-        return traderInfo.getId();
+        return getTraderInfoByUser(userInfo).getId();
     }
 
     @Override
@@ -518,6 +506,44 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         } catch (Exception e) {
             throw new ServiceException("no valid Factory Merchant relationship for the user " + userInfo.getName());
         }
+    }
+
+    @Override
+    public TraderInfo getTraderInfoByUser(UserInfo userInfo) {
+        TraderInfo traderInfo = null;
+        TraderInfoExample example = new TraderInfoExample();
+        TraderInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            traderInfo = traderInfoDao.getTraderInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no trader have the user " + userInfo.getName());
+        }
+        return traderInfo;
+    }
+
+    @Override
+    public FactoryInfo getFacotryInfoByTraderInfo(TraderInfo traderInfo) {
+        Date now = new Date();
+
+        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
+        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
+        criteria.andEndAtGreaterThanOrEqualTo(now);
+        criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andTraderIdEqualTo(traderInfo.getId());
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            Integer factoryId =
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0).getFactoryId();
+            return factoryInfoDao.getFactoryInfobyId(factoryId);
+        } catch (Exception e) {
+            throw new ServiceException(
+                "no valid Factory Merchant relationship for the trader " + traderInfo.getTitle());
+        }
+
     }
 
 }

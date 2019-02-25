@@ -72,7 +72,7 @@ public class GoodsController {
     }
 
     @ApiOperation(value = "获取药品", notes = "获取药品详情,无id则返回渠道药品列表")
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
         @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = true),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "id", value = "商品id", required = false)})

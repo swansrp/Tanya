@@ -18,6 +18,9 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -28,13 +31,22 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.srct.service.config.response.CommonResponse;
+import com.srct.service.exception.ServiceException;
+import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
+import com.srct.service.tanya.user.vo.UploadImgVO;
+import com.srct.service.utils.HttpUtil;
 import com.srct.service.utils.log.Log;
+import com.srct.service.utils.security.MD5Util;
 
 import io.swagger.annotations.Api;
 
@@ -44,6 +56,7 @@ import io.swagger.annotations.Api;
  */
 @Api(value = "PicController")
 @RestController("PicController")
+@RequestMapping(value = "/img")
 @CrossOrigin(origins = "*")
 public class PicController {
 
@@ -52,6 +65,48 @@ public class PicController {
 
     @Autowired
     private HttpServletRequest request;
+
+    private static String UPLOAD_PATH = "tanya/image";
+
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<UploadImgVO>.Resp> uploadImage(MultipartFile image) {
+        try {
+            String name = image.getOriginalFilename();
+
+            Log.i("file name before " + name);
+            String fileName = MD5Util.MD5(name + HttpUtil.getRemoteIp(request) + (new Date()).toString());
+            Log.i("file name after " + fileName);
+
+            InputStream inputStream = image.getInputStream();
+            Path directory = Paths.get(UPLOAD_PATH);
+            if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
+            }
+            long fileSize = Files.copy(inputStream, directory.resolve(fileName));
+            UploadImgVO vo = new UploadImgVO();
+            vo.setFileName(fileName);
+            vo.setFileSize(fileSize);
+
+            return TanyaExceptionHandler.generateResponse(vo);
+
+        } catch (Exception e) {
+            Log.e(e);
+            throw new ServiceException("upload failed " + e.getMessage());
+        }
+
+    }
+
+    // 使用流将图片输出
+    @RequestMapping(value = "/{imageName}", method = RequestMethod.GET)
+    public void getImage(HttpServletResponse response, @PathVariable("imageName") String imageName) throws IOException {
+        response.setContentType("image/jpeg;charset=utf-8");
+        response.setHeader("Content-Disposition", "inline; filename=girls.png");
+        ServletOutputStream outputStream = response.getOutputStream();
+        Log.i(Paths.get(UPLOAD_PATH).resolve(imageName).toString());
+        outputStream.write(Files.readAllBytes(Paths.get(UPLOAD_PATH).resolve(imageName)));
+        outputStream.flush();
+        outputStream.close();
+    }
 
     @RequestMapping(value = "test/rewards.png", method = RequestMethod.GET)
     public void pic(@RequestParam(value = "name", required = true) String name, HttpServletResponse response)

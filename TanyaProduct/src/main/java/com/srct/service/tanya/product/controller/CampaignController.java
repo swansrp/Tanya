@@ -72,7 +72,7 @@ public class CampaignController {
     }
 
     @ApiOperation(value = "获取促销活动", notes = "获取促销活动详情,无id则返回渠道促销活动列表")
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid",
         value = "促销活动id", required = false)})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> getCampaign(
@@ -90,6 +90,32 @@ public class CampaignController {
         QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = campaignService.getCampaignInfo(campaign);
 
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
+    }
+
+    @ApiOperation(value = "审批促销活动", notes = "审批促销活动  同意或拒绝")
+    @RequestMapping(value = "/confirm", method = RequestMethod.GET)
+    @ApiImplicitParams({
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid", value = "订单id",
+            required = true),
+        @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "confirmed", value = "true/false",
+            required = true)})
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> confirm(
+        @RequestParam(value = "campaignid", required = true) Integer campaignId,
+        @RequestParam(value = "confirmed", required = true) boolean confirmed) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***confirmCampaign***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<QueryReqVO> campaign = new ProductBO<QueryReqVO>();
+        campaign.setProductType("campaign");
+        campaign.setCreaterInfo(info);
+        campaign.setCreaterRole(role);
+        campaign.setProductId(campaignId);
+        campaign.setApproved(confirmed);
+        QueryRespVO<CampaignInfoRespVO> campaignInfoVO = campaignService.confirmCampaignInfo(campaign);
+
+        return TanyaExceptionHandler.generateResponse(campaignInfoVO);
     }
 
 }
