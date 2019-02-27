@@ -131,7 +131,7 @@ public class AdminRoleServiceImpl implements RoleService {
     public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
         AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(adminInfo, bo);
+        BeanUtil.copyProperties(adminInfo, res);
         res.setRoleType(getRoleType());
         return res;
     }

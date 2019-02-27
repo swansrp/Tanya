@@ -86,7 +86,8 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         try {
             merchantInfo = getMerchantInfoByCreater(bo.getCreaterInfo());
         } catch (Exception e) {
-            throw new ServiceException("no such user as role " + bo.getCreaterRole().getRole());
+            throw new ServiceException(
+                "creater role " + bo.getCreaterRole().getRole() + " dont allow create " + getRoleType());
         }
 
         FactoryInfo factoryInfo = makeFoctoryInfo(bo);

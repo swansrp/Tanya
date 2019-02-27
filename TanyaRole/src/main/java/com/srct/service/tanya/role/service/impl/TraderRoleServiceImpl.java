@@ -106,7 +106,8 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         try {
             factoryInfo = getFactoryInfoByCreater(bo.getCreaterInfo());
         } catch (Exception e) {
-            throw new ServiceException("no such user as role " + bo.getCreaterRole().getRole());
+            throw new ServiceException(
+                "creater role " + bo.getCreaterRole().getRole() + " dont allow create " + getRoleType());
         }
 
         FactoryMerchantMap factoryMerchantMap = getFactoryMerchantMapByFactoryInfo(factoryInfo);

@@ -128,7 +128,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
     public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
         MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(merchantInfo, bo);
+        BeanUtil.copyProperties(merchantInfo, res);
         res.setRoleType(getRoleType());
         return res;
     }

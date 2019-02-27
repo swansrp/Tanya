@@ -95,7 +95,8 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         try {
             traderInfo = getTraderInfoByCreater(bo.getCreaterInfo());
         } catch (Exception e) {
-            throw new ServiceException("no such user as role " + bo.getCreaterRole().getRole());
+            throw new ServiceException(
+                "creater role " + bo.getCreaterRole().getRole() + " dont allow create " + getRoleType());
         }
 
         SalesmanInfo salesmanInfo = makeSalesmanInfo(bo);
@@ -217,7 +218,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
 
         SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(salesmanInfo, bo);
+        BeanUtil.copyProperties(salesmanInfo, res);
         res.setRoleType(getRoleType());
         return res;
     }
