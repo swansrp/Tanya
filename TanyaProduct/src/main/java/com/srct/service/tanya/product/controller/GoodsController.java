@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
  * @author Sharp
  *
  */
-@Api(value = "GoodsController")
+@Api(value = "商品")
 @RestController("GoodsController")
 @RequestMapping(value = "/goods")
 @CrossOrigin(origins = "*")
@@ -74,7 +74,7 @@ public class GoodsController {
     @ApiOperation(value = "获取药品", notes = "获取药品详情,无id则返回渠道药品列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = true),
+        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = false),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "id", value = "商品id", required = false)})
     public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp>
         getGoods(@RequestBody QueryReqVO req, @RequestParam(value = "id", required = false) Integer goodsId) {

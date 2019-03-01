@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
  * @author sharuopeng
  *
  */
-@Api(value = "DiscountController")
+@Api(value = "折扣活动(药厂-渠道)")
 @RestController("DiscountController")
 @RequestMapping(value = "/discount")
 @CrossOrigin(origins = "*")
@@ -74,6 +74,7 @@ public class DiscountController {
     @ApiOperation(value = "获取折扣活动", notes = "获取折扣活动详情,无id则返回渠道折扣活动列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
+        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = false),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountid", value = "折扣活动id",
             required = false),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "factoryid", value = "药厂id",

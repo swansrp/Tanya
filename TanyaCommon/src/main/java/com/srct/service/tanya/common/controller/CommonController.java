@@ -1,8 +1,5 @@
 /**
- * Title: CommonController.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: CommonController.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.controller
@@ -28,7 +25,7 @@ import io.swagger.annotations.ApiOperation;
  * @author Sharp
  *
  */
-@Api(value = "CommonController")
+@Api(value = "系统自动重定向")
 @RestController("commonController")
 @RequestMapping(value = "")
 @CrossOrigin(origins = "*")

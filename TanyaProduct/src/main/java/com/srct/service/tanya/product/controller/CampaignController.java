@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
  * @author sharuopeng
  *
  */
-@Api(value = "CampaignController")
+@Api(value = "促销活动(药店促销员)")
 @RestController("CampaignController")
 @RequestMapping(value = "/campaign")
 @CrossOrigin(origins = "*")
@@ -73,8 +73,10 @@ public class CampaignController {
 
     @ApiOperation(value = "获取促销活动", notes = "获取促销活动详情,无id则返回渠道促销活动列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid",
-        value = "促销活动id", required = false)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = false),
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid", value = "促销活动id",
+            required = false)})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> getCampaign(
         @RequestBody QueryReqVO req,
         @RequestParam(value = "campaignid", required = false) Integer campaignId) {

@@ -359,8 +359,12 @@ public abstract class ProductServiceBaseImpl {
      */
     public PageInfo<?> buildPage(ProductBO<QueryReqVO> req) {
         PageInfo<?> pageInfo = new PageInfo<>();
-        pageInfo.setPageNum(req.getReq().getCurrentPage());
-        pageInfo.setPageSize(req.getReq().getPageSize());
+        if (req.getReq().getCurrentPage() != null) {
+            pageInfo.setPageNum(req.getReq().getCurrentPage());
+        }
+        if (req.getReq().getPageSize() != null) {
+            pageInfo.setPageSize(req.getReq().getPageSize());
+        }
         return pageInfo;
     }
 

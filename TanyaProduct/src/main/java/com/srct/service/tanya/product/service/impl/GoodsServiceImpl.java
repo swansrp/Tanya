@@ -56,7 +56,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         GoodsInfo goodsInfo = new GoodsInfo();
         if (goodsFactoryMerchantMapList == null
             || goodsFactoryMerchantMapList.size() < factoryMerchantMap.getGoodsNumber()) {
-            BeanUtil.copyProperties(req, goodsInfo);
+            BeanUtil.copyProperties(req.getReq().getGoods(), goodsInfo);
             goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             goodsInfoDao.updateGoodsInfo(goodsInfo);
             makeGoodsFactoryMerchantMapRelationShip(goodsInfo, factoryMerchantMap);

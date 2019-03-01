@@ -50,7 +50,7 @@ import io.swagger.annotations.ApiOperation;
  *
  */
 
-@Api(value = "RoleController")
+@Api(value = "权限相关操作")
 @RestController("RoleController")
 @RequestMapping(value = "/role")
 @CrossOrigin(origins = "*")

@@ -16,7 +16,6 @@ import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfoExample;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
@@ -35,12 +34,11 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
 
     @Override
     public QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> shop) {
-
-        ShopInfoExample example = new ShopInfoExample();
-        ShopInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         ShopInfo shopInfoEx = new ShopInfo();
         shopInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        if (shop.getProductId() != null) {
+            shopInfoEx.setId(shop.getProductId());
+        }
         PageInfo<?> pageInfo = super.buildPage(shop);
         List<ShopInfo> shopInfoList = shopInfoDao.getShopInfoSelective(shopInfoEx, pageInfo);
 

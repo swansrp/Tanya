@@ -1,8 +1,5 @@
 /**
- * Title: LoginController.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: LoginController.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.controller
@@ -59,7 +56,7 @@ import io.swagger.annotations.ApiOperation;
  * @author Sharp
  *
  */
-@Api(value = "LoginController")
+@Api(value = "登录操作")
 @RestController("LoginController")
 @RequestMapping(value = "")
 @CrossOrigin(origins = "*")

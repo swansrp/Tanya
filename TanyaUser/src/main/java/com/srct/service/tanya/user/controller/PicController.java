@@ -54,7 +54,7 @@ import io.swagger.annotations.Api;
  * @author sharuopeng
  *
  */
-@Api(value = "PicController")
+@Api(value = "图片操作")
 @RestController("PicController")
 @RequestMapping(value = "/img")
 @CrossOrigin(origins = "*")

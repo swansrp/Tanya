@@ -1,8 +1,5 @@
 /**
- * Title: PortalRoleController.java
- * Description:
- * Copyright: Copyright (c) 2019
- * Company: Sharp
+ * Title: PortalRoleController.java Description: Copyright: Copyright (c) 2019 Company: Sharp
  * 
  * @Project Name: TanyaPortal
  * @Package: com.srct.service.tanya.portal.controller.role
@@ -14,6 +11,7 @@ package com.srct.service.tanya.portal.controller.role;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +42,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController("portalRoleController")
 @RequestMapping(value = "/portal/role")
 @CrossOrigin(origins = "*")
+@Profile(value = {"dev", "test"})
 public class PortalRoleController {
 
     @Autowired

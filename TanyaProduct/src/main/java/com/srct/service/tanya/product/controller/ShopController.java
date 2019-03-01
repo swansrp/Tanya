@@ -40,7 +40,7 @@ import io.swagger.annotations.ApiOperation;
  * @author sharuopeng
  *
  */
-@Api(value = "ShopController")
+@Api(value = "药店信息")
 @RestController("ShopController")
 @RequestMapping(value = "/shop")
 @CrossOrigin(origins = "*")
@@ -73,7 +73,7 @@ public class ShopController {
     @ApiOperation(value = "获取订单", notes = "获取订单详情,无id则返回渠道订单列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = true),
+        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = false),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "订单id",
             required = false),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "factoryid", value = "药厂id",
