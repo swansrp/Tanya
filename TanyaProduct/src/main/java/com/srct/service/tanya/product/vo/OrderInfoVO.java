@@ -10,6 +10,10 @@ package com.srct.service.tanya.product.vo;
 
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -35,8 +39,12 @@ public class OrderInfoVO {
     private Double amount;
 
     @ApiModelProperty(value = "有效期起始")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date startAt;
 
     @ApiModelProperty(value = "有效期结束")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endAt;
 }

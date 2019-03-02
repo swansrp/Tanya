@@ -110,8 +110,8 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         FactoryMerchantMap factoryMerchantMap = new FactoryMerchantMap();
         factoryMerchantMap.setFactoryId(factoryInfo.getId());
         factoryMerchantMap.setMerchantId(merchantInfo.getId());
-        factoryMerchantMap.setGoodsNumber(1);
-        factoryMerchantMap.setTraderNumber(1);
+        factoryMerchantMap.setGoodsNumber(5);
+        factoryMerchantMap.setTraderNumber(5);
         factoryMerchantMap.setStartAt(now);
         factoryMerchantMap.setEndAt(merchantInfo.getEndAt());
 

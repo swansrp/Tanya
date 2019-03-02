@@ -133,9 +133,11 @@ public class LoginController {
         UserRegReqBO bo = new UserRegReqBO();
         bo.setGuid(guid);
         BeanUtil.copyProperties(vo, bo);
-        if (bo.getUsername() == null) {
-            bo.setUsername(bo.getEmail());
-        }
+
+        // TODO 前端不传入userName
+        // if (bo.getUsername() == null) {
+        // bo.setUsername(bo.getEmail());
+        // }
         userService.updateUser(bo);
         return TanyaExceptionHandler.generateResponse("");
     }

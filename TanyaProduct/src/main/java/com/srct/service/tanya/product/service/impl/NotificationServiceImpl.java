@@ -58,6 +58,7 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
             notificationInfo = new NotificationInfo();
         }
         BeanUtil.copyProperties(notification.getReq().getNotification(), notificationInfo);
+        notificationInfo.setFactoryId(factoryInfo.getId());
         notificationInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         notificationInfoDao.updateNotificationInfo(notificationInfo);
 

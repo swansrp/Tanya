@@ -110,12 +110,12 @@ public abstract class ProductServiceBaseImpl {
     protected TraderInfoDao traderInfoDao;
 
     private final static String CRITERIA_CREAT_METHOD = "createCriteria";
-
     private final static String CRITERIA_VALID_METHOD = "andValidEqualTo";
-
-    private final static String CRITERIA_STARTAT_METHOD = "andStartAtGreaterThanOrEqualTo";
-
-    private final static String CRITERIA_ENDAT_METHOD = "andEndAtLessThanOrEqualTo";
+    private final static String CRITERIA_STARTAT_BEFORE_METHOD = "andStartAtLessThanOrEqualTo";
+    private final static String CRITERIA_ENDAT_AFTER_METHOD = "andEndAtGreaterThanOrEqualTo";
+    // private final static String CRITERIA_OR_METHOD = "or";
+    // private final static String CRITERIA_ENDAT_BEFORE_METHOD = "andEndAtLessThanOrEqualTo";
+    // private final static String CRITERIA_STARTAT_AFTER_METHOD = "andStartAtGreaterThanOrEqualTo";
 
     /**
      * @param order
@@ -247,21 +247,27 @@ public abstract class ProductServiceBaseImpl {
      * @return
      */
     public <T> T makeQueryExample(ProductBO<?> bo, Class clazz) {
-        Object example = clazz.getInterfaces();
+        Date now = new Date();
         QueryReqVO req = bo.getReq();
+        Object example = null;
+
         try {
+            example = clazz.newInstance();
             Method method = example.getClass().getMethod(CRITERIA_CREAT_METHOD);
             Object criteria = method.invoke(example);
+
+            method = criteria.getClass().getMethod(CRITERIA_STARTAT_BEFORE_METHOD, Date.class);
+            method.invoke(criteria, req.getQueryEndAt() == null ? now : req.getQueryEndAt());
+            method = criteria.getClass().getMethod(CRITERIA_ENDAT_AFTER_METHOD, Date.class);
+            method.invoke(criteria, req.getQueryStartAt() == null ? now : req.getQueryStartAt());
+
             method = criteria.getClass().getMethod(CRITERIA_VALID_METHOD, Byte.class);
             method.invoke(criteria, DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            method = criteria.getClass().getMethod(CRITERIA_STARTAT_METHOD, Date.class);
-            if (req.getQueryStartAt() != null)
-                method.invoke(criteria, req.getQueryStartAt());
-            method = criteria.getClass().getMethod(CRITERIA_ENDAT_METHOD, Date.class);
-            if (req.getQueryEndAt() != null)
-                method.invoke(criteria, req.getQueryEndAt());
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
             | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InstantiationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

@@ -29,7 +29,6 @@ import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.CampaignService;
 import com.srct.service.tanya.product.vo.CampaignInfoReqVO;
 import com.srct.service.tanya.product.vo.CampaignInfoRespVO;
-import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
 import io.swagger.annotations.Api;
@@ -56,14 +55,14 @@ public class CampaignController {
     @ApiOperation(value = "新增/更新促销活动", notes = "只有trader等级可以添加促销活动 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
-        modifyCampaign(@RequestBody CampaignInfoReqVO vo) {
+        modifyCampaign(@RequestBody CampaignInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***modifyGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<CampaignInfoReqVO> campaign = new ProductBO<CampaignInfoReqVO>();
-        BeanUtil.copyProperties(vo, campaign);
+        campaign.setReq(req);
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
         QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = campaignService.updateCampaignInfo(campaign);

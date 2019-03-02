@@ -52,7 +52,7 @@ public class ShopController {
     @Autowired
     private ShopService shopService;
 
-    @ApiOperation(value = "新增/更新药店", notes = "只有merchant和admin等级可以添加药店 若传入id则为更新")
+    @ApiOperation(value = "新增/更新药店", notes = "salesman不可以添加药店 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp> modifyShop(@RequestBody ShopInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");

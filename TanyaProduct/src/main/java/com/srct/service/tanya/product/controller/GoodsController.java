@@ -29,7 +29,6 @@ import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.GoodsService;
 import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
 import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
-import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
 import io.swagger.annotations.Api;
@@ -56,14 +55,14 @@ public class GoodsController {
     @ApiOperation(value = "新增/更新药品", notes = "只有factory、trader等级可以添加药品 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp>
-        modifyGoods(@RequestBody GoodsInfoReqVO vo) {
+        modifyGoods(@RequestBody GoodsInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***modifyGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<GoodsInfoReqVO> goods = new ProductBO<GoodsInfoReqVO>();
-        BeanUtil.copyProperties(vo, goods);
+        goods.setReq(req);
         goods.setCreaterInfo(info);
         goods.setCreaterRole(role);
         QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.updateGoodsInfo(goods);

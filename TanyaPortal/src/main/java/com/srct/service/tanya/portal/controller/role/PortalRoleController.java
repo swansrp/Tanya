@@ -11,7 +11,6 @@ package com.srct.service.tanya.portal.controller.role;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +19,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.srct.service.config.response.CommonResponse;
+import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMap;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
+import com.srct.service.tanya.common.service.SessionService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -42,7 +41,6 @@ import io.swagger.annotations.ApiResponses;
 @RestController("portalRoleController")
 @RequestMapping(value = "/portal/role")
 @CrossOrigin(origins = "*")
-@Profile(value = {"dev", "test"})
 public class PortalRoleController {
 
     @Autowired
@@ -54,29 +52,49 @@ public class PortalRoleController {
     @Autowired
     private UserInfoDao userInfoDao;
 
-    @ApiOperation(value = "修改权限", notes = "修改登录者权限")
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "roleid", value = "roleId",
-        required = true)})
+    @Autowired
+    private SessionService sessionService;
+
+    @ApiOperation(value = "修改openId", notes = "将openId注入到指定用户信息")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "String", name = "username",
+        value = "userName", required = true),})
     @ApiResponses({@ApiResponse(code = 200, message = "操作成功"), @ApiResponse(code = 500, message = "服务器内部异常"),
         @ApiResponse(code = 403, message = "权限不足")})
-    @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<String>.Resp>
-        modifyRoleId(@RequestParam(value = "roleid", required = true) Integer roleId) {
+    @RequestMapping(value = "/openid", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<UserInfo>.Resp>
+        modifyRoleId(@RequestParam(value = "username", required = true) String userName) {
         String guid = (String)request.getAttribute("guid");
         UserInfo userInfo = new UserInfo();
         userInfo.setGuid(guid);
         userInfo = userInfoDao.getUserInfoSelective(userInfo).get(0);
+        if (userInfo.getWechatId() != null) {
+            String openId = userInfo.getWechatId();
+            userInfo.setWechatId(null);
+            userInfoDao.updateUserInfoStrict(userInfo);
 
-        UserRoleMapExample example = new UserRoleMapExample();
-        UserRoleMapExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userInfo.getId());
+            UserInfo target = new UserInfo();
+            target.setUsername(userName);
+            target = userInfoDao.getUserInfoSelective(target).get(0);
+            target.setWechatId(openId);
+            userInfoDao.updateUserInfo(target);
 
-        UserRoleMap userRoleMap = new UserRoleMap();
-        userRoleMap.setUserId(userInfo.getId());
-        userRoleMap.setRoleId(roleId);
+            // disable the old token
+            sessionService.genToken(guid);
 
-        userRoleMapDao.updateUserRoleMapByExample(userRoleMap, example);
-        return TanyaExceptionHandler.generateResponse("");
+            return TanyaExceptionHandler.generateResponse(target);
+        } else {
+            throw new ServiceException("login user dont have openId");
+        }
+
+    }
+
+    @ApiOperation(value = "获取GUID", notes = "已登录用户获取guid")
+    @ApiResponses({@ApiResponse(code = 200, message = "操作成功"), @ApiResponse(code = 500, message = "服务器内部异常"),
+        @ApiResponse(code = 403, message = "权限不足")})
+    @RequestMapping(value = "/guid", method = RequestMethod.GET)
+    public ResponseEntity<CommonResponse<String>.Resp> getGuid() {
+        String guid = (String)request.getAttribute("guid");
+        return TanyaExceptionHandler.generateResponse(guid);
     }
 
 }

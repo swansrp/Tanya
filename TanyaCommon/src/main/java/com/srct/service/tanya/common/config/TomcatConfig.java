@@ -15,12 +15,14 @@ import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * @author sharuopeng
  *
  */
 @Configuration
+@Profile(value = {"prod"})
 public class TomcatConfig {
     /**
      * http重定向到https
@@ -28,6 +30,7 @@ public class TomcatConfig {
      * @return
      */
     @Bean
+    @Profile(value = {"prod"})
     public TomcatServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
             @Override
@@ -45,6 +48,7 @@ public class TomcatConfig {
     }
 
     @Bean
+    @Profile(value = {"prod"})
     public Connector httpConnector() {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         connector.setScheme("http");

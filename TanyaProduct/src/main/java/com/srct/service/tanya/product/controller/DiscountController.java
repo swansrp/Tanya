@@ -29,7 +29,6 @@ import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.DiscountService;
 import com.srct.service.tanya.product.vo.DiscountInfoReqVO;
 import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
-import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
 import io.swagger.annotations.Api;
@@ -56,14 +55,14 @@ public class DiscountController {
     @ApiOperation(value = "新增/更新折扣活动", notes = "只有trader等级可以添加折扣活动 若传入id则为更新")
     @RequestMapping(value = "update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp>
-        modifyDiscount(@RequestBody DiscountInfoReqVO vo) {
+        modifyDiscount(@RequestBody DiscountInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***modifyGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<DiscountInfoReqVO> discount = new ProductBO<DiscountInfoReqVO>();
-        BeanUtil.copyProperties(vo, discount);
+        discount.setReq(req);
         discount.setCreaterInfo(info);
         discount.setCreaterRole(role);
         QueryRespVO<DiscountInfoRespVO> discountInfoVOList = discountService.updateDiscountInfo(discount);

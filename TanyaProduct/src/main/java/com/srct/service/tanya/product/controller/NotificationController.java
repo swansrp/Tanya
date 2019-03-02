@@ -29,7 +29,6 @@ import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.NotificationService;
 import com.srct.service.tanya.product.vo.NotificationInfoReqVO;
 import com.srct.service.tanya.product.vo.NotificationInfoRespVO;
-import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 
 import io.swagger.annotations.Api;
@@ -56,14 +55,14 @@ public class NotificationController {
     @ApiOperation(value = "新增/更新公告", notes = "只有factory等级可以添加公告 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<NotificationInfoRespVO>>.Resp>
-        modifyNotification(@RequestBody NotificationInfoReqVO vo) {
+        modifyNotification(@RequestBody NotificationInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***modifyNotification***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<NotificationInfoReqVO> notification = new ProductBO<NotificationInfoReqVO>();
-        BeanUtil.copyProperties(vo, notification);
+        notification.setReq(req);
         notification.setCreaterInfo(info);
         notification.setCreaterRole(role);
         QueryRespVO<NotificationInfoRespVO> notificationInfoVOList =
