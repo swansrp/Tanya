@@ -62,10 +62,8 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         shopInfoDao.updateShopInfo(shopInfo);
 
-        ShopInfoRespVO shopInfoRespVO = buildShopInfoRespVO(shopInfo);
-
         QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<ShopInfoRespVO>();
-        res.getInfo().add(shopInfoRespVO);
+        res.getInfo().add(buildShopInfoRespVO(shopInfo));
 
         return res;
     }
@@ -82,6 +80,16 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     }
 
     @Override
+    public QueryRespVO<ShopInfoRespVO> delShopInfo(ProductBO<ShopInfoReqVO> shop) {
+        validateDelete(shop);
+        ShopInfo shopInfo = shopInfoDao.getShopInfobyId(shop.getProductId());
+        shopInfoDao.delShopInfo(shopInfo);
+        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<ShopInfoRespVO>();
+        res.getInfo().add(buildShopInfoRespVO(shopInfo));
+        return res;
+    }
+
+    @Override
     protected void validateUpdate(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
         if (roleType.equals("salesman")) {
@@ -92,6 +100,20 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     @Override
     protected void validateConfirm(ProductBO<?> req) {
         throw new ServiceException("dont support confirm shop ");
+    }
+
+    @Override
+    protected void validateDelete(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("dont allow to delete shop by role " + roleType);
+        }
+    }
+
+    @Override
+    protected void validateQuery(ProductBO<?> req) {
+        // TODO Auto-generated method stub
+
     }
 
 }

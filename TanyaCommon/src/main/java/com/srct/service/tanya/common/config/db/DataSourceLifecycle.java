@@ -1,9 +1,9 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.config.db 
- * @author: sharuopeng   
+ * @Package: com.srct.service.tanya.common.config.db
+ * @author: sharuopeng
  * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.config.db;
@@ -36,8 +36,7 @@ public class DataSourceLifecycle implements SmartLifecycle {
 
     /**
      * 1. 我们主要在该方法中启动任务或者其他异步服务，比如开启MQ接收消息<br/>
-     * 2.
-     * 当上下文被刷新（所有对象已被实例化和初始化之后）时，将调用该方法，默认生命周期处理器将检查每个SmartLifecycle对象的isAutoStartup()方法返回的布尔值。
+     * 2. 当上下文被刷新（所有对象已被实例化和初始化之后）时，将调用该方法，默认生命周期处理器将检查每个SmartLifecycle对象的isAutoStartup()方法返回的布尔值。
      * 如果为“true”，则该方法会被调用，而不是等待显式调用自己的start()方法。
      */
     @Override

@@ -125,4 +125,24 @@ public class OrderController {
 
         return TanyaExceptionHandler.generateResponse(orderInfoVO);
     }
+
+    @ApiOperation(value = "删除订单", notes = "非salesman等级可以删除未审核的订单")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "orderid", value = "订单id",
+        required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<OrderInfoRespVO>>.Resp>
+        del(@RequestParam(value = "orderid", required = true) Integer orderId) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***DelOrder***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<OrderInfoReqVO> order = new ProductBO<OrderInfoReqVO>();
+        order.setCreaterInfo(info);
+        order.setCreaterRole(role);
+        order.setProductId(orderId);
+        QueryRespVO<OrderInfoRespVO> orderInfoVOList = orderService.delOrderInfo(order);
+
+        return TanyaExceptionHandler.generateResponse(orderInfoVOList);
+    }
 }

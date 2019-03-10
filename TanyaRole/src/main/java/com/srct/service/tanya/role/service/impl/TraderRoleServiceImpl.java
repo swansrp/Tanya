@@ -547,4 +547,38 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
 
     }
 
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        TraderInfo traderInfo = traderInfoDao.getTraderInfobyId(bo.getId());
+        if (traderInfo.getUserId() != null) {
+            throw new ServiceException(
+                "Dont allow to del role " + traderInfo.getId() + " without kickout the user " + traderInfo.getUserId());
+        }
+        traderInfoDao.delTraderInfo(traderInfo);
+        RoleInfoBO res = makeRoleInfoBO(traderInfo);
+        return res;
+    }
+
+    /**
+     * @param traderInfo
+     * @return
+     */
+    private RoleInfoBO makeRoleInfoBO(TraderInfo traderInfo) {
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(traderInfo, res);
+        res.setRoleType(getRoleType());
+        return res;
+    }
+
+    @Override
+    public List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo) {
+        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
+            getTraderFactoryMerchantMapByFactoryInfo(factoryInfo);
+        List<TraderInfo> traderInfoList = new ArrayList<>();
+        for (TraderFactoryMerchantMap map : traderFactoryMerchantMapList) {
+            traderInfoList.add(traderInfoDao.getTraderInfobyId(map.getTraderId()));
+        }
+        return traderInfoList;
+    }
+
 }

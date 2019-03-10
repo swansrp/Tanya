@@ -21,14 +21,20 @@ import com.srct.service.tanya.product.vo.ShopInfoRespVO;
 public interface ShopService {
 
     /**
-     * @param order
+     * @param shop
      * @return
      */
-    QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> shop);
+    public QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> shop);
 
     /**
-     * @param order
+     * @param shop
      * @return
      */
-    QueryRespVO<ShopInfoRespVO> updateShopInfo(ProductBO<ShopInfoReqVO> shop);
+    public QueryRespVO<ShopInfoRespVO> updateShopInfo(ProductBO<ShopInfoReqVO> shop);
+
+    /**
+     * @param shop
+     * @return
+     */
+    public QueryRespVO<ShopInfoRespVO> delShopInfo(ProductBO<ShopInfoReqVO> shop);
 }

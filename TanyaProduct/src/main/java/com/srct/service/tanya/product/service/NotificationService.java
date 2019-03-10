@@ -24,4 +24,6 @@ public interface NotificationService {
 
     public QueryRespVO<NotificationInfoRespVO> getNotificationInfo(ProductBO<QueryReqVO> notification);
 
+    public QueryRespVO<NotificationInfoRespVO> delNotificationInfo(ProductBO<NotificationInfoReqVO> notification);
+
 }

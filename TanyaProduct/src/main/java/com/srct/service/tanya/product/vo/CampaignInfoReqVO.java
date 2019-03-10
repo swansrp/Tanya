@@ -10,6 +10,7 @@ package com.srct.service.tanya.product.vo;
 
 import com.srct.service.tanya.common.vo.QueryReqVO;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -20,5 +21,8 @@ import lombok.Data;
 public class CampaignInfoReqVO extends QueryReqVO {
 
     private CampaignInfoVO campaign;
+
+    @ApiModelProperty(value = "商品id")
+    private Integer goodsId;
 
 }

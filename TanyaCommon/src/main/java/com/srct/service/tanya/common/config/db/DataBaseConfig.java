@@ -1,9 +1,9 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
  * 
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.config.db 
- * @author: sharuopeng   
+ * @Package: com.srct.service.tanya.common.config.db
+ * @author: sharuopeng
  * @date: 2019/02/23
  */
 package com.srct.service.tanya.common.config.db;
@@ -18,11 +18,11 @@ import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 
 @Configuration
 public class DataBaseConfig {
-	
-	@Bean
-	@ConfigurationProperties(prefix = "db.config.tanya")
-	public DataSource TanyaConfigDataSource() {
-		return DruidDataSourceBuilder.create().build();
-	}
+
+    @Bean
+    @ConfigurationProperties(prefix = "db.config.tanya")
+    public DataSource TanyaConfigDataSource() {
+        return DruidDataSourceBuilder.create().build();
+    }
 
 }

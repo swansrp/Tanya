@@ -71,9 +71,10 @@ public class RoleController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         CreateRoleBO bo = new CreateRoleBO();
+
+        BeanUtil.copyProperties(vo, bo);
         bo.setCreaterInfo(info);
         bo.setCreaterRole(role);
-        BeanUtil.copyProperties(vo, bo);
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
 
@@ -102,9 +103,10 @@ public class RoleController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         UpdateRoleInfoBO bo = new UpdateRoleInfoBO();
+
+        BeanUtil.copyProperties(vo, bo);
         bo.setCreaterInfo(info);
         bo.setCreaterRole(role);
-        BeanUtil.copyProperties(vo, bo);
 
         bo.setTargetId(vo.getId());
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
@@ -155,9 +157,10 @@ public class RoleController {
         RoleInfo role = (RoleInfo)request.getAttribute("role");
 
         ModifyRoleBO bo = new ModifyRoleBO();
+
+        BeanUtil.copyProperties(vo, bo);
         bo.setCreaterInfo(info);
         bo.setCreaterRole(role);
-        BeanUtil.copyProperties(vo, bo);
         bo.setTargetGuid(targetGuid);
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
@@ -177,14 +180,37 @@ public class RoleController {
         RoleInfo role = (RoleInfo)request.getAttribute("role");
 
         ModifyRoleBO bo = new ModifyRoleBO();
+
+        BeanUtil.copyProperties(vo, bo);
         bo.setCreaterInfo(info);
         bo.setCreaterRole(role);
-        BeanUtil.copyProperties(vo, bo);
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
 
         RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.kickout(bo);
+
+        RoleInfoVO resVO = convertRoleInfoVO(resBO);
+
+        return TanyaExceptionHandler.generateResponse(resVO);
+    }
+
+    @ApiOperation(value = "删除下属角色", notes = "将某个下属空角色删除")
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> del(@RequestBody ModifyRoleVO vo) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+
+        ModifyRoleBO bo = new ModifyRoleBO();
+
+        BeanUtil.copyProperties(vo, bo);
+        bo.setCreaterInfo(info);
+        bo.setCreaterRole(role);
+
+        bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
+
+        RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
+        RoleInfoBO resBO = roleService.del(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
 

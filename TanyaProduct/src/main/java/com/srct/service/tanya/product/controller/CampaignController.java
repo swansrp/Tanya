@@ -58,7 +58,7 @@ public class CampaignController {
         modifyCampaign(@RequestBody CampaignInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
-        Log.i("***modifyGoods***");
+        Log.i("***modifyCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<CampaignInfoReqVO> campaign = new ProductBO<CampaignInfoReqVO>();
@@ -81,16 +81,17 @@ public class CampaignController {
         @RequestParam(value = "campaignid", required = false) Integer campaignId) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
-        Log.i("***getOrder***");
+        Log.i("***getCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<QueryReqVO> campaign = new ProductBO<QueryReqVO>();
+        campaign.setReq(req);
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
         campaign.setProductId(campaignId);
-        QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = campaignService.getCampaignInfo(campaign);
+        QueryRespVO<CampaignInfoRespVO> campaignInfoVOList = campaignService.getCampaignInfo(campaign);
 
-        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
+        return TanyaExceptionHandler.generateResponse(campaignInfoVOList);
     }
 
     @ApiOperation(value = "审批促销活动", notes = "审批促销活动  同意或拒绝")
@@ -117,6 +118,26 @@ public class CampaignController {
         QueryRespVO<CampaignInfoRespVO> campaignInfoVO = campaignService.confirmCampaignInfo(campaign);
 
         return TanyaExceptionHandler.generateResponse(campaignInfoVO);
+    }
+
+    @ApiOperation(value = "删除促销活动", notes = "只有trader等级可以删除促销活动")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid",
+        value = "促销活动id", required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
+        del(@RequestParam(value = "campaignid", required = true) Integer campaignId) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***DelCampaign***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<CampaignInfoReqVO> campaign = new ProductBO<CampaignInfoReqVO>();
+        campaign.setCreaterInfo(info);
+        campaign.setCreaterRole(role);
+        campaign.setProductId(campaignId);
+        QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = campaignService.delCampaignInfo(campaign);
+
+        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 
 }

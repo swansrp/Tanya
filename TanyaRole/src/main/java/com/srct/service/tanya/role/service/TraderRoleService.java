@@ -8,6 +8,8 @@
  */
 package com.srct.service.tanya.role.service;
 
+import java.util.List;
+
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
@@ -26,5 +28,7 @@ public interface TraderRoleService {
     public TraderInfo getTraderInfoByUser(UserInfo userInfo);
 
     public TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo);
+
+    public List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo);
 
 }

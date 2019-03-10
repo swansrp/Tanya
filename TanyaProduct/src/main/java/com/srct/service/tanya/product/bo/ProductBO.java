@@ -25,8 +25,14 @@ public class ProductBO<T extends QueryReqVO> extends BaseBO {
 
     private Integer factoryId;
 
+    private Integer traderId;
+
+    private Integer salesmanId;
+
     private Integer productId;
 
-    private boolean approved;
+    private Integer goodsId;
+
+    private Boolean approved;
 
 }

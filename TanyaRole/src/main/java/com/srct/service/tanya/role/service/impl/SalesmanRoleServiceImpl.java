@@ -201,8 +201,8 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
             try {
                 traderInfo = getTraderInfoByCreater(userInfo);
             } catch (Exception e) {
-                Log.e("dont find the user id {} for {}", userInfo.getId(), "factory");
-                throw new ServiceException("dont find the user id " + userInfo.getId() + " for factory");
+                Log.e("dont find the user id {} for {}", userInfo.getId(), "trader");
+                throw new ServiceException("dont find the user id " + userInfo.getId() + " for trader");
             }
 
             SalesmanTraderMap salesmanTraderMapEx = new SalesmanTraderMap();
@@ -368,6 +368,29 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         } catch (Exception e) {
             throw new ServiceException("no valid Factory Merchant relationship for the user " + userInfo.getName());
         }
+    }
+
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
+        if (salesmanInfo.getUserId() != null) {
+            throw new ServiceException("Dont allow to del role " + salesmanInfo.getId() + " without kickout the user "
+                + salesmanInfo.getUserId());
+        }
+        salesmanInfoDao.delSalesmanInfo(salesmanInfo);
+        RoleInfoBO res = makeRoleInfoBO(salesmanInfo);
+        return res;
+    }
+
+    /**
+     * @param salesmanInfo
+     * @return
+     */
+    private RoleInfoBO makeRoleInfoBO(SalesmanInfo salesmanInfo) {
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(salesmanInfo, res);
+        res.setRoleType(getRoleType());
+        return res;
     }
 
 }

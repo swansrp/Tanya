@@ -100,4 +100,24 @@ public class ShopController {
         return TanyaExceptionHandler.generateResponse(shopInfoVO);
     }
 
+    @ApiOperation(value = "删除药店", notes = "非salesman等级可以删除药店")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "药店id",
+        required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp>
+        del(@RequestParam(value = "shopid", required = true) Integer shopId) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***DelShop***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<ShopInfoReqVO> shop = new ProductBO<ShopInfoReqVO>();
+        shop.setCreaterInfo(info);
+        shop.setCreaterRole(role);
+        shop.setProductId(shopId);
+        QueryRespVO<ShopInfoRespVO> shopInfoVOList = shopService.delShopInfo(shop);
+
+        return TanyaExceptionHandler.generateResponse(shopInfoVOList);
+    }
+
 }

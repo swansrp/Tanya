@@ -96,4 +96,25 @@ public class NotificationController {
         return TanyaExceptionHandler.generateResponse(notificationInfoVOList);
     }
 
+    @ApiOperation(value = "删除公告", notes = "只有factory等级可以删除商品")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "notificationid",
+        value = "公告id", required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<NotificationInfoRespVO>>.Resp>
+        del(@RequestParam(value = "notificationid", required = true) Integer notificationId) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***DelNotification***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<NotificationInfoReqVO> notification = new ProductBO<NotificationInfoReqVO>();
+        notification.setCreaterInfo(info);
+        notification.setCreaterRole(role);
+        notification.setProductId(notificationId);
+        QueryRespVO<NotificationInfoRespVO> notificationInfoVOList =
+            notificationService.delNotificationInfo(notification);
+
+        return TanyaExceptionHandler.generateResponse(notificationInfoVOList);
+    }
+
 }

@@ -1,6 +1,5 @@
 /**
- * @Title: RoleService.java
- *         Copyright (c) 2019 Sharp. All rights reserved.
+ * @Title: RoleService.java Copyright (c) 2019 Sharp. All rights reserved.
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.service.impl
  * @author Sharp
@@ -45,6 +44,8 @@ public interface RoleService {
     public RoleInfoBO invite(ModifyRoleBO bo);
 
     public RoleInfoBO kickout(ModifyRoleBO bo);
+
+    public RoleInfoBO del(ModifyRoleBO bo);
 
     public Integer getRoleIdbyUser(UserInfo userInfo);
 

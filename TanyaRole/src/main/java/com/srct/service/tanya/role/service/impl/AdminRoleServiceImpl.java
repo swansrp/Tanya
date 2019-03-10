@@ -130,10 +130,7 @@ public class AdminRoleServiceImpl implements RoleService {
     @Override
     public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
         AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getId());
-        RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(adminInfo, res);
-        res.setRoleType(getRoleType());
-        return res;
+        return makeRoleInfoBO(adminInfo);
     }
 
     /*
@@ -228,6 +225,29 @@ public class AdminRoleServiceImpl implements RoleService {
             throw new ServiceException("no admin have the user " + userInfo.getName());
         }
         return adminInfo.getId();
+    }
+
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getId());
+        if (adminInfo.getUserId() != null) {
+            throw new ServiceException(
+                "Dont allow to del role " + adminInfo.getId() + " without kickout the user " + adminInfo.getUserId());
+        }
+        adminInfoDao.delAdminInfo(adminInfo);
+        RoleInfoBO res = makeRoleInfoBO(adminInfo);
+        return res;
+    }
+
+    /**
+     * @param adminInfo
+     * @return
+     */
+    private RoleInfoBO makeRoleInfoBO(AdminInfo adminInfo) {
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(adminInfo, res);
+        res.setRoleType(getRoleType());
+        return res;
     }
 
 }

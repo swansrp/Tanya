@@ -11,6 +11,7 @@ package com.srct.service.tanya.product.service.impl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfo;
@@ -32,6 +34,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchan
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignHistoryDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.DiscountInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.FactoryInfoDao;
@@ -63,6 +66,9 @@ import cn.hutool.core.bean.BeanUtil;
  *
  */
 public abstract class ProductServiceBaseImpl {
+
+    private final static int DEFAULT_PERIOD_VALUE = 1;
+    private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
 
     @Autowired
     protected MerchantRoleService merchantRoleService;
@@ -109,6 +115,9 @@ public abstract class ProductServiceBaseImpl {
     @Autowired
     protected TraderInfoDao traderInfoDao;
 
+    @Autowired
+    protected CampaignHistoryDao campaignHistoryDao;
+
     private final static String CRITERIA_CREAT_METHOD = "createCriteria";
     private final static String CRITERIA_VALID_METHOD = "andValidEqualTo";
     private final static String CRITERIA_STARTAT_BEFORE_METHOD = "andStartAtLessThanOrEqualTo";
@@ -121,45 +130,52 @@ public abstract class ProductServiceBaseImpl {
      * @param order
      * @return
      */
-    public FactoryInfo getFactoryInfo(ProductBO<?> bo) {
+    public List<FactoryInfo> getFactoryInfoList(ProductBO<?> bo) {
+        List<FactoryInfo> facotoryInfoList = new ArrayList<>();
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
-        FactoryInfo factoryInfo = null;
         if (roleType.equals("trader")) {
-            factoryInfo = traderRoleService.getFactoryInfoByUser(userInfo);
+            facotoryInfoList.add(traderRoleService.getFactoryInfoByUser(userInfo));
         } else if (roleType.equals("factory")) {
-            factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
+            facotoryInfoList.add(factoryRoleService.getFactoryInfoByUser(userInfo));
         } else if (roleType.equals("merchant")) {
             if (bo.getFactoryId() != null) {
-                factoryInfo = factoryInfoDao.getFactoryInfobyId(bo.getFactoryId());
+                facotoryInfoList.add(factoryInfoDao.getFactoryInfobyId(bo.getFactoryId()));
+            } else {
+                MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
+                facotoryInfoList.addAll(factoryRoleService.getFactoryInfoListByMerchantInfo(merchantInfo));
+
             }
         }
-        if (factoryInfo == null) {
+        if (facotoryInfoList == null || facotoryInfoList.size() == 0) {
             throw new ServiceException(
                 "cant get factory info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
         }
 
-        return factoryInfo;
+        return facotoryInfoList;
     }
 
     /**
      * @param order
      * @return
      */
-    public TraderInfo getTraderInfo(ProductBO<?> bo) {
+    public List<TraderInfo> getTraderInfo(ProductBO<?> bo) {
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
-        TraderInfo traderInfo = null;
+        List<TraderInfo> traderInfoList = new ArrayList<>();
         if (roleType.equals("trader")) {
-            traderInfo = traderRoleService.getTraderInfoByUser(userInfo);
+            traderInfoList.add(traderRoleService.getTraderInfoByUser(userInfo));
         } else if (roleType.equals("salesman")) {
-            traderInfo = salesmanRoleService.getTraderInfoByUser(userInfo);
+            traderInfoList.add(salesmanRoleService.getTraderInfoByUser(userInfo));
+        } else if (roleType.equals("factory")) {
+            FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
+            traderInfoList.addAll(traderRoleService.getTraderInfoList(factoryInfo));
         } else {
             throw new ServiceException(
                 "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
         }
 
-        return traderInfo;
+        return traderInfoList;
     }
 
     public TraderFactoryMerchantMap getTraderFactoryMerchantMap(ProductBO<?> bo) {
@@ -192,11 +208,16 @@ public abstract class ProductServiceBaseImpl {
      * @param factoryInfo
      * @return
      */
-    public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> req, FactoryInfo factoryInfo) {
+    public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> req, List<FactoryInfo> factoryInfoList) {
         TraderFactoryMerchantMapExample mapExample =
             (TraderFactoryMerchantMapExample)makeQueryExample(req, TraderFactoryMerchantMapExample.class);
         TraderFactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
-        mapCriteria.andFactoryIdEqualTo(factoryInfo.getId());
+
+        List<Integer> factoryIdList = new ArrayList<>();
+        factoryInfoList.forEach(factoryInfo -> {
+            factoryIdList.add(factoryInfo.getId());
+        });
+        mapCriteria.andFactoryIdIn(factoryIdList);
         List<TraderFactoryMerchantMap> maps =
             traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(mapExample);
         List<Integer> traderFactoryMerchantMapIdList = new ArrayList<>();
@@ -211,11 +232,17 @@ public abstract class ProductServiceBaseImpl {
      * @param factoryInfo
      * @return
      */
-    public List<Integer> buildFactoryMerchantMapIdList(ProductBO<?> req, FactoryInfo factoryInfo) {
+    public List<Integer> buildFactoryMerchantMapIdList(ProductBO<?> req, List<FactoryInfo> factoryInfoList) {
         FactoryMerchantMapExample mapExample =
             (FactoryMerchantMapExample)makeQueryExample(req, FactoryMerchantMapExample.class);
         FactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
-        mapCriteria.andFactoryIdEqualTo(factoryInfo.getId());
+
+        List<Integer> factoryInfoIdList = new ArrayList<>();
+        factoryInfoList.forEach(factoryInfo -> {
+            factoryInfoIdList.add(factoryInfo.getId());
+        });
+
+        mapCriteria.andFactoryIdIn(factoryInfoIdList);
         List<FactoryMerchantMap> maps = factoryMerchantMapDao.getFactoryMerchantMapByExample(mapExample);
         List<Integer> factoryMerchantMapIdList = new ArrayList<>();
         maps.forEach(map -> {
@@ -229,17 +256,67 @@ public abstract class ProductServiceBaseImpl {
      * @param traderInfo
      * @return
      */
-    public List<Integer> buildSalesmanTraderMapTraderIdList(ProductBO<?> req, TraderInfo traderInfo) {
-        SalesmanTraderMapExample mapExample =
-            (SalesmanTraderMapExample)makeQueryExample(req, SalesmanTraderMapExample.class);
-        SalesmanTraderMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
-        mapCriteria.andTraderIdEqualTo(traderInfo.getId());
-        List<SalesmanTraderMap> maps = salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
+    public List<Integer> buildSalesmanTraderMapTraderIdList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
+        List<SalesmanTraderMap> maps = buildSalesmanTraderMapList(req, traderInfoList);
         List<Integer> salesTraderMapIdList = new ArrayList<>();
         maps.forEach(map -> {
             salesTraderMapIdList.add(map.getTraderId());
         });
         return salesTraderMapIdList;
+    }
+
+    /**
+     * @param campaign
+     * @param traderInfo
+     * @return
+     */
+    public List<Integer> buildSalesmanTraderMapSalesmanIdList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
+        List<SalesmanTraderMap> maps = buildSalesmanTraderMapList(req, traderInfoList);
+        List<Integer> salesTraderMapIdList = new ArrayList<>();
+        maps.forEach(map -> {
+            salesTraderMapIdList.add(map.getSalesmanId());
+        });
+        return salesTraderMapIdList;
+    }
+
+    /**
+     * @param req
+     * @param traderInfo
+     * @return
+     */
+    private List<SalesmanTraderMap> buildSalesmanTraderMapList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
+        SalesmanTraderMapExample mapExample =
+            (SalesmanTraderMapExample)makeQueryExample(req, SalesmanTraderMapExample.class);
+        SalesmanTraderMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
+        List<Integer> traderInfoIdList = new ArrayList<>();
+        traderInfoList.forEach(traderInfo -> {
+            traderInfoIdList.add(traderInfo.getId());
+        });
+        mapCriteria.andTraderIdIn(traderInfoIdList);
+        List<SalesmanTraderMap> maps = salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
+        return maps;
+    }
+
+    public void makeDefaultPeriod(Object obj) {
+        Date startAt = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(startAt);
+        c.set(DEFAULT_PERIOD_TYPE, c.get(DEFAULT_PERIOD_TYPE) + DEFAULT_PERIOD_VALUE);
+        Date endAt = c.getTime();
+
+        Method method = null;
+        try {
+            method = obj.getClass().getMethod("setStartAt", Date.class);
+            method.invoke(obj, startAt);
+
+            method = obj.getClass().getMethod("setEndAt", Date.class);
+            method.invoke(obj, endAt);
+        } catch (NoSuchMethodException | SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -257,9 +334,18 @@ public abstract class ProductServiceBaseImpl {
             Object criteria = method.invoke(example);
 
             method = criteria.getClass().getMethod(CRITERIA_STARTAT_BEFORE_METHOD, Date.class);
-            method.invoke(criteria, req.getQueryEndAt() == null ? now : req.getQueryEndAt());
+            if (req.getQueryEndAt() == null) {
+                // method.invoke(criteria, now);
+            } else {
+                method.invoke(criteria, req.getQueryEndAt());
+            }
+
             method = criteria.getClass().getMethod(CRITERIA_ENDAT_AFTER_METHOD, Date.class);
-            method.invoke(criteria, req.getQueryStartAt() == null ? now : req.getQueryStartAt());
+            if (req.getQueryStartAt() == null) {
+                method.invoke(criteria, now);
+            } else {
+                method.invoke(criteria, req.getQueryStartAt());
+            }
 
             method = criteria.getClass().getMethod(CRITERIA_VALID_METHOD, Byte.class);
             method.invoke(criteria, DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -377,5 +463,9 @@ public abstract class ProductServiceBaseImpl {
     protected abstract void validateUpdate(ProductBO<?> req);
 
     protected abstract void validateConfirm(ProductBO<?> req);
+
+    protected abstract void validateDelete(ProductBO<?> req);
+
+    protected abstract void validateQuery(ProductBO<?> req);
 
 }

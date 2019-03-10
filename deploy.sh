@@ -2,8 +2,8 @@ basepath=$(cd "$(dirname "$0")"; pwd)
 
 RestartCmd='tanya/start.sh restart'
 StatusCmd='tanya/start.sh status'
-TraceCmd='tail -f tanya/spring.log'
-APICmd='tail -f log/sys.log'
+TraceCmd='tail -f -n 1000 tanya/spring.log'
+APICmd='tail -f -n 1000 log/sys.log'
 ServerNum=1
 
 DevPath=$basepath/TanyaPortal/target/TanyaPortal-0.0.1-SNAPSHOT-exec.jar

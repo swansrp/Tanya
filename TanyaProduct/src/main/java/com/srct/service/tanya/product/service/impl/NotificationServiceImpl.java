@@ -8,7 +8,6 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,8 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
     @Override
     public QueryRespVO<NotificationInfoRespVO> updateNotificationInfo(ProductBO<NotificationInfoReqVO> notification) {
         validateUpdate(notification);
-        FactoryInfo factoryInfo = super.getFactoryInfo(notification);
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(notification);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
 
         NotificationInfo notificationInfo = null;
         if (notification.getReq().getNotification().getId() != null) {
@@ -63,16 +63,16 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         notificationInfoDao.updateNotificationInfo(notificationInfo);
 
         QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<NotificationInfoRespVO>();
-        res.setInfo(new ArrayList<>());
-        NotificationInfoRespVO notificationInfoRespVO = buildNotificationInfoRespVO(notificationInfo);
-        res.getInfo().add(notificationInfoRespVO);
+        res.getInfo().add(buildNotificationInfoRespVO(notificationInfo));
         return res;
 
     }
 
     @Override
     public QueryRespVO<NotificationInfoRespVO> getNotificationInfo(ProductBO<QueryReqVO> notification) {
-        FactoryInfo factoryInfo = super.getFactoryInfo(notification);
+        validateQuery(notification);
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(notification);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
         NotificationInfoExample example = super.makeQueryExample(notification, NotificationInfoExample.class);
         if (notification.getProductId() != null) {
             example.getOredCriteria().get(0).andIdEqualTo(notification.getProductId());
@@ -125,6 +125,39 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
     @Override
     protected void validateConfirm(ProductBO<?> req) {
         throw new ServiceException("dont support confirm notification ");
+
+    }
+
+    @Override
+    public QueryRespVO<NotificationInfoRespVO> delNotificationInfo(ProductBO<NotificationInfoReqVO> notification) {
+        validateDelete(notification);
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(notification);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
+        NotificationInfo notificationInfo = notificationInfoDao.getNotificationInfobyId(notification.getProductId());
+        if (!notificationInfo.getFactoryId().equals(factoryInfo.getId())) {
+            throw new ServiceException("Dont allow to delete notification " + notificationInfo.getFactoryId()
+                + " by factory " + factoryInfo.getId());
+        }
+        notificationInfoDao.delNotificationInfo(notificationInfo);
+        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<NotificationInfoRespVO>();
+        res.getInfo().add(buildNotificationInfoRespVO(notificationInfo));
+        return res;
+    }
+
+    @Override
+    protected void validateDelete(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (!roleType.equals("factory")) {
+            throw new ServiceException("dont allow to delete notification by role " + roleType);
+        }
+    }
+
+    @Override
+    protected void validateQuery(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("merchant") || roleType.equals("salesman")) {
+            throw new ServiceException("dont allow to query notification by role " + roleType);
+        }
 
     }
 

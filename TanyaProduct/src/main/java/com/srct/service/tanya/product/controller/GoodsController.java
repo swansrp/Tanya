@@ -93,4 +93,24 @@ public class GoodsController {
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 
+    @ApiOperation(value = "删除商品", notes = "非salesman等级可以删除商品")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "goodsid", value = "商品id",
+        required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp>
+        del(@RequestParam(value = "goodsid", required = true) Integer goodsId) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***DelGoods***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<GoodsInfoReqVO> goods = new ProductBO<GoodsInfoReqVO>();
+        goods.setCreaterInfo(info);
+        goods.setCreaterRole(role);
+        goods.setProductId(goodsId);
+        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.delGoodsInfo(goods);
+
+        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
+    }
+
 }

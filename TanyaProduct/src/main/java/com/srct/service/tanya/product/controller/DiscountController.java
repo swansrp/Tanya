@@ -52,13 +52,13 @@ public class DiscountController {
     @Autowired
     private DiscountService discountService;
 
-    @ApiOperation(value = "新增/更新折扣活动", notes = "只有trader等级可以添加折扣活动 若传入id则为更新")
+    @ApiOperation(value = "新增/更新折扣活动", notes = "只有factory等级可以添加折扣活动 若传入id则为更新")
     @RequestMapping(value = "update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp>
         modifyDiscount(@RequestBody DiscountInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
-        Log.i("***modifyGoods***");
+        Log.i("***modifyDiscount***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<DiscountInfoReqVO> discount = new ProductBO<DiscountInfoReqVO>();
@@ -77,14 +77,17 @@ public class DiscountController {
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountid", value = "折扣活动id",
             required = false),
         @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "factoryid", value = "药厂id",
-            required = false)})
+            required = false),
+        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "goodsid", value = "商品id",
+            required = false),})
     public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp> getDiscount(
         @RequestBody QueryReqVO req,
         @RequestParam(value = "discountid", required = false) Integer discountId,
-        @RequestParam(value = "factoryid", required = false) Integer factoryId) {
+        @RequestParam(value = "factoryid", required = false) Integer factoryId,
+        @RequestParam(value = "factoryid", required = false) Integer goodsId) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
-        Log.i("***getOrder***");
+        Log.i("***getDiscount***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<QueryReqVO> discount = new ProductBO<QueryReqVO>();
@@ -93,6 +96,7 @@ public class DiscountController {
         discount.setReq(req);
         discount.setFactoryId(factoryId);
         discount.setProductId(discountId);
+        discount.setGoodsId(goodsId);
         QueryRespVO<DiscountInfoRespVO> discountInfoVOList = discountService.getDiscountInfo(discount);
 
         return TanyaExceptionHandler.generateResponse(discountInfoVOList);
@@ -122,5 +126,25 @@ public class DiscountController {
         QueryRespVO<DiscountInfoRespVO> discountInfoVO = discountService.confirmDiscountInfo(discount);
 
         return TanyaExceptionHandler.generateResponse(discountInfoVO);
+    }
+
+    @ApiOperation(value = "删除折扣活动", notes = "只有factory等级可以删除没有确认的折扣活动")
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountid",
+        value = "折扣活动id", required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp>
+        del(@RequestParam(value = "discountid", required = true) Integer discountId) {
+        UserInfo info = (UserInfo)request.getAttribute("user");
+        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        Log.i("***DelDiscount***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<DiscountInfoReqVO> discount = new ProductBO<DiscountInfoReqVO>();
+        discount.setCreaterInfo(info);
+        discount.setCreaterRole(role);
+        discount.setProductId(discountId);
+        QueryRespVO<DiscountInfoRespVO> goodsInfoVOList = discountService.delDiscountInfo(discount);
+
+        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 }

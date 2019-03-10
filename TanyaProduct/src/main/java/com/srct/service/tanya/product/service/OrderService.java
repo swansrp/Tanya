@@ -24,18 +24,24 @@ public interface OrderService {
      * @param order
      * @return
      */
-    QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order);
+    public QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order);
 
     /**
      * @param order
      * @return
      */
-    QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
+    public QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
 
     /**
      * @param order
      * @return
      */
-    QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order);
+    public QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order);
+
+    /**
+     * @param order
+     * @return
+     */
+    public QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order);
 
 }

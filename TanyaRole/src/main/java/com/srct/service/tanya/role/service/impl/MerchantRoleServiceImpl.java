@@ -237,4 +237,27 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         return merchantInfo;
     }
 
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getId());
+        if (merchantInfo.getUserId() != null) {
+            throw new ServiceException("Dont allow to del role " + merchantInfo.getId() + " without kickout the user "
+                + merchantInfo.getUserId());
+        }
+        merchantInfoDao.delMerchantInfo(merchantInfo);
+        RoleInfoBO res = makeRoleInfoBO(merchantInfo);
+        return res;
+    }
+
+    /**
+     * @param merchantInfo
+     * @return
+     */
+    private RoleInfoBO makeRoleInfoBO(MerchantInfo merchantInfo) {
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(merchantInfo, res);
+        res.setRoleType(getRoleType());
+        return res;
+    }
+
 }

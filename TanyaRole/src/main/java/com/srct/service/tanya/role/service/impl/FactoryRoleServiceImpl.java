@@ -477,4 +477,41 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         }
     }
 
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfobyId(bo.getId());
+        if (factoryInfo.getUserId() != null) {
+            throw new ServiceException("Dont allow to del role " + factoryInfo.getId() + " without kickout the user "
+                + factoryInfo.getUserId());
+        }
+        factoryInfoDao.delFactoryInfo(factoryInfo);
+        RoleInfoBO res = makeRoleInfoBO(factoryInfo);
+        return res;
+    }
+
+    /**
+     * @param factoryInfo
+     * @return
+     */
+    private RoleInfoBO makeRoleInfoBO(FactoryInfo factoryInfo) {
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(factoryInfo, res);
+        res.setRoleType(getRoleType());
+        return res;
+    }
+
+    @Override
+    public List<FactoryInfo> getFactoryInfoListByMerchantInfo(MerchantInfo merchantInfo) {
+        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
+        factoryMerchantMapEx.setMerchantId(merchantInfo.getId());
+        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<FactoryMerchantMap> factoryMerchantMapList =
+            factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+        List<FactoryInfo> factoryInfoList = new ArrayList<>();
+        for (FactoryMerchantMap map : factoryMerchantMapList) {
+            factoryInfoList.add(factoryInfoDao.getFactoryInfobyId(map.getFactoryId()));
+        }
+        return factoryInfoList;
+    }
+
 }

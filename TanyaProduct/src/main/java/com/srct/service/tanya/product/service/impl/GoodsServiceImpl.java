@@ -50,7 +50,8 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
     @Override
     public QueryRespVO<GoodsInfoRespVO> updateGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
         validateUpdate(req);
-        FactoryInfo factoryInfo = super.getFactoryInfo(req);
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
         FactoryMerchantMap factoryMerchantMap = factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
         GoodsInfo goodsInfo = new GoodsInfo();
@@ -65,9 +66,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         }
 
         QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
-        res.setInfo(new ArrayList<>());
-        GoodsInfoRespVO goodsInfoRespVO = buidGoodInfoRespVO(goodsInfo);
-        res.getInfo().add(goodsInfoRespVO);
+        res.getInfo().add(buidGoodInfoRespVO(goodsInfo));
         return res;
     }
 
@@ -127,13 +126,23 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         return goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap);
     }
 
+    private GoodsFactoryMerchantMap getGoodsFactoryMerchantMapList(FactoryInfo factoryInfo, GoodsInfo goodsInfo) {
+        FactoryMerchantMap factoryMerchantMap = factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
+        GoodsFactoryMerchantMap goodsFactoryMerchantMap = new GoodsFactoryMerchantMap();
+        goodsFactoryMerchantMap.setFactoryMetchatMapId(factoryMerchantMap.getId());
+        goodsFactoryMerchantMap.setGoodsId(goodsInfo.getId());
+        goodsFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap).get(0);
+    }
+
     @Override
     public QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> goods) {
 
         QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
         res.setInfo(new ArrayList<>());
 
-        FactoryInfo factoryInfo = super.getFactoryInfo(goods);
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(goods);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
         if (goods.getProductId() == null) {
             res = getGoodsInfoList(goods, factoryInfo);
         } else {
@@ -168,7 +177,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
     @Override
     protected void validateUpdate(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
-        if (roleType.equals("salesman")) {
+        if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to update goods by role " + roleType);
         }
     }
@@ -176,6 +185,40 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
     @Override
     protected void validateConfirm(ProductBO<?> req) {
         throw new ServiceException("dont support confirm goods ");
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> delGoodsInfo(ProductBO<GoodsInfoReqVO> goods) {
+        validateDelete(goods);
+        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfobyId(goods.getProductId());
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(goods);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
+        GoodsFactoryMerchantMap goodsFactoryMerchantMap = getGoodsFactoryMerchantMapList(factoryInfo, goodsInfo);
+        FactoryMerchantMap factoryMerchantMap =
+            factoryMerchantMapDao.getFactoryMerchantMapbyId(goodsFactoryMerchantMap.getId());
+        factoryMerchantMap.setGoodsNumber(factoryMerchantMap.getGoodsNumber() - 1);
+        goodsInfoDao.delGoodsInfo(goodsInfo);
+
+        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<GoodsInfoRespVO>();
+        res.getInfo().add(buidGoodInfoRespVO(goodsInfo));
+        return res;
+    }
+
+    @Override
+    protected void validateDelete(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman") || roleType.equals("merchant")) {
+            throw new ServiceException("dont allow to delete goods by role " + roleType);
+        }
+    }
+
+    @Override
+    protected void validateQuery(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman") || roleType.equals("merchant")) {
+            throw new ServiceException("dont allow to query goods by role " + roleType);
+        }
+
     }
 
 }

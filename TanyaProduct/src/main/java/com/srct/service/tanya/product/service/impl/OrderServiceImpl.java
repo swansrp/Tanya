@@ -50,8 +50,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     @Override
     public QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order) {
-        FactoryInfo factoryInfo = super.getFactoryInfo(order);
-        List<Integer> traderFactoryMerchantMapIdList = super.buildTraderFactoryMerchantMapIdList(order, factoryInfo);
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(order);
+        List<Integer> traderFactoryMerchantMapIdList =
+            super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
         OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
         QueryRespVO<OrderInfoRespVO> res = buildResByExample(order, orderExample);
         return res;
@@ -87,12 +88,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         res.setTotalSize(pageInfo.getTotal());
 
         orderInfoList.forEach(orderInfo -> {
-            OrderInfoRespVO info = new OrderInfoRespVO();
-            OrderInfoVO vo = new OrderInfoVO();
-            BeanUtil.copyProperties(orderInfo, vo);
-            BeanUtil.copyProperties(orderInfo, info);
-            info.setOrderInfoVO(vo);
-            res.getInfo().add(info);
+            res.getInfo().add(buildOrderInfoRespVO(orderInfo));
         });
         return res;
     }
@@ -100,30 +96,20 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     @Override
     public QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order) {
         validateUpdate(order);
-        if (order.getReq().getOrder().getId() != null) {
-            FactoryInfo factoryInfo = super.getFactoryInfo(order);
-            List<Integer> traderFactoryMerchantMapIdList =
-                super.buildTraderFactoryMerchantMapIdList(order, factoryInfo);
-            OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
-            orderExample.getOredCriteria().get(0).andIdEqualTo(order.getReq().getOrder().getId());
-            OrderInfo orderExsited = null;
-            try {
-                orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
-            } catch (Exception e) {
-                throw new ServiceException("cant update the order id " + order.getReq().getOrder().getId());
-            }
-            if (orderExsited.getFactoryConfirmAt() != null || orderExsited.getMerchantConfirmAt() != null) {
-                throw new ServiceException(
-                    "already confirmed order by factory " + DF.format(orderExsited.getFactoryConfirmAt())
-                        + " by merchant" + DF.format(orderExsited.getMerchantConfirmAt()));
-            }
 
-        }
         OrderInfo orderInfo = new OrderInfo();
         BeanUtil.copyProperties(order.getReq().getOrder(), orderInfo);
+
+        if (orderInfo.getStartAt() == null && orderInfo.getEndAt() == null) {
+            super.makeDefaultPeriod(orderInfo);
+        }
+
         TraderFactoryMerchantMap map = super.getTraderFactoryMerchantMap(order);
         orderInfo.setTraderFactoryMerchantId(map.getId());
-
+        orderInfo.setShopId(order.getReq().getShopId());
+        orderInfo.setGoodsId(order.getReq().getGoodsId());
+        orderInfo.setDiscountId(order.getReq().getDiscountId());
+        orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         orderInfoDao.updateOrderInfo(orderInfo);
 
         QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
@@ -141,6 +127,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         BeanUtil.copyProperties(orderInfo, orderInfoVO);
 
         OrderInfoRespVO res = new OrderInfoRespVO();
+        BeanUtil.copyProperties(orderInfo, res);
 
         DiscountInfoVO discountInfoVO = super.getDiscountInfoVObyId(orderInfo.getDiscountId());
         GoodsInfoVO goodsInfoVO = super.getGoodsInfoVObyId(orderInfo.getGoodsId());
@@ -164,22 +151,6 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     }
 
     @Override
-    protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
-        if (roleType.equals("salesman")) {
-            throw new ServiceException("dont allow to update order by role " + roleType);
-        }
-    }
-
-    @Override
-    protected void validateConfirm(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
-        if (roleType.equals("salesman") || roleType.equals("trader")) {
-            throw new ServiceException("dont allow to confirm order by role " + roleType);
-        }
-    }
-
-    @Override
     public QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order) {
         validateConfirm(order);
         String roleType = order.getCreaterRole().getRole();
@@ -196,7 +167,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             } else if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getFactoryConfirmStatus())) {
                 throw new ServiceException("merchant dont allow to approve/reject order without factory confirm");
             }
-            if (order.isApproved()) {
+            if (order.getApproved()) {
                 orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             } else {
                 orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
@@ -209,14 +180,14 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 throw new ServiceException("dont allow to approve order by factory " + factoryInfo.getId());
             }
             if (DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getMerchantConfirmStatus())) {
-                if (order.isApproved() == false) {
+                if (order.getApproved() == false) {
                     throw new ServiceException("merchant dont allow to reject order when merchant has confirmed");
                 }
             }
-            if (order.isApproved()) {
-                orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+            if (order.getApproved()) {
+                orderInfo.setFactoryConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             } else {
-                orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                orderInfo.setFactoryConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
             }
             orderInfo.setFactoryConfirmAt(new Date());
             orderInfoDao.updateOrderInfo(orderInfo);
@@ -224,6 +195,92 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
         res.getInfo().add(buildOrderInfoRespVO(orderInfo));
         return res;
+    }
+
+    @Override
+    public QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order) {
+        validateDelete(order);
+        OrderInfo orderInfo = orderInfoDao.getOrderInfobyId(order.getProductId());
+        orderInfoDao.delOrderInfo(orderInfo);
+        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
+        res.getInfo().add(buildOrderInfoRespVO(orderInfo));
+        return res;
+    }
+
+    @Override
+    protected void validateDelete(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("dont allow to delete order by role " + roleType);
+        }
+
+        ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>)req;
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
+        List<Integer> traderFactoryMerchantMapIdList =
+            super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
+        OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
+        orderExample.getOredCriteria().get(0).andIdEqualTo(order.getProductId());
+        OrderInfo orderExsited = null;
+        try {
+            orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("cant delete the order id " + order.getReq().getOrder().getId());
+        }
+        if (orderExsited.getFactoryConfirmAt() != null) {
+            throw new ServiceException("dont allow to delete already confirmed order by factory "
+                + DF.format(orderExsited.getFactoryConfirmAt()));
+        } else if (orderExsited.getMerchantConfirmAt() != null) {
+            throw new ServiceException("dont allow to delete already confirmed order by merchant "
+                + DF.format(orderExsited.getMerchantConfirmAt()));
+        }
+
+    }
+
+    @Override
+    protected void validateQuery(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("dont allow to query campaign by role " + roleType);
+        }
+    }
+
+    @Override
+    protected void validateUpdate(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (!roleType.equals("trader")) {
+            throw new ServiceException("dont allow to update order by role " + roleType);
+        }
+
+        ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>)req;
+        if (order.getReq().getOrder().getId() != null) {
+            List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
+            List<Integer> traderFactoryMerchantMapIdList =
+                super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
+            OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
+            orderExample.getOredCriteria().get(0).andIdEqualTo(order.getReq().getOrder().getId());
+            OrderInfo orderExsited = null;
+            try {
+                orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
+            } catch (Exception e) {
+                throw new ServiceException("cant update the order id " + order.getReq().getOrder().getId());
+            }
+            if (orderExsited.getFactoryConfirmAt() != null || orderExsited.getMerchantConfirmAt() != null) {
+                throw new ServiceException(
+                    "already confirmed order by factory " + DF.format(orderExsited.getFactoryConfirmAt())
+                        + " by merchant" + DF.format(orderExsited.getMerchantConfirmAt()));
+            }
+        }
+    }
+
+    @Override
+    protected void validateConfirm(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (roleType.equals("salesman") || roleType.equals("trader")) {
+            throw new ServiceException("dont allow to confirm order by role " + roleType);
+        }
+        if (req.getApproved() == null) {
+            throw new ServiceException("approve status is null ");
+        }
     }
 
 }

@@ -28,10 +28,10 @@ public class FilterConfiguration {
         registration.setFilter(roleFilter());
         registration.addUrlPatterns("/*");
         // 拦截规则
-        registration.addInitParameter("exclusions",
-            "/portal/admin/*," + "/login,/logout,/register,/test/*,/reset,/qrcode,"
-                + "/swagger-ui.html,/swagger-resources,/v2/api-docs,/webjars/springfox-swagger-ui/*,/configuration/*,"
-                + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
+        registration.addInitParameter("exclusions", "/portal/admin/*,"
+            + "/login,/logout,/register,/test/*,/reset,/qrcode,"
+            + "/swagger-ui.html,/swagger-resources,/v2/api-docs,/webjars/springfox-swagger-ui/*,/configuration/*,/public/*,"
+            + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
         // 拦截规则
         registration.addInitParameter("roleRequired", "/role/*," + "/goods/*,/order/*,/discount/*,/campaign/*,/shop/*");
         // 过滤器名称
