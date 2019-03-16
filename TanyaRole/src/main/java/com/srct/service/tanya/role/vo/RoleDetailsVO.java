@@ -8,14 +8,12 @@
  */
 package com.srct.service.tanya.role.vo;
 
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @author Sharp
@@ -35,6 +33,9 @@ public class RoleDetailsVO {
 
     @ApiModelProperty(value = "修改角色comment")
     private String comment;
+
+    @ApiModelProperty(value = "修改角色联系方式")
+    private String contact;
 
     @ApiModelProperty(value = "修改角色起始有效期")
     @DateTimeFormat(pattern = "yyyy-MM-dd")

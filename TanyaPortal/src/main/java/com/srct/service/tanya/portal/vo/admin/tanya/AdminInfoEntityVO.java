@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: sharuopeng
-* @create: 2019/02/23
+* @create: 2019/03/16
  **/
 @Data
 public class AdminInfoEntityVO {
@@ -21,6 +21,9 @@ public class AdminInfoEntityVO {
  
     @ApiModelProperty(value = "角色名称")
     private String title;
+ 
+    @ApiModelProperty(value = "联系方式")
+    private String contact;
  
     @ApiModelProperty(value = "角色备注")
     private String comment;

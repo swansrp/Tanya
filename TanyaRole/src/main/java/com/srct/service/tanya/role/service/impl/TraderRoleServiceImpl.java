@@ -7,14 +7,6 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
@@ -45,6 +37,13 @@ import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Sharp
@@ -344,6 +343,7 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         }
 
         target.setUserId(null);
+        target.setContact(null);
         traderInfoDao.updateTraderInfoStrict(target);
 
         userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
@@ -368,6 +368,7 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         TraderInfo traderInfo = traderInfoDao.getTraderInfobyId(bo.getId());
         traderInfo.setId(bo.getId());
         traderInfo.setUserId(targetUserInfo.getId());
+        traderInfo.setContact(targetUserInfo.getPhone());
         traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         TraderInfo target = traderInfoDao.updateTraderInfo(traderInfo);
@@ -437,10 +438,10 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
                 }
 
                 if (bo.getSuperiorId() != null) {
-                    if (bo.getStartAt().after(traderFactoryMerchantMap.getStartAt())) {
+                    if (bo.getStartAt() != null && bo.getStartAt().after(traderFactoryMerchantMap.getStartAt())) {
                         traderFactoryMerchantMap.setStartAt(bo.getStartAt());
                     }
-                    if (bo.getEndAt().before(traderFactoryMerchantMap.getEndAt())) {
+                    if (bo.getEndAt() != null && bo.getEndAt().before(traderFactoryMerchantMap.getEndAt())) {
                         traderFactoryMerchantMap.setEndAt(bo.getEndAt());
                     }
                 } else {

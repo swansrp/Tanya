@@ -7,14 +7,6 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
@@ -34,6 +26,13 @@ import com.srct.service.tanya.role.service.MerchantRoleService;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Sharp
@@ -155,6 +154,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         }
 
         target.setUserId(null);
+        target.setContact(null);
         merchantInfoDao.updateMerchantInfoStrict(target);
 
         userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
@@ -178,6 +178,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
         MerchantInfo merchant = merchantInfoDao.getMerchantInfobyId(bo.getId());
         merchant.setUserId(targetUserInfo.getId());
+        merchant.setContact(targetUserInfo.getPhone());
         merchant.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         MerchantInfo target = merchantInfoDao.updateMerchantInfo(merchant);

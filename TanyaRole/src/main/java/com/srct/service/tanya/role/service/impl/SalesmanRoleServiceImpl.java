@@ -7,14 +7,6 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -40,6 +32,13 @@ import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Sharp
@@ -83,12 +82,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     public String getSubordinateRoleType() {
         return null;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#create(com.srct.service.tanya.role.bo.CreateRoleBO)
-     */
+    
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
         TraderInfo traderInfo = null;
@@ -110,10 +104,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return res;
     }
 
-    /**
-     * @param traderInfo
-     * @param salesmanInfo
-     */
     private void makeSalesmanTraderRelationship(TraderInfo traderInfo, SalesmanInfo salesmanInfo) {
         Date now = new Date();
         SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
@@ -125,10 +115,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         salesmanTraderMapDao.updateSalesmanTraderMap(salesmanTraderMap);
     }
 
-    /**
-     * @param bo
-     * @return
-     */
     private SalesmanInfo makeSalesmanInfo(CreateRoleBO bo) {
         SalesmanInfo salesmanInfo = new SalesmanInfo();
         BeanUtil.copyProperties(bo, salesmanInfo);
@@ -137,10 +123,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return salesmanInfo;
     }
 
-    /**
-     * @param bo
-     * @return
-     */
     private TraderInfo getTraderInfoByCreater(UserInfo creater) {
         TraderInfo traderInfo = null;
         TraderInfoExample example = new TraderInfoExample();
@@ -268,6 +250,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         }
 
         target.setUserId(null);
+        target.setContact(null);
         salesmanInfoDao.updateSalesmanInfoStrict(target);
 
         userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
@@ -296,6 +279,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
 
         SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
         salesmanInfo.setUserId(targetUserInfo.getId());
+        salesmanInfo.setContact(targetUserInfo.getPhone());
         salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         SalesmanInfo target = salesmanInfoDao.updateSalesmanInfo(salesmanInfo);

@@ -7,14 +7,6 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfo;
@@ -33,6 +25,13 @@ import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Sharp
@@ -56,11 +55,6 @@ public class AdminRoleServiceImpl implements RoleService {
     @Autowired
     private UserService userService;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#test()
-     */
     @Override
     public String getRoleType() {
         return "admin";
@@ -71,11 +65,6 @@ public class AdminRoleServiceImpl implements RoleService {
         return "merchant";
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#create(com.srct.service.tanya.role.bo.CreateRoleBO)
-     */
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
 
@@ -88,10 +77,6 @@ public class AdminRoleServiceImpl implements RoleService {
         return res;
     }
 
-    /**
-     * @param bo
-     * @return
-     */
     private AdminInfo makeAdminInfo(CreateRoleBO bo) {
         Date now = new Date();
 
@@ -105,11 +90,6 @@ public class AdminRoleServiceImpl implements RoleService {
         return adminInfo;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
-     */
     @Override
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
         List<AdminInfo> adminInfoList =
@@ -133,11 +113,6 @@ public class AdminRoleServiceImpl implements RoleService {
         return makeRoleInfoBO(adminInfo);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#operate(com.srct.service.tanya.role.bo.ModifyRoleBO)
-     */
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
 
@@ -160,6 +135,7 @@ public class AdminRoleServiceImpl implements RoleService {
         }
 
         target.setUserId(null);
+        target.setContact(null);
         adminInfoDao.updateAdminInfoStrict(target);
 
         userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
@@ -183,6 +159,7 @@ public class AdminRoleServiceImpl implements RoleService {
 
         AdminInfo admin = adminInfoDao.getAdminInfobyId(bo.getId());
         admin.setUserId(targetUserInfo.getId());
+        admin.setContact(targetUserInfo.getPhone());
         admin.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         AdminInfo target = adminInfoDao.updateAdminInfo(admin);
@@ -212,7 +189,6 @@ public class AdminRoleServiceImpl implements RoleService {
 
     @Override
     public Integer getRoleIdbyUser(UserInfo userInfo) {
-        AdminInfo adminInfo = null;
         AdminInfoExample example = new AdminInfoExample();
         AdminInfoExample.Criteria criteria = example.createCriteria();
         criteria.andUserIdEqualTo(userInfo.getId());
@@ -220,11 +196,12 @@ public class AdminRoleServiceImpl implements RoleService {
         // criteria.andStartAtLessThanOrEqualTo(now);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            adminInfo = adminInfoDao.getAdminInfoByExample(example).get(0);
+            AdminInfo adminInfo = adminInfoDao.getAdminInfoByExample(example).get(0);
+            return adminInfo.getId();
         } catch (Exception e) {
             throw new ServiceException("no admin have the user " + userInfo.getName());
         }
-        return adminInfo.getId();
+
     }
 
     @Override
@@ -235,14 +212,9 @@ public class AdminRoleServiceImpl implements RoleService {
                 "Dont allow to del role " + adminInfo.getId() + " without kickout the user " + adminInfo.getUserId());
         }
         adminInfoDao.delAdminInfo(adminInfo);
-        RoleInfoBO res = makeRoleInfoBO(adminInfo);
-        return res;
+        return makeRoleInfoBO(adminInfo);
     }
 
-    /**
-     * @param adminInfo
-     * @return
-     */
     private RoleInfoBO makeRoleInfoBO(AdminInfo adminInfo) {
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(adminInfo, res);
