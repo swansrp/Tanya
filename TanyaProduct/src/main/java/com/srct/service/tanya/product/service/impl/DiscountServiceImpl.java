@@ -8,20 +8,11 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
-import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfoExample;
-import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
-import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.*;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
@@ -31,8 +22,10 @@ import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import org.springframework.stereotype.Service;
 
-import cn.hutool.core.bean.BeanUtil;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -103,6 +96,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
         FactoryMerchantMap map = super.getFactoryMerchantMap(discount);
         discountInfo.setFactoryMetchatMapId(map.getId());
+        if (discount.getReq().getGoodsId() != null) {
+            discountInfo.setGoodsId(discount.getReq().getGoodsId());
+        }
         discountInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         discountInfoDao.updateDiscountInfo(discountInfo);
@@ -116,7 +112,6 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
     /**
      * @param discountInfo
-     * @param map
      */
     private DiscountInfoRespVO buildDiscountInfoRespVO(DiscountInfo discountInfo) {
         DiscountInfoVO discountInfoVO = new DiscountInfoVO();

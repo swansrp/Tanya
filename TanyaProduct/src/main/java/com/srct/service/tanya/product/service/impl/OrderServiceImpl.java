@@ -8,36 +8,23 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
-import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
-import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfoExample;
-import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.*;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.OrderService;
-import com.srct.service.tanya.product.vo.DiscountInfoVO;
-import com.srct.service.tanya.product.vo.GoodsInfoVO;
-import com.srct.service.tanya.product.vo.OrderInfoReqVO;
-import com.srct.service.tanya.product.vo.OrderInfoRespVO;
-import com.srct.service.tanya.product.vo.OrderInfoVO;
-import com.srct.service.tanya.product.vo.ShopInfoVO;
+import com.srct.service.tanya.product.vo.*;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import org.springframework.stereotype.Service;
 
-import cn.hutool.core.bean.BeanUtil;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -60,7 +47,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     /**
      * @param order
-     * @param mapIdList
+     * @param traderFactoryMerchantMapIdList
      * @return
      */
     private OrderInfoExample buildOrderInfoExample(ProductBO<?> order, List<Integer> traderFactoryMerchantMapIdList) {
@@ -107,7 +94,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         TraderFactoryMerchantMap map = super.getTraderFactoryMerchantMap(order);
         orderInfo.setTraderFactoryMerchantId(map.getId());
         orderInfo.setShopId(order.getReq().getShopId());
-        orderInfo.setGoodsId(order.getReq().getGoodsId());
+        if (order.getReq().getGoodsId() != null) {
+            orderInfo.setGoodsId(order.getReq().getGoodsId());
+        }
         orderInfo.setDiscountId(order.getReq().getDiscountId());
         orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         orderInfoDao.updateOrderInfo(orderInfo);
@@ -120,7 +109,6 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     /**
      * @param orderInfo
-     * @param map
      */
     private OrderInfoRespVO buildOrderInfoRespVO(OrderInfo orderInfo) {
         OrderInfoVO orderInfoVO = new OrderInfoVO();
