@@ -20,9 +20,11 @@ import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
  */
 public interface GoodsService {
 
-    public QueryRespVO<GoodsInfoRespVO> updateGoodsInfo(ProductBO<GoodsInfoReqVO> goods);
+    QueryRespVO<GoodsInfoRespVO> updateGoodsInfo(ProductBO<GoodsInfoReqVO> goods);
 
-    public QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> goods);
+    QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> goods);
 
-    public QueryRespVO<GoodsInfoRespVO> delGoodsInfo(ProductBO<GoodsInfoReqVO> goods);
+    QueryRespVO<GoodsInfoRespVO> delGoodsInfo(ProductBO<GoodsInfoReqVO> goods);
+
+    QueryRespVO<GoodsInfoRespVO> getGoodsInfoWithDiscount(ProductBO<QueryReqVO> goods);
 }

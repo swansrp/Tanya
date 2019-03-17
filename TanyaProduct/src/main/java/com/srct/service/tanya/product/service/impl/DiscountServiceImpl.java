@@ -12,7 +12,12 @@ import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
-import com.srct.service.tanya.common.datalayer.tanya.entity.*;
+import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfoExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
@@ -159,6 +164,18 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<DiscountInfoRespVO>();
         res.getInfo().add(buildDiscountInfoRespVO(discountInfo));
         return res;
+    }
+
+    @Override
+    public List<DiscountInfo> getDiscountInfoListByGoodsId(Integer goodsId) {
+        Date now = new Date();
+        DiscountInfoExample example = new DiscountInfoExample();
+        DiscountInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andGoodsIdEqualTo(goodsId);
+        criteria.andEndAtGreaterThan(now);
+        criteria.andStartAtLessThan(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return discountInfoDao.getDiscountInfoByExample(example);
     }
 
     @Override

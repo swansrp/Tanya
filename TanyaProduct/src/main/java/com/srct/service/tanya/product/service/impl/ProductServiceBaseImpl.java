@@ -8,15 +8,7 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
@@ -58,8 +50,14 @@ import com.srct.service.tanya.role.service.MerchantRoleService;
 import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import cn.hutool.core.bean.BeanUtil;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -69,67 +67,46 @@ public abstract class ProductServiceBaseImpl {
 
     private final static int DEFAULT_PERIOD_VALUE = 1;
     private final static int DEFAULT_PERIOD_TYPE = Calendar.YEAR;
-
-    @Autowired
-    protected MerchantRoleService merchantRoleService;
-
-    @Autowired
-    protected FactoryRoleService factoryRoleService;
-
-    @Autowired
-    protected TraderRoleService traderRoleService;
-
-    @Autowired
-    protected SalesmanRoleService salesmanRoleService;
-
-    @Autowired
-    protected TraderFactoryMerchantMapDao traderFactoryMerchantMapDao;
-
-    @Autowired
-    protected FactoryMerchantMapDao factoryMerchantMapDao;
-
-    @Autowired
-    protected SalesmanTraderMapDao salesmanTraderMapDao;
-
-    @Autowired
-    protected OrderInfoDao orderInfoDao;
-
-    @Autowired
-    protected GoodsInfoDao goodsInfoDao;
-
-    @Autowired
-    protected ShopInfoDao shopInfoDao;
-
-    @Autowired
-    protected CampaignInfoDao campaignInfoDao;
-
-    @Autowired
-    protected DiscountInfoDao discountInfoDao;
-
-    @Autowired
-    protected MerchantInfoDao merchantInfoDao;
-
-    @Autowired
-    protected FactoryInfoDao factoryInfoDao;
-
-    @Autowired
-    protected TraderInfoDao traderInfoDao;
-
-    @Autowired
-    protected CampaignHistoryDao campaignHistoryDao;
-
     private final static String CRITERIA_CREAT_METHOD = "createCriteria";
     private final static String CRITERIA_VALID_METHOD = "andValidEqualTo";
     private final static String CRITERIA_STARTAT_BEFORE_METHOD = "andStartAtLessThanOrEqualTo";
     private final static String CRITERIA_ENDAT_AFTER_METHOD = "andEndAtGreaterThanOrEqualTo";
+    @Autowired
+    protected MerchantRoleService merchantRoleService;
+    @Autowired
+    protected FactoryRoleService factoryRoleService;
+    @Autowired
+    protected TraderRoleService traderRoleService;
+    @Autowired
+    protected SalesmanRoleService salesmanRoleService;
+    @Autowired
+    protected TraderFactoryMerchantMapDao traderFactoryMerchantMapDao;
+    @Autowired
+    protected FactoryMerchantMapDao factoryMerchantMapDao;
+    @Autowired
+    protected SalesmanTraderMapDao salesmanTraderMapDao;
+    @Autowired
+    protected OrderInfoDao orderInfoDao;
+    @Autowired
+    protected GoodsInfoDao goodsInfoDao;
+    @Autowired
+    protected ShopInfoDao shopInfoDao;
+    @Autowired
+    protected CampaignInfoDao campaignInfoDao;
+    @Autowired
+    protected DiscountInfoDao discountInfoDao;
+    @Autowired
+    protected MerchantInfoDao merchantInfoDao;
+    @Autowired
+    protected FactoryInfoDao factoryInfoDao;
+    @Autowired
+    protected TraderInfoDao traderInfoDao;
+    @Autowired
+    protected CampaignHistoryDao campaignHistoryDao;
     // private final static String CRITERIA_OR_METHOD = "or";
     // private final static String CRITERIA_ENDAT_BEFORE_METHOD = "andEndAtLessThanOrEqualTo";
     // private final static String CRITERIA_STARTAT_AFTER_METHOD = "andStartAtGreaterThanOrEqualTo";
 
-    /**
-     * @param order
-     * @return
-     */
     public List<FactoryInfo> getFactoryInfoList(ProductBO<?> bo) {
         List<FactoryInfo> facotoryInfoList = new ArrayList<>();
         UserInfo userInfo = bo.getCreaterInfo();
@@ -155,10 +132,6 @@ public abstract class ProductServiceBaseImpl {
         return facotoryInfoList;
     }
 
-    /**
-     * @param order
-     * @return
-     */
     public List<TraderInfo> getTraderInfo(ProductBO<?> bo) {
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
@@ -203,11 +176,6 @@ public abstract class ProductServiceBaseImpl {
         }
     }
 
-    /**
-     * @param order
-     * @param factoryInfo
-     * @return
-     */
     public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> req, List<FactoryInfo> factoryInfoList) {
         TraderFactoryMerchantMapExample mapExample =
             (TraderFactoryMerchantMapExample)makeQueryExample(req, TraderFactoryMerchantMapExample.class);
@@ -227,11 +195,6 @@ public abstract class ProductServiceBaseImpl {
         return traderFactoryMerchantMapIdList;
     }
 
-    /**
-     * @param discount
-     * @param factoryInfo
-     * @return
-     */
     public List<Integer> buildFactoryMerchantMapIdList(ProductBO<?> req, List<FactoryInfo> factoryInfoList) {
         FactoryMerchantMapExample mapExample =
             (FactoryMerchantMapExample)makeQueryExample(req, FactoryMerchantMapExample.class);
@@ -251,11 +214,6 @@ public abstract class ProductServiceBaseImpl {
         return factoryMerchantMapIdList;
     }
 
-    /**
-     * @param campaign
-     * @param traderInfo
-     * @return
-     */
     public List<Integer> buildSalesmanTraderMapTraderIdList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
         List<SalesmanTraderMap> maps = buildSalesmanTraderMapList(req, traderInfoList);
         List<Integer> salesTraderMapIdList = new ArrayList<>();
@@ -265,11 +223,6 @@ public abstract class ProductServiceBaseImpl {
         return salesTraderMapIdList;
     }
 
-    /**
-     * @param campaign
-     * @param traderInfo
-     * @return
-     */
     public List<Integer> buildSalesmanTraderMapSalesmanIdList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
         List<SalesmanTraderMap> maps = buildSalesmanTraderMapList(req, traderInfoList);
         List<Integer> salesTraderMapIdList = new ArrayList<>();
@@ -445,10 +398,6 @@ public abstract class ProductServiceBaseImpl {
         resp.setQueryEndAt(req.getReq().getQueryEndAt());
     }
 
-    /**
-     * @param shop
-     * @return
-     */
     public PageInfo<?> buildPage(ProductBO<QueryReqVO> req) {
         PageInfo<?> pageInfo = new PageInfo<>();
         if (req.getReq().getCurrentPage() != null) {

@@ -19,4 +19,8 @@ public class GoodsInfoRespVO {
 
     private GoodsInfoVO goodsInfoVO;
 
+    private Integer unit;
+
+    private DiscountInfoVO discountInfoVO;
+
 }

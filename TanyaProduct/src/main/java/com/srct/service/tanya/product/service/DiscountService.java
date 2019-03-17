@@ -8,11 +8,14 @@
  */
 package com.srct.service.tanya.product.service;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.vo.DiscountInfoReqVO;
 import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
+
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -20,28 +23,14 @@ import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
  */
 public interface DiscountService {
 
-    /**
-     * @param discount
-     * @return
-     */
-    public QueryRespVO<DiscountInfoRespVO> getDiscountInfo(ProductBO<QueryReqVO> discount);
+    QueryRespVO<DiscountInfoRespVO> getDiscountInfo(ProductBO<QueryReqVO> discount);
 
-    /**
-     * @param discount
-     * @return
-     */
-    public QueryRespVO<DiscountInfoRespVO> updateDiscountInfo(ProductBO<DiscountInfoReqVO> discount);
+    QueryRespVO<DiscountInfoRespVO> updateDiscountInfo(ProductBO<DiscountInfoReqVO> discount);
 
-    /**
-     * @param discount
-     * @return
-     */
-    public QueryRespVO<DiscountInfoRespVO> confirmDiscountInfo(ProductBO<QueryReqVO> discount);
+    QueryRespVO<DiscountInfoRespVO> confirmDiscountInfo(ProductBO<QueryReqVO> discount);
 
-    /**
-     * @param discount
-     * @return
-     */
-    public QueryRespVO<DiscountInfoRespVO> delDiscountInfo(ProductBO<DiscountInfoReqVO> discount);
+    QueryRespVO<DiscountInfoRespVO> delDiscountInfo(ProductBO<DiscountInfoReqVO> discount);
+
+    List<DiscountInfo> getDiscountInfoListByGoodsId(Integer goodsId);
 
 }
