@@ -8,11 +8,7 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
@@ -30,8 +26,10 @@ import com.srct.service.tanya.product.vo.CampaignInfoRespVO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import org.springframework.stereotype.Service;
 
-import cn.hutool.core.bean.BeanUtil;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -201,7 +199,7 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfobyId(campaign.getProductId());
         TraderInfo traderInfo = traderInfoDao.getTraderInfobyId(campaignInfo.getTraderId());
 
-        FactoryInfo campaignFactoryInfo = traderRoleService.getFacotryInfoByTraderInfo(traderInfo);
+        FactoryInfo campaignFactoryInfo = traderRoleService.getFactoryInfoByTraderInfo(traderInfo);
         FactoryInfo userFactoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
 
         if (!userFactoryInfo.getId().equals(campaignFactoryInfo.getId())) {
