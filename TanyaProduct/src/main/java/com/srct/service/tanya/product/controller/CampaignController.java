@@ -53,7 +53,7 @@ public class CampaignController {
     @ApiOperation(value = "新增/更新促销活动", notes = "只有trader等级可以添加促销活动 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
-        modifyCampaign(@RequestBody CampaignInfoReqVO req) {
+    modifyCampaign(@RequestBody CampaignInfoReqVO req) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***modifyCampaign***");
@@ -64,6 +64,23 @@ public class CampaignController {
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
         QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = campaignService.updateCampaignInfo(campaign);
+        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
+    }
+
+    @ApiOperation(value = "绑定促销活动", notes = "只有trader等级可以绑定促销活动")
+    @RequestMapping(value = "/bind", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
+    bindCampaign(@RequestBody CampaignInfoReqVO req) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***bindCampaign***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<CampaignInfoReqVO> campaign = new ProductBO<>();
+        campaign.setReq(req);
+        campaign.setCreaterInfo(info);
+        campaign.setCreaterRole(role);
+        QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = null;
         if (req.getUndbindSalesmanIdList() != null || req.getBindSalesmanIdList() != null) {
             goodsInfoVOList = campaignService.bindCampaignInfoSalesman(campaign);
         }
