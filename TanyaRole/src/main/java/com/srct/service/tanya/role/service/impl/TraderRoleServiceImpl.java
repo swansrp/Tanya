@@ -34,6 +34,7 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.PermissionDetailsBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
@@ -249,6 +250,23 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         BeanUtil.copyProperties(traderInfo, res);
         res.setRoleType(getRoleType());
         return res;
+    }
+
+    @Override
+    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
+        Integer id = getRoleIdbyUser(userInfo);
+        TraderInfo traderInfo = traderInfoDao.getTraderInfobyId(id);
+        FactoryInfo factoryInfo = getFactoryInfoByTraderInfo(traderInfo);
+        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
+        factoryMerchantMapEx.setFactoryId(factoryInfo.getId());
+        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<FactoryMerchantMap> factoryMerchantMapList =
+                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+
+        if (factoryMerchantMapList == null || factoryMerchantMapList.size() == 0) {
+            throw new ServiceException("没有找到上级商业渠道");
+        }
+        return makeRoleInfoBO(traderInfo, factoryMerchantMapList.get(0));
     }
 
     private List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapByFactoryInfo(FactoryInfo factoryInfo) {
@@ -522,6 +540,14 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(traderInfo, res);
         res.setRoleType(getRoleType());
+        return res;
+    }
+
+    private RoleInfoBO makeRoleInfoBO(TraderInfo traderInfo, FactoryMerchantMap map) {
+        RoleInfoBO res = makeRoleInfoBO(traderInfo);
+        PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+        BeanUtil.copyProperties(map, permissionDetailsBO);
+        res.setPermissionDetails(permissionDetailsBO);
         return res;
     }
 

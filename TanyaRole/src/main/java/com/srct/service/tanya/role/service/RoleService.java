@@ -7,10 +7,6 @@
  */
 package com.srct.service.tanya.role.service;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -23,31 +19,37 @@ import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.utils.log.Log;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 /**
  * @author Sharp
  *
  */
 public interface RoleService {
 
-    public String getRoleType();
+    String getRoleType();
 
-    public String getSubordinateRoleType();
+    String getSubordinateRoleType();
 
-    public RoleInfoBO create(CreateRoleBO bo);
+    RoleInfoBO create(CreateRoleBO bo);
 
-    public RoleInfoBO update(UpdateRoleInfoBO bo);
+    RoleInfoBO update(UpdateRoleInfoBO bo);
 
-    public List<RoleInfoBO> getSubordinate(UserInfo userInfo);
+    List<RoleInfoBO> getSubordinate(UserInfo userInfo);
 
-    public RoleInfoBO getDetails(GetRoleDetailsBO bo);
+    RoleInfoBO getDetails(GetRoleDetailsBO bo);
 
-    public RoleInfoBO invite(ModifyRoleBO bo);
+    RoleInfoBO invite(ModifyRoleBO bo);
 
-    public RoleInfoBO kickout(ModifyRoleBO bo);
+    RoleInfoBO kickout(ModifyRoleBO bo);
 
-    public RoleInfoBO del(ModifyRoleBO bo);
+    RoleInfoBO del(ModifyRoleBO bo);
 
-    public Integer getRoleIdbyUser(UserInfo userInfo);
+    RoleInfoBO getSelfDetails(UserInfo userInfo);
+
+    Integer getRoleIdbyUser(UserInfo userInfo);
 
     default Date getDefaultPeriod(Date date, int defaultType, int defaultValue) {
         Calendar c = Calendar.getInstance();

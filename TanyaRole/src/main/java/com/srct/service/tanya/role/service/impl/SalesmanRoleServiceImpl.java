@@ -199,6 +199,13 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return res;
     }
 
+    @Override
+    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
+        Integer id = getRoleIdbyUser(userInfo);
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(id);
+        return makeRoleInfoBO(salesmanInfo);
+    }
+
     private List<RoleInfoBO> getAllSalesman() {
         List<SalesmanInfo> salesmanInfoList =
             salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);

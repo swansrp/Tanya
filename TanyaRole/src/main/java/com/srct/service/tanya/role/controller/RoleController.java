@@ -253,6 +253,27 @@ public class RoleController {
         return TanyaExceptionHandler.generateResponse(resVO);
     }
 
+    @ApiOperation(value = "获取本人详细信息", notes = "根据传入人员角色获取本人信息。")
+    @RequestMapping(value = "/self", method = RequestMethod.GET)
+    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> selfDetails() {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+
+        Log.i("***getDetails***");
+        Log.i("guid {}, role type {} target type {}", info.getGuid(), role.getComment(), role.getRole());
+
+        if (role.getRole().equals("superAdmin")) {
+            throw new ServiceException("超级管理员不能查看自身信息");
+        }
+
+        RoleService roleService = (RoleService) BeanUtil.getBean(role.getRole() + "RoleServiceImpl");
+
+        RoleInfoBO resBO = roleService.getSelfDetails(info);
+        RoleInfoVO resVO = convertRoleInfoVO(resBO);
+
+        return TanyaExceptionHandler.generateResponse(resVO);
+    }
+
     private String getTargetRoleType(String roletype, RoleInfo role) {
         String targetRoleType;
         switch (role.getRole()) {

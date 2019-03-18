@@ -8,8 +8,19 @@
  */
 package com.srct.service.tanya.portal.controller.role;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.srct.service.config.response.CommonResponse;
+import com.srct.service.exception.ServiceException;
+import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
+import com.srct.service.tanya.common.service.SessionService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,20 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.srct.service.config.response.CommonResponse;
-import com.srct.service.exception.ServiceException;
-import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
-import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
-import com.srct.service.tanya.common.service.SessionService;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Sharp
@@ -62,7 +60,7 @@ public class PortalRoleController {
         @ApiResponse(code = 403, message = "权限不足")})
     @RequestMapping(value = "/openid", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<UserInfo>.Resp>
-        modifyRoleId(@RequestParam(value = "username", required = true) String userName) {
+    modifyRoleId(@RequestParam(value = "username") String userName) {
         String guid = (String)request.getAttribute("guid");
         UserInfo userInfo = new UserInfo();
         userInfo.setGuid(guid);
@@ -80,6 +78,7 @@ public class PortalRoleController {
 
             // disable the old token
             sessionService.genToken(guid);
+            sessionService.genWechatToken(guid);
 
             return TanyaExceptionHandler.generateResponse(target);
         } else {

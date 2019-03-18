@@ -88,10 +88,6 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         return res;
     }
 
-    /**
-     * @param bo
-     * @return
-     */
     private MerchantInfo makeMerchantInfo(CreateRoleBO bo) {
         Date now = new Date();
 
@@ -130,6 +126,13 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         BeanUtil.copyProperties(merchantInfo, res);
         res.setRoleType(getRoleType());
         return res;
+    }
+
+    @Override
+    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
+        Integer id = getRoleIdbyUser(userInfo);
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(id);
+        return makeRoleInfoBO(merchantInfo);
     }
 
     @Override
@@ -223,7 +226,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
     @Override
     public MerchantInfo getMerchantInfoByUser(UserInfo userInfo) {
-        MerchantInfo merchantInfo = null;
+        MerchantInfo merchantInfo;
         MerchantInfoExample example = new MerchantInfoExample();
         MerchantInfoExample.Criteria criteria = example.createCriteria();
         criteria.andUserIdEqualTo(userInfo.getId());
@@ -246,14 +249,9 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
                 + merchantInfo.getUserId());
         }
         merchantInfoDao.delMerchantInfo(merchantInfo);
-        RoleInfoBO res = makeRoleInfoBO(merchantInfo);
-        return res;
+        return makeRoleInfoBO(merchantInfo);
     }
 
-    /**
-     * @param merchantInfo
-     * @return
-     */
     private RoleInfoBO makeRoleInfoBO(MerchantInfo merchantInfo) {
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(merchantInfo, res);

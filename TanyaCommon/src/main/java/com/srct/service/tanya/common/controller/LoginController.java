@@ -8,23 +8,6 @@
  */
 package com.srct.service.tanya.common.controller;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -48,9 +31,23 @@ import com.srct.service.utils.email.EmailRepository;
 import com.srct.service.utils.email.EmailUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.utils.security.MD5Util;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Sharp
@@ -63,13 +60,11 @@ import io.swagger.annotations.ApiOperation;
 public class LoginController {
 
     @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
     SessionService sessionService;
-
     @Autowired
     UserService userService;
+    @Autowired
+    private HttpServletRequest request;
 
     @ApiOperation(value = "用户登入", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -80,23 +75,31 @@ public class LoginController {
         @RequestParam(value = "rememberme", required = false) boolean rememberMe) {
 
         Log.i("**********login**********");
-        UserLoginRespBO bo = null;
+        String token;
+        UserLoginRespBO bo;
         if (wechatAuthCode != null) {
             try {
                 bo = userService.login(wechatAuthCode);
             } catch (NoSuchUserException e) {
                 bo = userService.regbyOpenId(e.getMessage());
             }
+            userLoginRespBOValidate(bo);
+            token = sessionService.genWechatToken(bo.getGuid());
         } else if (username != null && password != null) {
             bo = userService.login(username, password);
+            userLoginRespBOValidate(bo);
+            token = sessionService.genToken(bo.getGuid());
+        } else {
+            throw new ServiceException("登录信息不足");
         }
+
+        return TanyaExceptionHandler.generateResponse(token);
+    }
+
+    private void userLoginRespBOValidate(UserLoginRespBO bo) {
         if (bo == null || bo.getGuid() == null) {
             throw new NoSuchUserException("");
         }
-        String guid = bo.getGuid();
-        String token = sessionService.genToken(guid);
-
-        return TanyaExceptionHandler.generateResponse(token);
     }
 
     @ApiOperation(value = "用户注册", notes = "用户注册入系统，获取session信息")
@@ -109,18 +112,20 @@ public class LoginController {
         Log.i("**********register**********");
         Log.i("name: {} pw: {}, wechat: {}", username, password, wechatAuthCode);
 
-        UserLoginRespBO bo = null;
+        UserLoginRespBO bo;
+        String token;
         if (wechatAuthCode != null) {
             bo = userService.reg(wechatAuthCode);
+            userLoginRespBOValidate(bo);
+            token = sessionService.genWechatToken(bo.getGuid());
         } else if (username != null && password != null) {
             String hashedPassword = MD5Util.generate(password);
             bo = userService.reg(username, hashedPassword);
+            userLoginRespBOValidate(bo);
+            token = sessionService.genToken(bo.getGuid());
+        } else {
+            throw new ServiceException("注册信息不足");
         }
-        if (bo == null || bo.getGuid() == null) {
-            throw new ServiceException("register user failed");
-        }
-        String guid = bo.getGuid();
-        String token = sessionService.genToken(guid);
         return TanyaExceptionHandler.generateResponse(token);
     }
 
@@ -183,7 +188,7 @@ public class LoginController {
     @ApiOperation(value = "重置密码", notes = "向用户邮箱发送重置密码链接")
     @RequestMapping(value = "/reset", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<String>.Resp>
-        reset(@RequestParam(value = "req", required = true) String token) {
+    reset(@RequestParam(value = "req") String token) {
         Log.i("**********reset**********");
         Log.i(token);
         String guid = sessionService.getGuidbyResetPasswordToken(token);

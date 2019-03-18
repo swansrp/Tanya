@@ -7,13 +7,6 @@
  */
 package com.srct.service.tanya.common.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.srct.service.bo.wechat.OpenIdBO;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.AccountOrPasswordIncorrectException;
@@ -38,6 +31,12 @@ import com.srct.service.utils.JSONUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.utils.security.MD5Util;
 import com.srct.service.utils.security.RandomUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Sharp
@@ -61,12 +60,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     WechatService wechatService;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.srct.service.tanya.common.service.UserService#regUser(com.srct.service.tanya.common.vo.user.UserRegReqVO)
-     */
     @Override
     public UserInfo updateUser(UserRegReqBO bo) {
         UserInfo userInfo = new UserInfo();
@@ -80,6 +73,9 @@ public class UserServiceImpl implements UserService {
         userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         Integer num = userInfoDao.updateUserInfoByExample(userInfo, example);
+        if (num == null || num == 0) {
+            throw new ServiceException("更新用户信息失败");
+        }
         return userInfo;
     }
 
@@ -92,18 +88,13 @@ public class UserServiceImpl implements UserService {
         return userInfo;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String)
-     */
     @Override
     public UserLoginRespBO reg(String wechatCode) {
 
         OpenIdBO openIdBO = wechatService.getOpenId(wechatCode);
         String wechatId = openIdBO.getOpenId();
 
-        UserInfo userInfo = null;
+        UserInfo userInfo;
         try {
             UserRegReqBO bo = new UserRegReqBO();
             bo.setWechatId(wechatId);
@@ -113,9 +104,7 @@ public class UserServiceImpl implements UserService {
             throw new ServiceException("register wechatid " + wechatId + " failed\n" + e.getMessage());
         }
 
-        UserLoginRespBO res = getRoleInfo(userInfo);
-
-        return res;
+        return getRoleInfo(userInfo);
     }
 
     /*
@@ -125,7 +114,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserLoginRespBO regbyOpenId(String openId) {
-        UserInfo userInfo = null;
+        UserInfo userInfo;
         try {
             UserRegReqBO bo = new UserRegReqBO();
             bo.setWechatId(openId);
@@ -135,9 +124,8 @@ public class UserServiceImpl implements UserService {
             throw new ServiceException("register wechatid " + openId + " failed\n" + e.getMessage());
         }
 
-        UserLoginRespBO res = getRoleInfo(userInfo);
+        return getRoleInfo(userInfo);
 
-        return res;
     }
 
     /*
@@ -148,7 +136,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserLoginRespBO reg(String name, String password) {
 
-        UserInfo userInfo = null;
+        UserInfo userInfo;
         try {
             UserRegReqBO bo = new UserRegReqBO();
             bo.setUsername(name);
@@ -159,15 +147,9 @@ public class UserServiceImpl implements UserService {
             throw new ServiceException("register user " + name + " failed\n" + e.getMessage());
         }
 
-        UserLoginRespBO res = getRoleInfo(userInfo);
-        return res;
+        return getRoleInfo(userInfo);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String)
-     */
     @Override
     public UserLoginRespBO login(String wechatCode) {
 
@@ -179,7 +161,7 @@ public class UserServiceImpl implements UserService {
         userInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         List<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfoEx);
 
-        UserInfo userInfo = null;
+        UserInfo userInfo;
         try {
             userInfo = userInfoList.get(0);
             userInfo.setLastAt(new Date());
@@ -188,9 +170,7 @@ public class UserServiceImpl implements UserService {
             throw new NoSuchUserException(wechatId);
         }
 
-        UserLoginRespBO res = getRoleInfo(userInfo);
-
-        return res;
+        return getRoleInfo(userInfo);
     }
 
     /*
@@ -227,8 +207,7 @@ public class UserServiceImpl implements UserService {
             throw new AccountOrPasswordIncorrectException();
         }
 
-        UserLoginRespBO res = getRoleInfo(userInfo);
-        return res;
+        return getRoleInfo(userInfo);
     }
 
     private UserLoginRespBO getRoleInfo(UserInfo userInfo) {
@@ -236,7 +215,7 @@ public class UserServiceImpl implements UserService {
         res.setGuid(userInfo.getGuid());
         // res.setSn(String.format("%08d", userInfo.getId()));
         res.setWechatOpenId(userInfo.getWechatId());
-        res.setRole(new ArrayList<RoleInfo>());
+        res.setRole(new ArrayList<>());
 
         Integer userId = userInfo.getId();
         if (userId == null) {
@@ -330,13 +309,6 @@ public class UserServiceImpl implements UserService {
         return userInfoDao.updateUserInfo(info);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.srct.service.tanya.common.service.UserService#addRole(com.srct.service.tanya.common.datalayer.tanya.entity.
-     * UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
-     */
     @Override
     public List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo) {
 
@@ -348,7 +320,7 @@ public class UserServiceImpl implements UserService {
         userRoleMapEx.setUserId(userInfo.getId());
         userRoleMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
-        UserRoleMap userRoleMap = null;
+        UserRoleMap userRoleMap;
         try {
             userRoleMap = userRoleMapDao.getUserRoleMapSelective(userRoleMapEx).get(0);
         } catch (Exception e) {
@@ -375,13 +347,6 @@ public class UserServiceImpl implements UserService {
         return res;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.srct.service.tanya.common.service.UserService#removeRole(com.srct.service.tanya.common.datalayer.tanya.entity
-     * .UserInfo, com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo)
-     */
     @Override
     public List<RoleInfo> removeRole(UserInfo userInfo, RoleInfo roleInfo) {
 
@@ -394,7 +359,7 @@ public class UserServiceImpl implements UserService {
         userRoleMapEx.setRoleId(roleInfo.getId());
         userRoleMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
-        UserRoleMap userRoleMap = null;
+        UserRoleMap userRoleMap;
         try {
             userRoleMap = userRoleMapDao.getUserRoleMapSelective(userRoleMapEx).get(0);
         } catch (Exception e) {

@@ -216,6 +216,22 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         return res;
     }
 
+    @Override
+    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
+        Integer id = getRoleIdbyUser(userInfo);
+        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
+        factoryMerchantMapEx.setFactoryId(id);
+        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<FactoryMerchantMap> factoryMerchantMapList =
+                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+
+        if (factoryMerchantMapList == null || factoryMerchantMapList.size() == 0) {
+            throw new ServiceException("没有找到上级商业渠道");
+        }
+        FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfobyId(id);
+        return makeRoleInfoBO(factoryInfo, factoryMerchantMapList.get(0));
+    }
+
     private List<RoleInfoBO> getAllFactory() {
         List<FactoryInfo> factoryInfoList =
             factoryInfoDao.getAllFactoryInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -463,6 +479,14 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(factoryInfo, res);
         res.setRoleType(getRoleType());
+        return res;
+    }
+
+    private RoleInfoBO makeRoleInfoBO(FactoryInfo factoryInfo, FactoryMerchantMap map) {
+        RoleInfoBO res = makeRoleInfoBO(factoryInfo);
+        PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+        BeanUtil.copyProperties(map, permissionDetailsBO);
+        res.setPermissionDetails(permissionDetailsBO);
         return res;
     }
 

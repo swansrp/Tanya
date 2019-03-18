@@ -13,13 +13,15 @@ package com.srct.service.tanya.common.service;
  *
  */
 public interface SessionService {
-    public String genToken(String guid);
+    String genWechatToken(String guid);
 
-    public String getGuidByToken(String token);
+    String genToken(String guid);
 
-    public boolean retry(String guid);
+    String getGuidByToken(String token);
 
-    public String getResetPasswordToken(String guid);
+    boolean retry(String guid);
 
-    public String getGuidbyResetPasswordToken(String token);
+    String getResetPasswordToken(String guid);
+
+    String getGuidbyResetPasswordToken(String token);
 }

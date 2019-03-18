@@ -17,7 +17,7 @@ import java.util.Date;
 
 /**
  * @author Sharp
- *
+ * description for update role info
  */
 @Data
 public class RoleDetailsVO {
