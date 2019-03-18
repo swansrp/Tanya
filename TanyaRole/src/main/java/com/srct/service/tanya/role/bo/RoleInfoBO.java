@@ -24,10 +24,7 @@ public class RoleInfoBO extends RoleInfoBaseBO {
     @ApiModelProperty(value = "对应角色id")
     private Integer id;
 
-    @ApiModelProperty(value = "商品数量")
-    private Integer goodsNumber;
-
-    @ApiModelProperty(value = "销售员数量")
-    private Integer traderNumber;
+    @ApiModelProperty(value = "权限控制")
+    private PermissionDetailsBO permissionDetails;
 
 }

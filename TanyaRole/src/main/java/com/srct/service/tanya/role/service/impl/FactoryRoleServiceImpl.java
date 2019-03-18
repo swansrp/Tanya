@@ -26,6 +26,7 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.PermissionDetailsBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.FactoryRoleService;
@@ -81,7 +82,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
 
-        MerchantInfo merchantInfo = null;
+        MerchantInfo merchantInfo;
         try {
             merchantInfo = getMerchantInfoByCreater(bo.getCreaterInfo());
         } catch (Exception e) {
@@ -105,8 +106,10 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         FactoryMerchantMap factoryMerchantMap = new FactoryMerchantMap();
         factoryMerchantMap.setFactoryId(factoryInfo.getId());
         factoryMerchantMap.setMerchantId(merchantInfo.getId());
-        factoryMerchantMap.setGoodsNumber(5);
-        factoryMerchantMap.setTraderNumber(5);
+        factoryMerchantMap.setGoodsNumber(0);
+        factoryMerchantMap.setTraderNumber(0);
+        factoryMerchantMap.setCampaignNumber(0);
+        factoryMerchantMap.setDiscountNumber(0);
         factoryMerchantMap.setStartAt(now);
         factoryMerchantMap.setEndAt(merchantInfo.getEndAt());
 
@@ -126,9 +129,8 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
     }
 
     public MerchantInfo getMerchantInfoByCreater(UserInfo creater) {
-        Date now = new Date();
+        //Date now = new Date();
 
-        MerchantInfo merchantInfo = null;
         MerchantInfoExample example = new MerchantInfoExample();
         MerchantInfoExample.Criteria criteria = example.createCriteria();
         criteria.andUserIdEqualTo(creater.getId());
@@ -136,21 +138,19 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         // criteria.andStartAtLessThanOrEqualTo(now);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            merchantInfo = merchantInfoDao.getMerchantInfoByExample(example).get(0);
+            return merchantInfoDao.getMerchantInfoByExample(example).get(0);
         } catch (Exception e) {
-            throw new ServiceException("");
+            throw new ServiceException(e.getMessage());
         }
-        return merchantInfo;
     }
 
     @Override
     public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
         if (userInfo == null) {
             return getAllFactory();
-
         }
 
-        MerchantInfo merchantInfo = null;
+        MerchantInfo merchantInfo;
         try {
             merchantInfo = getMerchantInfoByCreater(userInfo);
         } catch (Exception e) {
@@ -171,8 +171,9 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(factoryInfo, bo);
             bo.setRoleType(getRoleType());
-            bo.setGoodsNumber(factoryMerchantMap.getGoodsNumber());
-            bo.setTraderNumber(factoryMerchantMap.getTraderNumber());
+            PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+            BeanUtil.copyProperties(factoryMerchantMap, permissionDetailsBO);
+            bo.setPermissionDetails(permissionDetailsBO);
             boList.add(bo);
 
         }
@@ -184,7 +185,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         UserInfo userInfo = bo.getCreaterInfo();
         FactoryMerchantMap factoryMerchantMap = null;
         if (userInfo != null) {
-            MerchantInfo merchantInfo = null;
+            MerchantInfo merchantInfo;
             try {
                 merchantInfo = getMerchantInfoByCreater(userInfo);
             } catch (Exception e) {
@@ -208,8 +209,9 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         BeanUtil.copyProperties(factoryInfo, res);
         res.setRoleType(getRoleType());
         if (factoryMerchantMap != null) {
-            res.setGoodsNumber(factoryMerchantMap.getGoodsNumber());
-            res.setTraderNumber(factoryMerchantMap.getTraderNumber());
+            PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+            BeanUtil.copyProperties(factoryMerchantMap, permissionDetailsBO);
+            res.setPermissionDetails(permissionDetailsBO);
         }
         return res;
     }
@@ -291,7 +293,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
     @Override
     public RoleInfoBO update(UpdateRoleInfoBO bo) {
-        MerchantInfo merchantInfo = null;
+        MerchantInfo merchantInfo;
         if (bo.getSuperiorId() != null) {
             merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getSuperiorId());
         } else if (bo.getCreaterInfo() != null) {
@@ -302,10 +304,12 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
             }
 
             if ((bo.getStartAt() != null && bo.getStartAt().before(merchantInfo.getStartAt()))
-                || (bo.getEndAt() != null && bo.getEndAt().after(merchantInfo.getEndAt()))) {
+                    || (bo.getEndAt() != null && bo.getEndAt().after(merchantInfo.getEndAt()))) {
                 throw new ServiceException("invalid Period " + bo.getStartAt() + " - " + bo.getEndAt()
-                    + " for its Superior " + merchantInfo.getStartAt() + " - " + merchantInfo.getEndAt());
+                        + " for its Superior " + merchantInfo.getStartAt() + " - " + merchantInfo.getEndAt());
             }
+        } else {
+            throw new ServiceException("dont have enough information to update factory");
         }
 
         List<FactoryInfo> factoryInfoList = new ArrayList<>();
@@ -328,7 +332,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
                         update = true;
                     }
                     if (update) {
-                        factoryInfo = factoryInfoDao.updateFactoryInfo(factoryInfo);
+                        factoryInfoDao.updateFactoryInfo(factoryInfo);
                     }
                 }
             } catch (Exception e) {
@@ -340,10 +344,8 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         }
 
         for (FactoryInfo factoryInfo : factoryInfoList) {
-
-            if (bo.getStartAt() != null || bo.getEndAt() != null || bo.getGoodsNumber() != null
-                || bo.getTraderNumber() != null) {
-                FactoryMerchantMap factoryMerchantMap = null;
+            if (bo.getStartAt() != null || bo.getEndAt() != null || bo.getPermissionDetails() != null) {
+                FactoryMerchantMap factoryMerchantMap;
                 try {
                     FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
                     factoryMerchantMapEx.setMerchantId(merchantInfo.getId());
@@ -363,7 +365,9 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
                         factoryMerchantMap.setEndAt(bo.getEndAt());
                     }
                 } else {
-                    BeanUtil.copyProperties(bo, factoryMerchantMap);
+                    if (bo.getPermissionDetails() != null) {
+                        BeanUtil.copyProperties(bo.getPermissionDetails(), factoryMerchantMap);
+                    }
                 }
 
                 factoryMerchantMapDao.updateFactoryMerchantMap(factoryMerchantMap);

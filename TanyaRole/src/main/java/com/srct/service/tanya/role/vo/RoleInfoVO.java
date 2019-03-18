@@ -59,9 +59,6 @@ public class RoleInfoVO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date endAt;
 
-    @ApiModelProperty(value = "商品数量")
-    private Integer goodsNumber;
-
-    @ApiModelProperty(value = "销售员数量")
-    private Integer traderNumber;
+    @ApiModelProperty(value = "权限控制")
+    private PermissionDetailsVO permissionDetailsVO;
 }

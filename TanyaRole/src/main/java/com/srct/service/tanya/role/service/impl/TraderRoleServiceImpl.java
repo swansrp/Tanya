@@ -14,6 +14,8 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
@@ -22,6 +24,8 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.FactoryInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.FactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.SalesmanInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.SalesmanTraderMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
@@ -57,10 +61,16 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
     private TraderInfoDao traderInfoDao;
 
     @Autowired
+    private SalesmanInfoDao salesmanInfoDao;
+
+    @Autowired
     private FactoryMerchantMapDao factoryMerchantMapDao;
 
     @Autowired
     private TraderFactoryMerchantMapDao traderFactoryMerchantMapDao;
+
+    @Autowired
+    private SalesmanTraderMapDao salesmanTraderMapDao;
 
     @Autowired
     private UserInfoDao userInfoDao;
@@ -71,11 +81,6 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
     @Autowired
     private RoleInfoDao roleInfoDao;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#getRoleType()
-     */
     @Override
     public String getRoleType() {
         return "trader";
@@ -358,7 +363,7 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
                         + " for its Superior " + factoryInfo.getStartAt() + " - " + factoryInfo.getEndAt());
             }
         } else {
-            throw new ServiceException("dont have enough information to update factory");
+            throw new ServiceException("dont have enough information to update trader");
         }
 
         List<TraderInfo> traderInfoList = new ArrayList<>();
@@ -529,6 +534,22 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
             traderInfoList.add(traderInfoDao.getTraderInfobyId(map.getTraderId()));
         }
         return traderInfoList;
+    }
+
+
+    @Override
+    public List<SalesmanInfo> getSalesmanInfoListByTraderInfo(UserInfo userInfo) {
+
+        TraderInfo traderInfo = getTraderInfoByUser(userInfo);
+
+        SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
+        salesmanTraderMap.setTraderId(traderInfo.getId());
+        salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<SalesmanTraderMap> salesmanTraderMapList = salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMap);
+
+        List<SalesmanInfo> res = new ArrayList<>();
+        salesmanTraderMapList.forEach(map -> res.add(salesmanInfoDao.getSalesmanInfobyId(map.getSalesmanId())));
+        return res;
     }
 
 }

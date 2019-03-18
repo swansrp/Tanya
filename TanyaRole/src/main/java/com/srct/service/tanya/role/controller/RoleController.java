@@ -7,20 +7,6 @@
  */
 package com.srct.service.tanya.role.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
@@ -30,20 +16,33 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.PermissionDetailsBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.vo.CreateRoleVO;
 import com.srct.service.tanya.role.vo.ModifyRoleVO;
+import com.srct.service.tanya.role.vo.PermissionDetailsVO;
 import com.srct.service.tanya.role.vo.RoleDetailsVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Sharp
@@ -88,15 +87,17 @@ public class RoleController {
 
     @ApiOperation(value = "更新角色信息", notes = "更新制定角色详细信息")
     @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "goodsnum", value = "商品数量",
-            required = false),
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "tradernum", value = "销售员数量",
-            required = false)})
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "goodsnum", value = "商品数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "tradernum", value = "销售员数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountnum", value = "商品活动数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignnum", value = "促销活动数量")})
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> updateRole(
-        @RequestBody RoleDetailsVO vo,
-        @RequestParam(value = "goodsnum", required = false) Integer goodsNumber,
-        @RequestParam(value = "tradernum", required = false) Integer traderNumber) {
+            @RequestBody RoleDetailsVO vo,
+            @RequestParam(value = "goodsnum", required = false) Integer goodsNumber,
+            @RequestParam(value = "tradernum", required = false) Integer traderNumber,
+            @RequestParam(value = "discountnum", required = false) Integer discountNumber,
+            @RequestParam(value = "campaignnum", required = false) Integer campaignNumber) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***updateRole***");
@@ -110,8 +111,12 @@ public class RoleController {
 
         bo.setTargetId(vo.getId());
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
-        bo.setGoodsNumber(goodsNumber);
-        bo.setTraderNumber(traderNumber);
+        PermissionDetailsBO permissionBO = new PermissionDetailsBO();
+        permissionBO.setGoodsNumber(goodsNumber);
+        permissionBO.setTraderNumber(traderNumber);
+        permissionBO.setDiscountNumber(discountNumber);
+        permissionBO.setCampaignNumber(campaignNumber);
+        bo.setPermissionDetails(permissionBO);
 
         RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.update(bo);
@@ -152,7 +157,7 @@ public class RoleController {
     @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "String", name = "target",
         value = "邀请对象guid，从二维码获取", required = true)})
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp>
-        invite(@RequestBody ModifyRoleVO vo, @RequestParam(value = "target", required = true) String targetGuid) {
+    invite(@RequestBody ModifyRoleVO vo, @RequestParam(value = "target") String targetGuid) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
 
@@ -248,13 +253,8 @@ public class RoleController {
         return TanyaExceptionHandler.generateResponse(resVO);
     }
 
-    /**
-     * @param roletype
-     * @param role
-     * @return
-     */
     private String getTargetRoleType(String roletype, RoleInfo role) {
-        String targetRoleType = null;
+        String targetRoleType;
         switch (role.getRole()) {
             case "superAdmin":
                 targetRoleType = roletype;
@@ -281,13 +281,14 @@ public class RoleController {
         return targetRoleType;
     }
 
-    /**
-     * @param resBO
-     * @return
-     */
     private RoleInfoVO convertRoleInfoVO(RoleInfoBO resBO) {
         RoleInfoVO resVO = new RoleInfoVO();
         BeanUtil.copyProperties(resBO, resVO);
+        if (resBO.getPermissionDetails() != null) {
+            PermissionDetailsVO permissionDetailsVO = new PermissionDetailsVO();
+            BeanUtil.copyProperties(resBO.getPermissionDetails(), permissionDetailsVO);
+            resVO.setPermissionDetailsVO(permissionDetailsVO);
+        }
         if (resVO.getUserId() != null) {
             UserInfo user = userService.getUserbyUserId(resVO.getUserId());
             resVO.setUserName(user.getName());

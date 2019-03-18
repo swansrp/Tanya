@@ -11,7 +11,6 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
@@ -68,11 +67,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     @Autowired
     private RoleInfoDao roleInfoDao;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#getRoleType()
-     */
     @Override
     public String getRoleType() {
         return "salesman";
@@ -85,7 +79,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     
     @Override
     public RoleInfoBO create(CreateRoleBO bo) {
-        TraderInfo traderInfo = null;
+        TraderInfo traderInfo;
         try {
             traderInfo = getTraderInfoByCreater(bo.getCreaterInfo());
         } catch (Exception e) {
@@ -124,7 +118,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     }
 
     private TraderInfo getTraderInfoByCreater(UserInfo creater) {
-        TraderInfo traderInfo = null;
+        TraderInfo traderInfo;
         TraderInfoExample example = new TraderInfoExample();
         TraderInfoExample.Criteria criteria = example.createCriteria();
         criteria.andUserIdEqualTo(creater.getId());
@@ -148,7 +142,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
             return getAllSalesman();
         }
 
-        TraderInfo traderInfo = null;
+        TraderInfo traderInfo;
         try {
             traderInfo = getTraderInfoByCreater(userInfo);
         } catch (Exception e) {
@@ -179,7 +173,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
         UserInfo userInfo = bo.getCreaterInfo();
         if (userInfo != null) {
-            TraderInfo traderInfo = null;
+            TraderInfo traderInfo;
             try {
                 traderInfo = getTraderInfoByCreater(userInfo);
             } catch (Exception e) {
@@ -205,9 +199,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return res;
     }
 
-    /**
-     * @return
-     */
     private List<RoleInfoBO> getAllSalesman() {
         List<SalesmanInfo> salesmanInfoList =
             salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -223,11 +214,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return boList;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.srct.service.tanya.role.service.RoleService#invite(com.srct.service.tanya.role.bo.ModifyRoleBO)
-     */
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
 
@@ -315,42 +301,39 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
 
     @Override
     public SalesmanInfo getSalesmanInfoByUser(UserInfo userInfo) {
-        SalesmanInfo salesmanInfo = null;
-        SalesmanInfoExample example = new SalesmanInfoExample();
-        SalesmanInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userInfo.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        SalesmanInfo salesmanInfo = new SalesmanInfo();
+        salesmanInfo.setUserId(userInfo.getId());
+        salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            salesmanInfo = salesmanInfoDao.getSalesmanInfoByExample(example).get(0);
+            return salesmanInfoDao.getSalesmanInfoSelective(salesmanInfo).get(0);
         } catch (Exception e) {
             throw new ServiceException("no salesman have the user " + userInfo.getName());
         }
-        return salesmanInfo;
     }
 
     @Override
-    public TraderInfo getTraderInfoByUser(UserInfo userInfo) {
-        Integer traderId = getSalesmanTraderMap(userInfo).getTraderId();
-        return traderInfoDao.getTraderInfobyId(traderId);
+    public List<TraderInfo> getTraderInfoByUser(UserInfo userInfo) {
+        List<TraderInfo> res = new ArrayList<>();
+        getSalesmanTraderMap(userInfo).forEach(salesmanTraderMap -> res.add(traderInfoDao.getTraderInfobyId(salesmanTraderMap.getTraderId())));
+        return res;
     }
 
     @Override
-    public SalesmanTraderMap getSalesmanTraderMap(UserInfo userInfo) {
-        Date now = new Date();
+    public List<SalesmanTraderMap> getSalesmanTraderMap(UserInfo userInfo) {
+        //Date now = new Date();
         Integer salesmanId = getRoleIdbyUser(userInfo);
 
         SalesmanTraderMapExample example = new SalesmanTraderMapExample();
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
-        criteria.andEndAtGreaterThanOrEqualTo(now);
-        criteria.andStartAtLessThanOrEqualTo(now);
+        //criteria.andEndAtGreaterThanOrEqualTo(now);
+        //criteria.andStartAtLessThanOrEqualTo(now);
         criteria.andSalesmanIdEqualTo(salesmanId);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            return salesmanTraderMapDao.getSalesmanTraderMapByExample(example).get(0);
+            return salesmanTraderMapDao.getSalesmanTraderMapByExample(example);
         } catch (Exception e) {
-            throw new ServiceException("no valid Factory Merchant relationship for the user " + userInfo.getName());
+            throw new ServiceException("no valid Salesman Trader relationship for the user " + userInfo.getName());
         }
     }
 
@@ -362,14 +345,9 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
                 + salesmanInfo.getUserId());
         }
         salesmanInfoDao.delSalesmanInfo(salesmanInfo);
-        RoleInfoBO res = makeRoleInfoBO(salesmanInfo);
-        return res;
+        return makeRoleInfoBO(salesmanInfo);
     }
 
-    /**
-     * @param salesmanInfo
-     * @return
-     */
     private RoleInfoBO makeRoleInfoBO(SalesmanInfo salesmanInfo) {
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(salesmanInfo, res);

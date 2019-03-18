@@ -20,28 +20,14 @@ import com.srct.service.tanya.product.vo.CampaignInfoRespVO;
  */
 public interface CampaignService {
 
-    /**
-     * @param order
-     * @return
-     */
-    public QueryRespVO<CampaignInfoRespVO> getCampaignInfo(ProductBO<QueryReqVO> campaign);
+    QueryRespVO<CampaignInfoRespVO> getCampaignInfo(ProductBO<QueryReqVO> campaign);
 
-    /**
-     * @param order
-     * @return
-     */
-    public QueryRespVO<CampaignInfoRespVO> updateCampaignInfo(ProductBO<CampaignInfoReqVO> campaign);
+    QueryRespVO<CampaignInfoRespVO> updateCampaignInfo(ProductBO<CampaignInfoReqVO> campaign);
 
-    /**
-     * @param campaign
-     * @return
-     */
-    public QueryRespVO<CampaignInfoRespVO> confirmCampaignInfo(ProductBO<QueryReqVO> campaign);
+    QueryRespVO<CampaignInfoRespVO> confirmCampaignInfo(ProductBO<QueryReqVO> campaign);
 
-    /**
-     * @param campaign
-     * @return
-     */
-    public QueryRespVO<CampaignInfoRespVO> delCampaignInfo(ProductBO<CampaignInfoReqVO> campaign);
+    QueryRespVO<CampaignInfoRespVO> delCampaignInfo(ProductBO<CampaignInfoReqVO> campaign);
+
+    QueryRespVO<CampaignInfoRespVO> bindCampaignInfoSalesman(ProductBO<CampaignInfoReqVO> campaign);
 
 }

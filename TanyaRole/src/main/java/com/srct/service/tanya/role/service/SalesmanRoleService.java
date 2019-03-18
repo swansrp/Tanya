@@ -13,16 +13,19 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 
+import java.util.List;
+
 /**
  * @author sharuopeng
  *
  */
+
 public interface SalesmanRoleService {
 
-    public SalesmanInfo getSalesmanInfoByUser(UserInfo userInfo);
+    SalesmanInfo getSalesmanInfoByUser(UserInfo userInfo);
 
-    public TraderInfo getTraderInfoByUser(UserInfo userInfo);
+    List<TraderInfo> getTraderInfoByUser(UserInfo userInfo);
 
-    public SalesmanTraderMap getSalesmanTraderMap(UserInfo userInfo);
+    List<SalesmanTraderMap> getSalesmanTraderMap(UserInfo userInfo);
 
 }

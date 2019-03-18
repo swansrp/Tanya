@@ -9,6 +9,7 @@
 package com.srct.service.tanya.role.service;
 
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
@@ -21,14 +22,16 @@ import java.util.List;
  */
 public interface TraderRoleService {
 
-    public FactoryInfo getFactoryInfoByTraderInfo(TraderInfo traderInfo);
+    FactoryInfo getFactoryInfoByTraderInfo(TraderInfo traderInfo);
 
-    public FactoryInfo getFactoryInfoByUser(UserInfo userInfo);
+    FactoryInfo getFactoryInfoByUser(UserInfo userInfo);
 
-    public TraderInfo getTraderInfoByUser(UserInfo userInfo);
+    TraderInfo getTraderInfoByUser(UserInfo userInfo);
 
-    public TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo);
+    TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo);
 
-    public List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo);
+    List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo);
+
+    List<SalesmanInfo> getSalesmanInfoListByTraderInfo(UserInfo userInfo);
 
 }

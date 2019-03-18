@@ -19,6 +19,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfo;
@@ -28,12 +29,14 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignHistoryDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignSalesmanMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.DiscountInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.FactoryInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.FactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.MerchantInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.OrderInfoDao;
+import com.srct.service.tanya.common.datalayer.tanya.repository.SalesmanInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.SalesmanTraderMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.ShopInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderFactoryMerchantMapDao;
@@ -102,7 +105,11 @@ public abstract class ProductServiceBaseImpl {
     @Autowired
     protected TraderInfoDao traderInfoDao;
     @Autowired
+    protected SalesmanInfoDao salesmanInfoDao;
+    @Autowired
     protected CampaignHistoryDao campaignHistoryDao;
+    @Autowired
+    protected CampaignSalesmanMapDao campaignSalesmanMapDao;
     // private final static String CRITERIA_OR_METHOD = "or";
     // private final static String CRITERIA_ENDAT_BEFORE_METHOD = "andEndAtLessThanOrEqualTo";
     // private final static String CRITERIA_STARTAT_AFTER_METHOD = "andStartAtGreaterThanOrEqualTo";
@@ -139,7 +146,7 @@ public abstract class ProductServiceBaseImpl {
         if (roleType.equals("trader")) {
             traderInfoList.add(traderRoleService.getTraderInfoByUser(userInfo));
         } else if (roleType.equals("salesman")) {
-            traderInfoList.add(salesmanRoleService.getTraderInfoByUser(userInfo));
+            traderInfoList.addAll(salesmanRoleService.getTraderInfoByUser(userInfo));
         } else if (roleType.equals("factory")) {
             FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
             traderInfoList.addAll(traderRoleService.getTraderInfoList(factoryInfo));
@@ -147,8 +154,20 @@ public abstract class ProductServiceBaseImpl {
             throw new ServiceException(
                 "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
         }
-
         return traderInfoList;
+    }
+
+    public List<SalesmanInfo> getSalesmanInfo(ProductBO<?> bo) {
+        UserInfo userInfo = bo.getCreaterInfo();
+        String roleType = bo.getCreaterRole().getRole();
+        List<SalesmanInfo> salesmanInfoList = new ArrayList<>();
+        if (roleType.equals("trader")) {
+            salesmanInfoList.addAll(traderRoleService.getSalesmanInfoListByTraderInfo(userInfo));
+        } else {
+            throw new ServiceException(
+                    "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
+        }
+        return salesmanInfoList;
     }
 
     public TraderFactoryMerchantMap getTraderFactoryMerchantMap(ProductBO<?> bo) {
@@ -232,11 +251,6 @@ public abstract class ProductServiceBaseImpl {
         return salesTraderMapIdList;
     }
 
-    /**
-     * @param req
-     * @param traderInfo
-     * @return
-     */
     private List<SalesmanTraderMap> buildSalesmanTraderMapList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
         SalesmanTraderMapExample mapExample =
             (SalesmanTraderMapExample)makeQueryExample(req, SalesmanTraderMapExample.class);
@@ -272,10 +286,6 @@ public abstract class ProductServiceBaseImpl {
         }
     }
 
-    /**
-     * @param order
-     * @return
-     */
     public <T> T makeQueryExample(ProductBO<?> bo, Class clazz) {
         Date now = new Date();
         QueryReqVO req = bo.getReq();
@@ -313,10 +323,6 @@ public abstract class ProductServiceBaseImpl {
         return (T)example;
     }
 
-    /**
-     * @param id
-     * @return
-     */
     public DiscountInfoVO getDiscountInfoVObyId(Integer id) {
         if (id == null) {
             return null;
@@ -327,10 +333,6 @@ public abstract class ProductServiceBaseImpl {
         return discountInfoVO;
     }
 
-    /**
-     * @param id
-     * @return
-     */
     public ShopInfoVO getShopInfoVObyId(Integer id) {
         if (id == null) {
             return null;
@@ -341,10 +343,6 @@ public abstract class ProductServiceBaseImpl {
         return shopInfoVO;
     }
 
-    /**
-     * @param id
-     * @return
-     */
     public GoodsInfoVO getGoodsInfoVObyId(Integer id) {
         if (id == null) {
             return null;
@@ -355,10 +353,6 @@ public abstract class ProductServiceBaseImpl {
         return goodsInfoVO;
     }
 
-    /**
-     * @param id
-     * @return
-     */
     public CampaignInfoVO getCampaignInfoVObyId(Integer id) {
         if (id == null) {
             return null;
@@ -381,6 +375,9 @@ public abstract class ProductServiceBaseImpl {
                 break;
             case "trader":
                 targetInfo = traderInfoDao.getTraderInfobyId(id);
+                break;
+            case "salesman":
+                targetInfo = salesmanInfoDao.getSalesmanInfobyId(id);
                 break;
             default:
                 throw new ServiceException("");

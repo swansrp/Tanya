@@ -8,11 +8,7 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
@@ -30,8 +26,10 @@ import com.srct.service.tanya.product.vo.CampaignHistoryRespVO;
 import com.srct.service.tanya.product.vo.CampaignHistoryVO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import org.springframework.stereotype.Service;
 
-import cn.hutool.core.bean.BeanUtil;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -138,6 +136,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     public QueryRespVO<CampaignHistoryRespVO> confirmCampaignHistory(ProductBO<QueryReqVO> history, Integer rewards) {
         validateConfirm(history);
         List<TraderInfo> traderInfoList = super.getTraderInfo(history);
+        //only trader allow to confirm
         TraderInfo traderInfo = traderInfoList.get(0);
         List<Integer> salesmanInfoIdList = buildSalesmanTraderMapSalesmanIdList(history, traderInfoList);
 

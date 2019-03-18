@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: sharuopeng
-* @create: 2019/02/23
+* @create: 2019/03/17
  **/
 @Data
 public class FactoryMerchantMapEntityVO {
@@ -30,6 +30,12 @@ public class FactoryMerchantMapEntityVO {
  
     @ApiModelProperty(value = "销售代表数量")
     private Integer traderNumber;
+ 
+    @ApiModelProperty(value = "商品活动数量")
+    private Integer discountNumber;
+ 
+    @ApiModelProperty(value = "促销活动数量")
+    private Integer campaignNumber;
  
     @ApiModelProperty(value = "有效期起始")
     private Date startAt;

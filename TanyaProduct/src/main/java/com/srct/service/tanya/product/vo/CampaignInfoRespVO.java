@@ -8,12 +8,12 @@
  */
 package com.srct.service.tanya.product.vo;
 
-import java.util.Date;
-
 import com.srct.service.tanya.role.vo.RoleInfoVO;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -23,16 +23,17 @@ import lombok.Data;
 public class CampaignInfoRespVO {
 
     private CampaignInfoVO campaignInfoVO;
-
     @ApiModelProperty(value = "发起销售人员信息")
     private RoleInfoVO traderInfoVO;
-
     @ApiModelProperty(value = "促销商品信息")
     private GoodsInfoVO goodsInfoVO;
-
     @ApiModelProperty(value = "确认状态")
     private Byte confirmStatus;
-
     @ApiModelProperty(value = "确认时间")
     private Date confirmAt;
+    @ApiModelProperty(value = "绑定促销员")
+    private List<RoleInfoVO> bindSalesmanList;
+    @ApiModelProperty(value = "未绑定促销员")
+    private List<RoleInfoVO> undbindSalesmanList;
+
 }

@@ -93,8 +93,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
         DiscountInfo discountInfo = new DiscountInfo();
         BeanUtil.copyProperties(discount.getReq().getDiscount(), discountInfo);
-        discountInfo.setGoodsId(discount.getReq().getGoodsId());
-
+        if (discount.getReq().getGoodsId() != null) {
+            discountInfo.setGoodsId(discount.getReq().getGoodsId());
+        }
         if (discountInfo.getStartAt() == null && discountInfo.getEndAt() == null) {
             super.makeDefaultPeriod(discountInfo);
         }

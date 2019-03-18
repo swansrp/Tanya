@@ -8,17 +8,6 @@
  */
 package com.srct.service.tanya.product.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -30,11 +19,20 @@ import com.srct.service.tanya.product.service.CampaignService;
 import com.srct.service.tanya.product.vo.CampaignInfoReqVO;
 import com.srct.service.tanya.product.vo.CampaignInfoRespVO;
 import com.srct.service.utils.log.Log;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author sharuopeng
@@ -61,21 +59,22 @@ public class CampaignController {
         Log.i("***modifyCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<CampaignInfoReqVO> campaign = new ProductBO<CampaignInfoReqVO>();
+        ProductBO<CampaignInfoReqVO> campaign = new ProductBO<>();
         campaign.setReq(req);
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
         QueryRespVO<CampaignInfoRespVO> goodsInfoVOList = campaignService.updateCampaignInfo(campaign);
-
+        if (req.getUndbindSalesmanIdList() != null || req.getBindSalesmanIdList() != null) {
+            goodsInfoVOList = campaignService.bindCampaignInfoSalesman(campaign);
+        }
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 
     @ApiOperation(value = "获取促销活动", notes = "获取促销活动详情,无id则返回渠道促销活动列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = false),
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid", value = "促销活动id",
-            required = false)})
+            @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid", value = "促销活动id")})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> getCampaign(
         @RequestBody QueryReqVO req,
         @RequestParam(value = "campaignid", required = false) Integer campaignId) {
@@ -84,7 +83,7 @@ public class CampaignController {
         Log.i("***getCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> campaign = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> campaign = new ProductBO<>();
         campaign.setReq(req);
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
@@ -102,14 +101,14 @@ public class CampaignController {
         @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "confirmed", value = "true/false",
             required = true)})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> confirm(
-        @RequestParam(value = "campaignid", required = true) Integer campaignId,
-        @RequestParam(value = "confirmed", required = true) boolean confirmed) {
+            @RequestParam(value = "campaignid") Integer campaignId,
+            @RequestParam(value = "confirmed") boolean confirmed) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***confirmCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> campaign = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> campaign = new ProductBO<>();
         campaign.setProductType("campaign");
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
@@ -125,13 +124,13 @@ public class CampaignController {
         value = "促销活动id", required = true)})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
-        del(@RequestParam(value = "campaignid", required = true) Integer campaignId) {
+    del(@RequestParam(value = "campaignid") Integer campaignId) {
         UserInfo info = (UserInfo)request.getAttribute("user");
         RoleInfo role = (RoleInfo)request.getAttribute("role");
         Log.i("***DelCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<CampaignInfoReqVO> campaign = new ProductBO<CampaignInfoReqVO>();
+        ProductBO<CampaignInfoReqVO> campaign = new ProductBO<>();
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
         campaign.setProductId(campaignId);

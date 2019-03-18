@@ -8,14 +8,12 @@
  */
 package com.srct.service.tanya.product.vo;
 
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @author sharuopeng
@@ -31,6 +29,9 @@ public class CampaignInfoVO {
 
     @ApiModelProperty(value = "促销活动备注")
     private String comment;
+
+    @ApiModelProperty(value = "商品id")
+    private String goodsId;
 
     @ApiModelProperty(value = "有效期起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd")

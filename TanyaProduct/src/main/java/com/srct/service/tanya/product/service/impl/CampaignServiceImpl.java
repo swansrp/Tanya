@@ -14,6 +14,7 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfoExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
@@ -28,6 +29,7 @@ import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -42,42 +44,29 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
     public QueryRespVO<CampaignInfoRespVO> getCampaignInfo(ProductBO<QueryReqVO> campaign) {
         List<TraderInfo> traderInfoList = super.getTraderInfo(campaign);
         List<Integer> salesmanTraderMapTraderIdList =
-            super.buildSalesmanTraderMapTraderIdList(campaign, traderInfoList);
-        CampaignInfoExample campaignInfoExample = buildCampaignInfoExample(campaign, salesmanTraderMapTraderIdList);
-        QueryRespVO<CampaignInfoRespVO> res = buildResByExample(campaign, campaignInfoExample);
-        return res;
+                super.buildSalesmanTraderMapTraderIdList(campaign, traderInfoList);
+        CampaignInfoExample campaignInfoExample =
+                buildCampaignInfoExample(campaign, salesmanTraderMapTraderIdList);
+        return buildResByExample(campaign, campaignInfoExample);
     }
 
-    /**
-     * @param campaign
-     * @param campaignInfoExample
-     * @return
-     */
     private QueryRespVO<CampaignInfoRespVO>
         buildResByExample(ProductBO<QueryReqVO> campaign, CampaignInfoExample campaignInfoExample) {
         PageInfo<?> pageInfo = super.buildPage(campaign);
         List<CampaignInfo> campaignInfoList = campaignInfoDao.getCampaignInfoByExample(campaignInfoExample, pageInfo);
 
-        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<CampaignInfoRespVO>();
+        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, campaign);
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
 
-        campaignInfoList.forEach(campaignInfo -> {
-            res.getInfo().add(buildCampaignInfoRespVO(campaignInfo));
-        });
+        campaignInfoList.forEach(campaignInfo -> res.getInfo().add(buildCampaignInfoRespVO(campaignInfo)));
         return res;
     }
 
-    /**
-     * @param campaign
-     * @param salesmanTraderMapIdList
-     * @return
-     */
     private CampaignInfoExample
         buildCampaignInfoExample(ProductBO<?> campaign, List<Integer> salesmanTraderMapTraderIdList) {
-        CampaignInfoExample campaignInfoExample =
-            (CampaignInfoExample)super.makeQueryExample(campaign, CampaignInfoExample.class);
+        CampaignInfoExample campaignInfoExample = super.makeQueryExample(campaign, CampaignInfoExample.class);
         CampaignInfoExample.Criteria campaignCriteria = campaignInfoExample.getOredCriteria().get(0);
         campaignCriteria.andTraderIdIn(salesmanTraderMapTraderIdList);
         if (campaign.getProductId() != null) {
@@ -92,13 +81,15 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
 
         CampaignInfo campaignInfo = new CampaignInfo();
         BeanUtil.copyProperties(campaign.getReq().getCampaign(), campaignInfo);
-
-        campaignInfo.setGoodsId(campaign.getReq().getGoodsId());
+        if (campaign.getReq().getGoodsId() != null) {
+            campaignInfo.setGoodsId(campaign.getReq().getGoodsId());
+        }
 
         if (campaignInfo.getStartAt() == null && campaignInfo.getEndAt() == null) {
             super.makeDefaultPeriod(campaignInfo);
         }
 
+        //only trader allow to update
         List<TraderInfo> traderInfoList = super.getTraderInfo(campaign);
         TraderInfo traderInfo = traderInfoList.get(0);
         campaignInfo.setTraderId(traderInfo.getId());
@@ -106,16 +97,12 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         campaignInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         campaignInfoDao.updateCampaignInfo(campaignInfo);
 
-        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<CampaignInfoRespVO>();
+        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildCampaignInfoRespVO(campaignInfo));
 
         return res;
     }
 
-    /**
-     * @param campaignInfo
-     * @return
-     */
     private CampaignInfoRespVO buildCampaignInfoRespVO(CampaignInfo campaignInfo) {
         CampaignInfoVO campaignInfoVO = new CampaignInfoVO();
         BeanUtil.copyProperties(campaignInfo, campaignInfoVO);
@@ -128,6 +115,34 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         res.setGoodsInfoVO(goodsInfoVO);
         res.setCampaignInfoVO(campaignInfoVO);
         res.setTraderInfoVO(traderInfoVO);
+        res.setBindSalesmanList(getBindSalesmanList(campaignInfo));
+        res.setUndbindSalesmanList(getUnbindSalesmanList(campaignInfo));
+        return res;
+    }
+
+    private List<RoleInfoVO> getBindSalesmanList(CampaignInfo campaignInfo) {
+        CampaignSalesmanMap salesmanCampaignMapEx = new CampaignSalesmanMap();
+        salesmanCampaignMapEx.setCampaignId(campaignInfo.getId());
+        salesmanCampaignMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<CampaignSalesmanMap> campaignSalesmanMapList = campaignSalesmanMapDao.getCampaignSalesmanMapSelective(salesmanCampaignMapEx);
+        if (campaignSalesmanMapList == null) {
+            return null;
+        }
+        List<RoleInfoVO> res = new ArrayList<>();
+        campaignSalesmanMapList.forEach(campaignSalesmanMap -> res.add(super.getRoleInfoVO(campaignSalesmanMap.getSalesmanId(), "salesman")));
+        return res;
+    }
+
+    private List<RoleInfoVO> getUnbindSalesmanList(CampaignInfo campaignInfo) {
+        CampaignSalesmanMap salesmanCampaignMapEx = new CampaignSalesmanMap();
+        salesmanCampaignMapEx.setCampaignId(campaignInfo.getId());
+        salesmanCampaignMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        List<CampaignSalesmanMap> campaignSalesmanMapList = campaignSalesmanMapDao.getCampaignSalesmanMapSelective(salesmanCampaignMapEx);
+        if (campaignSalesmanMapList == null) {
+            return null;
+        }
+        List<RoleInfoVO> res = new ArrayList<>();
+        campaignSalesmanMapList.forEach(campaignSalesmanMap -> res.add(super.getRoleInfoVO(campaignSalesmanMap.getSalesmanId(), "salesman")));
         return res;
     }
 
@@ -143,7 +158,7 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         }
         campaignInfo.setConfirmAt(new Date());
         campaignInfoDao.updateCampaignInfo(campaignInfo);
-        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<CampaignInfoRespVO>();
+        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildCampaignInfoRespVO(campaignInfo));
         return res;
     }
@@ -155,8 +170,55 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfobyId(campaign.getProductId());
         campaignInfoDao.delCampaignInfo(campaignInfo);
 
-        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<CampaignInfoRespVO>();
+        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildCampaignInfoRespVO(campaignInfo));
+        return res;
+    }
+
+    @Override
+    public QueryRespVO<CampaignInfoRespVO> bindCampaignInfoSalesman(ProductBO<CampaignInfoReqVO> campaign) {
+        validateBind(campaign);
+        CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfobyId(campaign.getReq().getCampaign().getId());
+        if (campaign.getReq().getBindSalesmanIdList() != null && campaign.getReq().getBindSalesmanIdList().size() > 0) {
+            campaign.getReq().getBindSalesmanIdList().forEach(id -> {
+                CampaignSalesmanMap salesmanCampaignMap = new CampaignSalesmanMap();
+                salesmanCampaignMap.setCampaignId(campaignInfo.getId());
+                salesmanCampaignMap.setSalesmanId(id);
+                List<CampaignSalesmanMap> salesmanCampaignMapList = campaignSalesmanMapDao.getCampaignSalesmanMapSelective(salesmanCampaignMap);
+                if (salesmanCampaignMapList != null && salesmanCampaignMapList.size() > 0) {
+                    salesmanCampaignMap = salesmanCampaignMapList.get(0);
+                    if (salesmanCampaignMap.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_INVALID)) {
+                        salesmanCampaignMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                        campaignSalesmanMapDao.updateCampaignSalesmanMap(salesmanCampaignMap);
+                    }
+                } else {
+                    salesmanCampaignMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                    campaignSalesmanMapDao.updateCampaignSalesmanMap(salesmanCampaignMap);
+                }
+            });
+        }
+        if (campaign.getReq().getUndbindSalesmanIdList() != null && campaign.getReq().getUndbindSalesmanIdList().size() > 0) {
+            campaign.getReq().getUndbindSalesmanIdList().forEach(id -> {
+                CampaignSalesmanMap salesmanCampaignMap = new CampaignSalesmanMap();
+                salesmanCampaignMap.setCampaignId(campaignInfo.getId());
+                salesmanCampaignMap.setSalesmanId(id);
+                List<CampaignSalesmanMap> salesmanCampaignMapList = campaignSalesmanMapDao.getCampaignSalesmanMapSelective(salesmanCampaignMap);
+                if (salesmanCampaignMapList != null && salesmanCampaignMapList.size() > 0) {
+                    salesmanCampaignMap = salesmanCampaignMapList.get(0);
+                    if (salesmanCampaignMap.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
+                        salesmanCampaignMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                        campaignSalesmanMapDao.updateCampaignSalesmanMap(salesmanCampaignMap);
+                    }
+                } else {
+                    salesmanCampaignMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                    campaignSalesmanMapDao.updateCampaignSalesmanMap(salesmanCampaignMap);
+                }
+            });
+        }
+
+        QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
+        res.getInfo().add(buildCampaignInfoRespVO(campaignInfo));
+
         return res;
     }
 
@@ -164,22 +226,45 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
     protected void validateUpdate(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
         if (!roleType.equals("trader")) {
-            throw new ServiceException("dont allow to update campaign by role " + roleType);
+            throw new ServiceException("不允许[" + roleType + "]角色修改促销活动");
         }
         ProductBO<CampaignInfoReqVO> campaign = (ProductBO<CampaignInfoReqVO>)req;
         if (campaign.getReq().getCampaign().getId() != null) {
             List<TraderInfo> traderInfoList = super.getTraderInfo(campaign);
-            List<Integer> salestraderMapTraderIdList =
+            List<Integer> salesTraderMapTraderIdList =
                 super.buildSalesmanTraderMapTraderIdList(campaign, traderInfoList);
-            CampaignInfoExample campaignExample = buildCampaignInfoExample(campaign, salestraderMapTraderIdList);
+            CampaignInfoExample campaignExample = buildCampaignInfoExample(campaign, salesTraderMapTraderIdList);
             campaignExample.getOredCriteria().get(0).andIdEqualTo(campaign.getReq().getCampaign().getId());
             try {
                 if (campaignInfoDao.getCampaignInfoByExample(campaignExample).get(0).getConfirmAt() != null) {
-                    throw new ServiceException("alreday confirmed campaign dont allow to update ");
+                    throw new ServiceException("已经审批不能更新");
                 }
             } catch (Exception e) {
-                throw new ServiceException("cant update the campaign id " + campaign.getReq().getCampaign().getId()
-                    + " reason: " + e.getMessage());
+                throw new ServiceException("不能更新促销活动:" + campaign.getReq().getCampaign().getId()
+                        + " 原因为: " + e.getMessage());
+            }
+        }
+    }
+
+    private void validateBind(ProductBO<?> req) {
+        String roleType = req.getCreaterRole().getRole();
+        if (!roleType.equals("trader")) {
+            throw new ServiceException("不允许[" + roleType + "]角色绑定促销活动");
+        }
+        ProductBO<CampaignInfoReqVO> campaign = (ProductBO<CampaignInfoReqVO>) req;
+        if (campaign.getReq().getCampaign().getId() != null) {
+            List<TraderInfo> traderInfoList = super.getTraderInfo(campaign);
+            List<Integer> salesTraderMapTraderIdList =
+                    super.buildSalesmanTraderMapTraderIdList(campaign, traderInfoList);
+            CampaignInfoExample campaignExample = buildCampaignInfoExample(campaign, salesTraderMapTraderIdList);
+            campaignExample.getOredCriteria().get(0).andIdEqualTo(campaign.getReq().getCampaign().getId());
+            try {
+                if (campaignInfoDao.getCampaignInfoByExample(campaignExample).get(0).getConfirmAt() == null) {
+                    throw new ServiceException("尚未审批不能绑定");
+                }
+            } catch (Exception e) {
+                throw new ServiceException("不能绑定促销活动: " + campaign.getReq().getCampaign().getId()
+                        + " 原因为: " + e.getMessage());
             }
         }
     }
@@ -194,7 +279,7 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
             throw new ServiceException("approve status is null ");
         }
 
-        ProductBO<CampaignInfoReqVO> campaign = (ProductBO<CampaignInfoReqVO>)req;
+        ProductBO<CampaignInfoReqVO> campaign = (ProductBO<CampaignInfoReqVO>) req;
         UserInfo userInfo = campaign.getCreaterInfo();
         CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfobyId(campaign.getProductId());
         TraderInfo traderInfo = traderInfoDao.getTraderInfobyId(campaignInfo.getTraderId());
@@ -213,7 +298,7 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         if (!roleType.equals("trader")) {
             throw new ServiceException("dont allow to delete campaign by role " + roleType);
         }
-        ProductBO<CampaignInfoReqVO> campaign = (ProductBO<CampaignInfoReqVO>)req;
+        ProductBO<CampaignInfoReqVO> campaign = (ProductBO<CampaignInfoReqVO>) req;
         List<TraderInfo> traderInfoList = super.getTraderInfo(campaign);
         List<Integer> salestraderMapTraderIdList = super.buildSalesmanTraderMapTraderIdList(campaign, traderInfoList);
         CampaignInfoExample campaignExample = buildCampaignInfoExample(campaign, salestraderMapTraderIdList);

@@ -13,7 +13,6 @@ package com.srct.service.tanya.role.bo;
 
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -36,9 +35,6 @@ public class UpdateRoleInfoBO extends RoleInfoBaseBO {
     @ApiModelProperty(value = "创建人角色")
     private RoleInfo createrRole;
 
-    @ApiModelProperty(value = "商品数量")
-    private Integer goodsNumber;
-
-    @ApiModelProperty(value = "销售员数量")
-    private Integer traderNumber;
+    @ApiModelProperty(value = "权限控制")
+    private PermissionDetailsBO permissionDetails;
 }
