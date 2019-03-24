@@ -3,7 +3,7 @@
  * Description:
  * Copyright: Copyright (c) 2019
  * Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo
  * @author Sharp
@@ -16,7 +16,6 @@ import lombok.Data;
 
 /**
  * @author Sharp
- *
  */
 @Data
 public class GoodsInfoVO {

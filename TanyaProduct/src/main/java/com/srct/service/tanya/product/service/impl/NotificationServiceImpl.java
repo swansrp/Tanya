@@ -1,17 +1,12 @@
 /**
  * Title: NotificationServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service.impl
  * @author sharuopeng
  * @date 2019-02-28 18:20:08
  */
 package com.srct.service.tanya.product.service.impl;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
@@ -29,10 +24,13 @@ import com.srct.service.tanya.product.vo.NotificationInfoRespVO;
 import com.srct.service.tanya.product.vo.NotificationInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import com.srct.service.utils.BeanUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 @Service
 public class NotificationServiceImpl extends ProductServiceBaseImpl implements NotificationService {
@@ -46,13 +44,12 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(notification);
         FactoryInfo factoryInfo = factoryInfoList.get(0);
 
-        NotificationInfo notificationInfo = null;
+        NotificationInfo notificationInfo;
         if (notification.getReq().getNotification().getId() != null) {
             notificationInfo =
-                notificationInfoDao.getNotificationInfobyId(notification.getReq().getNotification().getId());
-            if (notificationInfo == null || notificationInfo.getFactoryId() != factoryInfo.getId()) {
-                throw new ServiceException(
-                    "The notification dont belong to your factory - trader: " + notificationInfo.getId());
+                    notificationInfoDao.getNotificationInfobyId(notification.getReq().getNotification().getId());
+            if (notificationInfo == null || !notificationInfo.getFactoryId().equals(factoryInfo.getId())) {
+                throw new ServiceException("无权观看此公告");
             }
         } else {
             notificationInfo = new NotificationInfo();
@@ -62,7 +59,7 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         notificationInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         notificationInfoDao.updateNotificationInfo(notificationInfo);
 
-        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<NotificationInfoRespVO>();
+        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildNotificationInfoRespVO(notificationInfo));
         return res;
 
@@ -81,9 +78,9 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
 
         PageInfo<?> pageInfo = super.buildPage(notification);
         List<NotificationInfo> notificationInfoList =
-            notificationInfoDao.getNotificationInfoByExample(example, pageInfo);
+                notificationInfoDao.getNotificationInfoByExample(example, pageInfo);
 
-        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<NotificationInfoRespVO>();
+        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, notification);
         res.setTotalPages(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
@@ -96,10 +93,6 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         return res;
     }
 
-    /**
-     * @param notificationInfo
-     * @return
-     */
     private NotificationInfoRespVO buildNotificationInfoRespVO(NotificationInfo notificationInfo) {
         NotificationInfoRespVO notificationInfoRespVO = new NotificationInfoRespVO();
         NotificationInfoVO vo = new NotificationInfoVO();
@@ -135,11 +128,12 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         FactoryInfo factoryInfo = factoryInfoList.get(0);
         NotificationInfo notificationInfo = notificationInfoDao.getNotificationInfobyId(notification.getProductId());
         if (!notificationInfo.getFactoryId().equals(factoryInfo.getId())) {
-            throw new ServiceException("Dont allow to delete notification " + notificationInfo.getFactoryId()
-                + " by factory " + factoryInfo.getId());
+            throw new ServiceException(
+                    "Dont allow to delete notification " + notificationInfo.getFactoryId() + " by factory "
+                            + factoryInfo.getId());
         }
         notificationInfoDao.delNotificationInfo(notificationInfo);
-        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<NotificationInfoRespVO>();
+        QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildNotificationInfoRespVO(notificationInfo));
         return res;
     }

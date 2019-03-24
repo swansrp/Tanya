@@ -1,6 +1,6 @@
 /**
  * Title: NotificationInfoVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo
  * @author sharuopeng
@@ -8,18 +8,15 @@
  */
 package com.srct.service.tanya.product.vo;
 
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @author sharuopeng
- *
  */
 @Data
 public class NotificationInfoVO {

@@ -1,6 +1,6 @@
 /**
  * Title: CampaingInfoVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo
  * @author sharuopeng
@@ -16,7 +16,6 @@ import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 @Data
 public class CampaignInfoReqVO extends QueryReqVO {

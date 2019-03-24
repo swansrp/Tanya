@@ -1,6 +1,6 @@
 /**
  * Title: OrderServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service.impl
  * @author sharuopeng
@@ -12,12 +12,23 @@ import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
-import com.srct.service.tanya.common.datalayer.tanya.entity.*;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfoExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.vo.QueryReqVO;
 import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.OrderService;
-import com.srct.service.tanya.product.vo.*;
+import com.srct.service.tanya.product.vo.DiscountInfoVO;
+import com.srct.service.tanya.product.vo.GoodsInfoVO;
+import com.srct.service.tanya.product.vo.OrderInfoReqVO;
+import com.srct.service.tanya.product.vo.OrderInfoRespVO;
+import com.srct.service.tanya.product.vo.OrderInfoVO;
+import com.srct.service.tanya.product.vo.ShopInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +39,6 @@ import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 @Service
 public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderService {
@@ -39,19 +49,13 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     public QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order) {
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(order);
         List<Integer> traderFactoryMerchantMapIdList =
-            super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
+                super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
         OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
-        QueryRespVO<OrderInfoRespVO> res = buildResByExample(order, orderExample);
-        return res;
+        return buildResByExample(order, orderExample);
     }
 
-    /**
-     * @param order
-     * @param traderFactoryMerchantMapIdList
-     * @return
-     */
     private OrderInfoExample buildOrderInfoExample(ProductBO<?> order, List<Integer> traderFactoryMerchantMapIdList) {
-        OrderInfoExample orderExample = (OrderInfoExample)super.makeQueryExample(order, OrderInfoExample.class);
+        OrderInfoExample orderExample = super.makeQueryExample(order, OrderInfoExample.class);
         OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
         orderCriteria.andTraderFactoryMerchantIdIn(traderFactoryMerchantMapIdList);
         if (order.getProductId() != null) {
@@ -60,23 +64,16 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         return orderExample;
     }
 
-    /**
-     * @param order
-     * @param orderExample
-     * @return
-     */
     private QueryRespVO<OrderInfoRespVO> buildResByExample(ProductBO<QueryReqVO> order, OrderInfoExample orderExample) {
         PageInfo<?> pageInfo = super.buildPage(order);
         List<OrderInfo> orderInfoList = orderInfoDao.getOrderInfoByExample(orderExample, pageInfo);
 
-        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
+        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, order);
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
 
-        orderInfoList.forEach(orderInfo -> {
-            res.getInfo().add(buildOrderInfoRespVO(orderInfo));
-        });
+        orderInfoList.forEach(orderInfo -> res.getInfo().add(buildOrderInfoRespVO(orderInfo)));
         return res;
     }
 
@@ -101,15 +98,12 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         orderInfoDao.updateOrderInfo(orderInfo);
 
-        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
+        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildOrderInfoRespVO(orderInfo));
 
         return res;
     }
 
-    /**
-     * @param orderInfo
-     */
     private OrderInfoRespVO buildOrderInfoRespVO(OrderInfo orderInfo) {
         OrderInfoVO orderInfoVO = new OrderInfoVO();
         BeanUtil.copyProperties(orderInfo, orderInfoVO);
@@ -121,12 +115,14 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         GoodsInfoVO goodsInfoVO = super.getGoodsInfoVObyId(orderInfo.getGoodsId());
         ShopInfoVO shopInfoVO = super.getShopInfoVObyId(orderInfo.getShopId());
         TraderFactoryMerchantMap map =
-            traderFactoryMerchantMapDao.getTraderFactoryMerchantMapbyId(orderInfo.getTraderFactoryMerchantId());
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapbyId(orderInfo.getTraderFactoryMerchantId());
         FactoryMerchantMap factoryMerchantMap =
-            factoryMerchantMapDao.getFactoryMerchantMapbyId(map.getFactoryMerchantMapId());
+                factoryMerchantMapDao.getFactoryMerchantMapbyId(map.getFactoryMerchantMapId());
         RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
         RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
         RoleInfoVO traderInfoVO = super.getRoleInfoVO(map.getTraderId(), "trader");
+        RoleInfoVO merchantConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getMerchantConfirmBy(), "merchant");
+        RoleInfoVO factoryConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getFactoryConfirmBy(), "factory");
         res.setDiscountInfoVO(discountInfoVO);
         res.setFactoryInfoVO(factoryInfoVO);
         res.setGoodsInfoVO(goodsInfoVO);
@@ -134,7 +130,8 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         res.setOrderInfoVO(orderInfoVO);
         res.setShopInfoVO(shopInfoVO);
         res.setTraderInfoVO(traderInfoVO);
-
+        res.setMerchantConfirmRoleInfoVO(merchantConfirmRoleInfoVO);
+        res.setFactoryConfirmRoleInfoVO(factoryConfirmRoleInfoVO);
         return res;
     }
 
@@ -145,11 +142,11 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         UserInfo userInfo = order.getCreaterInfo();
         OrderInfo orderInfo = orderInfoDao.getOrderInfobyId(order.getProductId());
         TraderFactoryMerchantMap traderFactoryMerchantMap =
-            traderFactoryMerchantMapDao.getTraderFactoryMerchantMapbyId(orderInfo.getTraderFactoryMerchantId());
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapbyId(orderInfo.getTraderFactoryMerchantId());
         if (roleType.equals("merchant")) {
             MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
             FactoryMerchantMap factoryMerchantMap =
-                factoryMerchantMapDao.getFactoryMerchantMapbyId(traderFactoryMerchantMap.getFactoryMerchantMapId());
+                    factoryMerchantMapDao.getFactoryMerchantMapbyId(traderFactoryMerchantMap.getFactoryMerchantMapId());
             if (!factoryMerchantMap.getMerchantId().equals(merchantInfo.getId())) {
                 throw new ServiceException("dont allow to approve order by merchant " + merchantInfo.getId());
             } else if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getFactoryConfirmStatus())) {
@@ -161,6 +158,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
             }
             orderInfo.setMerchantConfirmAt(new Date());
+            orderInfo.setMerchantConfirmBy(super.getRoleInfoVOByReq(order).getId());
             orderInfoDao.updateOrderInfo(orderInfo);
         } else if (roleType.equals("factory")) {
             FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
@@ -168,7 +166,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 throw new ServiceException("dont allow to approve order by factory " + factoryInfo.getId());
             }
             if (DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getMerchantConfirmStatus())) {
-                if (order.getApproved() == false) {
+                if (!order.getApproved()) {
                     throw new ServiceException("merchant dont allow to reject order when merchant has confirmed");
                 }
             }
@@ -178,9 +176,10 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 orderInfo.setFactoryConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
             }
             orderInfo.setFactoryConfirmAt(new Date());
+            orderInfo.setFactoryConfirmBy(super.getRoleInfoVOByReq(order).getId());
             orderInfoDao.updateOrderInfo(orderInfo);
         }
-        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
+        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildOrderInfoRespVO(orderInfo));
         return res;
     }
@@ -190,7 +189,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         validateDelete(order);
         OrderInfo orderInfo = orderInfoDao.getOrderInfobyId(order.getProductId());
         orderInfoDao.delOrderInfo(orderInfo);
-        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<OrderInfoRespVO>();
+        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildOrderInfoRespVO(orderInfo));
         return res;
     }
@@ -202,24 +201,24 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             throw new ServiceException("dont allow to delete order by role " + roleType);
         }
 
-        ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>)req;
+        ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>) req;
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
         List<Integer> traderFactoryMerchantMapIdList =
-            super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
+                super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
         OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
         orderExample.getOredCriteria().get(0).andIdEqualTo(order.getProductId());
-        OrderInfo orderExsited = null;
+        OrderInfo orderExsited;
         try {
             orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
         } catch (Exception e) {
             throw new ServiceException("cant delete the order id " + order.getReq().getOrder().getId());
         }
         if (orderExsited.getFactoryConfirmAt() != null) {
-            throw new ServiceException("dont allow to delete already confirmed order by factory "
-                + DF.format(orderExsited.getFactoryConfirmAt()));
+            throw new ServiceException("dont allow to delete already confirmed order by factory " + DF
+                    .format(orderExsited.getFactoryConfirmAt()));
         } else if (orderExsited.getMerchantConfirmAt() != null) {
-            throw new ServiceException("dont allow to delete already confirmed order by merchant "
-                + DF.format(orderExsited.getMerchantConfirmAt()));
+            throw new ServiceException("dont allow to delete already confirmed order by merchant " + DF
+                    .format(orderExsited.getMerchantConfirmAt()));
         }
 
     }
@@ -239,14 +238,14 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             throw new ServiceException("dont allow to update order by role " + roleType);
         }
 
-        ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>)req;
+        ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>) req;
         if (order.getReq().getOrder().getId() != null) {
             List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
             List<Integer> traderFactoryMerchantMapIdList =
-                super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
+                    super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
             OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
             orderExample.getOredCriteria().get(0).andIdEqualTo(order.getReq().getOrder().getId());
-            OrderInfo orderExsited = null;
+            OrderInfo orderExsited;
             try {
                 orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
             } catch (Exception e) {
@@ -254,8 +253,8 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             }
             if (orderExsited.getFactoryConfirmAt() != null || orderExsited.getMerchantConfirmAt() != null) {
                 throw new ServiceException(
-                    "already confirmed order by factory " + DF.format(orderExsited.getFactoryConfirmAt())
-                        + " by merchant" + DF.format(orderExsited.getMerchantConfirmAt()));
+                        "already confirmed order by factory " + DF.format(orderExsited.getFactoryConfirmAt())
+                                + " by merchant" + DF.format(orderExsited.getMerchantConfirmAt()));
             }
         }
     }

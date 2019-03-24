@@ -1,6 +1,6 @@
 /**
  * Title: SalesmanRoleService.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.service
  * @author sharuopeng
@@ -22,10 +22,10 @@ import java.util.List;
 
 public interface SalesmanRoleService {
 
-    SalesmanInfo getSalesmanInfoByUser(UserInfo userInfo);
+	List<SalesmanInfo> getSalesmanInfoListByUser(UserInfo userInfo);
 
-    List<TraderInfo> getTraderInfoByUser(UserInfo userInfo);
+	List<TraderInfo> getTraderInfoByUser(UserInfo userInfo);
 
-    List<SalesmanTraderMap> getSalesmanTraderMap(UserInfo userInfo);
+	List<SalesmanTraderMap> getSalesmanTraderMap(UserInfo userInfo);
 
 }

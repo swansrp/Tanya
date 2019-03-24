@@ -1,16 +1,12 @@
 /**
  * Title: ShopServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service.impl
  * @author sharuopeng
  * @date 2019-02-22 09:29:07
  */
 package com.srct.service.tanya.product.service.impl;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
@@ -24,10 +20,12 @@ import com.srct.service.tanya.product.vo.ShopInfoReqVO;
 import com.srct.service.tanya.product.vo.ShopInfoRespVO;
 import com.srct.service.tanya.product.vo.ShopInfoVO;
 import com.srct.service.utils.BeanUtil;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 @Service
 public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopService {
@@ -42,7 +40,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         PageInfo<?> pageInfo = super.buildPage(shop);
         List<ShopInfo> shopInfoList = shopInfoDao.getShopInfoSelective(shopInfoEx, pageInfo);
 
-        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<ShopInfoRespVO>();
+        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, shop);
         res.setTotalPages(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
@@ -62,20 +60,17 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         shopInfoDao.updateShopInfo(shopInfo);
 
-        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<ShopInfoRespVO>();
+        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildShopInfoRespVO(shopInfo));
 
         return res;
     }
 
-    /**
-     * @param shopInfo
-     * @return
-     */
     private ShopInfoRespVO buildShopInfoRespVO(ShopInfo shopInfo) {
         ShopInfoVO shopInfoVO = new ShopInfoVO();
         BeanUtil.copyProperties(shopInfo, shopInfoVO);
-        ShopInfoRespVO shopInfoResp = new ShopInfoRespVO(shopInfoVO);
+        ShopInfoRespVO shopInfoResp = new ShopInfoRespVO();
+        shopInfoResp.setShopInfoVO(shopInfoVO);
         return shopInfoResp;
     }
 
@@ -84,7 +79,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         validateDelete(shop);
         ShopInfo shopInfo = shopInfoDao.getShopInfobyId(shop.getProductId());
         shopInfoDao.delShopInfo(shopInfo);
-        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<ShopInfoRespVO>();
+        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildShopInfoRespVO(shopInfo));
         return res;
     }

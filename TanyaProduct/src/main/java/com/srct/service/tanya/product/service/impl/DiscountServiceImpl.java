@@ -1,6 +1,6 @@
 /**
  * Title: DiscountServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service.impl
  * @author sharuopeng
@@ -34,7 +34,6 @@ import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 @Service
 public class DiscountServiceImpl extends ProductServiceBaseImpl implements DiscountService {
@@ -45,19 +44,12 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(discount);
         List<Integer> factoryMerchantMapIdList = super.buildFactoryMerchantMapIdList(discount, factoryInfoList);
         DiscountInfoExample discountExample = buildDiscountInfoExample(discount, factoryMerchantMapIdList);
-        QueryRespVO<DiscountInfoRespVO> res = buildResByExample(discount, discountExample);
-        return res;
+        return buildResByExample(discount, discountExample);
     }
 
-    /**
-     * @param discount
-     * @param factoryMerchantMapIdList
-     * @return
-     */
-    private DiscountInfoExample
-        buildDiscountInfoExample(ProductBO<?> discount, List<Integer> factoryMerchantMapIdList) {
-        DiscountInfoExample discountExample =
-            (DiscountInfoExample)super.makeQueryExample(discount, DiscountInfoExample.class);
+    private DiscountInfoExample buildDiscountInfoExample(ProductBO<?> discount,
+            List<Integer> factoryMerchantMapIdList) {
+        DiscountInfoExample discountExample = super.makeQueryExample(discount, DiscountInfoExample.class);
         DiscountInfoExample.Criteria discountCriteria = discountExample.getOredCriteria().get(0);
         discountCriteria.andFactoryMetchatMapIdIn(factoryMerchantMapIdList);
         if (discount.getProductId() != null) {
@@ -66,24 +58,17 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         return discountExample;
     }
 
-    /**
-     * @param discount
-     * @param discountExample
-     * @return
-     */
-    private QueryRespVO<DiscountInfoRespVO>
-        buildResByExample(ProductBO<QueryReqVO> discount, DiscountInfoExample discountExample) {
+    private QueryRespVO<DiscountInfoRespVO> buildResByExample(ProductBO<QueryReqVO> discount,
+            DiscountInfoExample discountExample) {
         PageInfo<?> pageInfo = super.buildPage(discount);
         List<DiscountInfo> discountInfoList = discountInfoDao.getDiscountInfoByExample(discountExample, pageInfo);
 
-        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<DiscountInfoRespVO>();
+        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, discount);
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
 
-        discountInfoList.forEach(discountInfo -> {
-            res.getInfo().add(buildDiscountInfoRespVO(discountInfo));
-        });
+        discountInfoList.forEach(discountInfo -> res.getInfo().add(buildDiscountInfoRespVO(discountInfo)));
         return res;
     }
 
@@ -109,16 +94,13 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
         discountInfoDao.updateDiscountInfo(discountInfo);
 
-        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<DiscountInfoRespVO>();
+        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildDiscountInfoRespVO(discountInfo));
 
         return res;
 
     }
 
-    /**
-     * @param discountInfo
-     */
     private DiscountInfoRespVO buildDiscountInfoRespVO(DiscountInfo discountInfo) {
         DiscountInfoVO discountInfoVO = new DiscountInfoVO();
         BeanUtil.copyProperties(discountInfo, discountInfoVO);
@@ -131,12 +113,13 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         FactoryMerchantMap factoryMerchantMap = factoryMerchantMapDao.getFactoryMerchantMapbyId(map.getId());
         RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
         RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
+        RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(discountInfo.getConfirmBy(), "merchant");
         res.setDiscountInfoVO(discountInfoVO);
         res.setFactoryInfoVO(factoryInfoVO);
         res.setGoodsInfoVO(goodsInfoVO);
         res.setMerchantInfoVO(merchantInfoVO);
         res.setDiscountInfoVO(discountInfoVO);
-
+        res.setConfirmRoleInfoVO(confirmRoleInfoVO);
         return res;
     }
 
@@ -151,8 +134,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
             discountInfo.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
         }
         discountInfo.setConfirmAt(new Date());
+        discountInfo.setConfirmBy(super.getRoleInfoVOByReq(discount).getId());
         discountInfoDao.updateDiscountInfo(discountInfo);
-        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<DiscountInfoRespVO>();
+        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildDiscountInfoRespVO(discountInfo));
         return res;
     }
@@ -162,7 +146,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         validateDelete(discount);
         DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(discount.getProductId());
         discountInfoDao.delDiscountInfo(discountInfo);
-        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<DiscountInfoRespVO>();
+        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildDiscountInfoRespVO(discountInfo));
         return res;
     }
@@ -185,7 +169,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to update discount by role " + roleType);
         }
-        ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>)req;
+        ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>) req;
         if (discount.getReq().getDiscount().getId() != null) {
             List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(discount);
             List<Integer> factoryMerchantMapIdList = super.buildFactoryMerchantMapIdList(discount, factoryInfoList);
@@ -193,13 +177,14 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
             discountExample.getOredCriteria().get(0).andIdEqualTo(discount.getReq().getDiscount().getId());
             try {
                 if (discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmAt() != null
-                    && discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmStatus()
+                        && discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmStatus()
                         .equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
                     throw new ServiceException("alreday confirmed discount dont allow to update ");
                 }
             } catch (Exception e) {
-                throw new ServiceException("cant update the discount id " + discount.getReq().getDiscount().getId()
-                    + " reason: " + e.getMessage());
+                throw new ServiceException(
+                        "cant update the discount id " + discount.getReq().getDiscount().getId() + " reason: " + e
+                                .getMessage());
             }
         }
     }
@@ -213,11 +198,11 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         if (req.getApproved() == null) {
             throw new ServiceException("approve status is null ");
         }
-        ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>)req;
+        ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>) req;
         UserInfo userInfo = discount.getCreaterInfo();
         DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(discount.getProductId());
         FactoryMerchantMap factoryMerchantMap =
-            factoryMerchantMapDao.getFactoryMerchantMapbyId(discountInfo.getFactoryMetchatMapId());
+                factoryMerchantMapDao.getFactoryMerchantMapbyId(discountInfo.getFactoryMetchatMapId());
 
         MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
         if (!factoryMerchantMap.getMerchantId().equals(merchantInfo.getId())) {
@@ -231,20 +216,21 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to delete discount by role " + roleType);
         }
-        ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>)req;
+        ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>) req;
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(discount);
         List<Integer> factoryMerchantMapIdList = super.buildFactoryMerchantMapIdList(discount, factoryInfoList);
         DiscountInfoExample discountExample = buildDiscountInfoExample(discount, factoryMerchantMapIdList);
         discountExample.getOredCriteria().get(0).andIdEqualTo(discount.getProductId());
         try {
             if (discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmAt() != null
-                && discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmStatus()
+                    && discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmStatus()
                     .equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
                 throw new ServiceException("alreday confirmed discount dont allow to delete ");
             }
         } catch (Exception e) {
-            throw new ServiceException("cant delete the discount id " + discount.getReq().getDiscount().getId()
-                + " reason: " + e.getMessage());
+            throw new ServiceException(
+                    "cant delete the discount id " + discount.getReq().getDiscount().getId() + " reason: " + e
+                            .getMessage());
         }
     }
 

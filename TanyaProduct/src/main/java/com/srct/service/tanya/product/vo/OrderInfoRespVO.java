@@ -1,24 +1,21 @@
 /**
- * Title: OrderInfoVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
- * @Project Name: TanyaProduct
- * @Package: com.srct.service.tanya.product.vo
+ * Title: OrderInfoVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp @Project Name:
+ * TanyaProduct @Package: com.srct.service.tanya.product.vo
+ *
  * @author sharuopeng
  * @date 2019-02-18 19:49:45
  */
 package com.srct.service.tanya.product.vo;
 
-import java.util.Date;
-
 import com.srct.service.tanya.role.vo.RoleInfoVO;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author sharuopeng
- *
  */
 @ApiModel(value = "订单", description = "订单详情")
 @Data
@@ -32,11 +29,17 @@ public class OrderInfoRespVO {
     @ApiModelProperty(value = "药厂确认时间")
     private Date factoryConfirmAt;
 
+    @ApiModelProperty(value = "药厂确认者")
+    private RoleInfoVO factoryConfirmRoleInfoVO;
+
     @ApiModelProperty(value = "渠道确认状态")
     private Date merchantConfirmStatus;
 
     @ApiModelProperty(value = "渠道确认时间")
     private Date merchantConfirmAt;
+
+    @ApiModelProperty(value = "渠道确认者")
+    private RoleInfoVO merchantConfirmRoleInfoVO;
 
     @ApiModelProperty(value = "药店信息")
     private ShopInfoVO shopInfoVO;
@@ -55,5 +58,4 @@ public class OrderInfoRespVO {
 
     @ApiModelProperty(value = "销售员信息")
     private RoleInfoVO traderInfoVO;
-
 }

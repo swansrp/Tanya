@@ -1,23 +1,20 @@
 /**
- * Title: DiscountInfoRespVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
- * @Project Name: TanyaProduct
- * @Package: com.srct.service.tanya.product.vo
+ * Title: DiscountInfoRespVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp @Project
+ * Name: TanyaProduct @Package: com.srct.service.tanya.product.vo
+ *
  * @author sharuopeng
  * @date 2019-02-19 09:54:26
  */
 package com.srct.service.tanya.product.vo;
 
-import java.util.Date;
-
 import com.srct.service.tanya.role.vo.RoleInfoVO;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author sharuopeng
- *
  */
 @Data
 public class DiscountInfoRespVO {
@@ -38,4 +35,7 @@ public class DiscountInfoRespVO {
 
     @ApiModelProperty(value = "确认时间")
     private Date confirmAt;
+
+    @ApiModelProperty(value = "确认者")
+    private RoleInfoVO confirmRoleInfoVO;
 }

@@ -1,7 +1,6 @@
 /**
- * @Title: TokenServiceImpl.java Copyright (c) 2019 Sharp. All rights reserved.
- * @Project Name: TanyaCommon
- * @Package: com.srct.service.tanya.common.service.impl
+ * @Title: TokenServiceImpl.java Copyright (c) 2019 Sharp. All rights reserved. @Project Name:
+ * TanyaCommon @Package: com.srct.service.tanya.common.service.impl
  * @author Sharp
  * @date 2019-01-29 20:43:39
  */
@@ -19,16 +18,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Sharp
- *
  */
 @Service
 public class SessionServiceImpl implements SessionService {
 
     private static final String BASE_KEY = "TanyaSession:";
 
-    private static final String WECHAT_PREFIX = "WECHAT";
+    private static final String WECHAT_PREFIX = "WECHAT_";
 
-    private static final String AUTH_PREFIX = "AUTH";
+    private static final String AUTH_PREFIX = "AUTH_";
 
     private static final String RETRY_KEY = BASE_KEY + "RetryLimit:";
 
@@ -46,7 +44,6 @@ public class SessionServiceImpl implements SessionService {
 
     private static final String AES_KEY = "Tanya";
 
-
     @Autowired
     RedisService redisService;
 
@@ -61,7 +58,7 @@ public class SessionServiceImpl implements SessionService {
             redisService.delete(WECHAT_SESSION_KEY + guid);
         }
         redisService.set(WECHATTOKEN_KEY + token, SESSION_TIMEOUT, guid);
-        redisService.set(WECHAT_SESSION_KEY + guid, SESSION_TIMEOUT, token);
+        redisService.set(WECHAT_SESSION_KEY + guid, SESSION_TIMEOUT, WECHATTOKEN_KEY + token);
         redisService.delete(RETRY_KEY + guid);
         return token;
     }
@@ -127,5 +124,4 @@ public class SessionServiceImpl implements SessionService {
         redisService.delete(RESET_PASSWORD_KEY + oriToken);
         return guid;
     }
-
 }

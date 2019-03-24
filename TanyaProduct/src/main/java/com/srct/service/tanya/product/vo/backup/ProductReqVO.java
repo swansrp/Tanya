@@ -1,6 +1,6 @@
 /**
  * Title: ProductReqVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo
  * @author sharuopeng
@@ -8,16 +8,14 @@
  */
 package com.srct.service.tanya.product.vo.backup;
 
-import java.util.Date;
-
 import com.srct.service.tanya.common.vo.QueryReqVO;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author sharuopeng
- *
  */
 @Data
 public class ProductReqVO<T> extends QueryReqVO {

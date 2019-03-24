@@ -1,6 +1,6 @@
 /**
  * Title: CampaignHistoryVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo.backup
  * @author sharuopeng
@@ -13,7 +13,6 @@ import lombok.Data;
 
 /**
  * @author sharuopeng
- *
  */
 @Data
 public class CampaignHistoryVO {

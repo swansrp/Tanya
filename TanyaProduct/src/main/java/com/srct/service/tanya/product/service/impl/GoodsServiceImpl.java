@@ -1,6 +1,6 @@
 /**
  * Title: GoodsServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service.impl
  * @author Sharp
@@ -38,7 +38,6 @@ import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 @Service
 public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsService {
@@ -60,8 +59,8 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         FactoryMerchantMap factoryMerchantMap = factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = getGoodsFactoryMerchantMapList(factoryInfo);
         GoodsInfo goodsInfo = new GoodsInfo();
-        if (goodsFactoryMerchantMapList == null
-            || goodsFactoryMerchantMapList.size() < factoryMerchantMap.getGoodsNumber()) {
+        if (goodsFactoryMerchantMapList == null || goodsFactoryMerchantMapList.size() < factoryMerchantMap
+                .getGoodsNumber()) {
             BeanUtil.copyProperties(req.getReq().getGoods(), goodsInfo);
             goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             goodsInfoDao.updateGoodsInfo(goodsInfo);
@@ -149,7 +148,8 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         List<GoodsInfoRespVO> infoList = new ArrayList<>();
         res.getInfo().forEach(info -> {
             infoList.add(info);
-            List<DiscountInfo> discountList = discountService.getDiscountInfoListByGoodsId(info.getGoodsInfoVO().getId());
+            List<DiscountInfo> discountList =
+                    discountService.getDiscountInfoListByGoodsId(info.getGoodsInfoVO().getId());
             discountList.forEach(discountInfo -> infoList.add(buidGoodInfoRespVO(discountInfo)));
         });
         res.setInfo(infoList);
@@ -200,8 +200,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfobyId(goods.getProductId());
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(goods);
         FactoryInfo factoryInfo = factoryInfoList.get(0);
-        GoodsFactoryMerchantMap goodsFactoryMerchantMap =
-                getGoodsFactoryMerchantMapList(factoryInfo, goodsInfo);
+        GoodsFactoryMerchantMap goodsFactoryMerchantMap = getGoodsFactoryMerchantMapList(factoryInfo, goodsInfo);
         FactoryMerchantMap factoryMerchantMap =
                 factoryMerchantMapDao.getFactoryMerchantMapbyId(goodsFactoryMerchantMap.getId());
         factoryMerchantMap.setGoodsNumber(factoryMerchantMap.getGoodsNumber() - 1);

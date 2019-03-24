@@ -11,7 +11,7 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: sharuopeng
-* @create: 2019/02/24
+* @create: 2019/03/20
  **/
 @Data
 public class DiscountInfoEntityVO {
@@ -54,6 +54,9 @@ public class DiscountInfoEntityVO {
  
     @ApiModelProperty(value = "确认时间")
     private Date confirmAt;
+ 
+    @ApiModelProperty(value = "确认者id")
+    private Integer confirmBy;
  
     @ApiModelProperty(value = "有效性")
     private Byte valid;

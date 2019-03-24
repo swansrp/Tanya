@@ -1,6 +1,6 @@
 /**
  * Title: ReqOrderInfoVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo
  * @author sharuopeng
@@ -9,13 +9,11 @@
 package com.srct.service.tanya.product.vo;
 
 import com.srct.service.tanya.common.vo.QueryReqVO;
-
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 /**
  * @author sharuopeng
- *
  */
 @ApiModel(value = "订单请求", description = "订单请求详情")
 @Data

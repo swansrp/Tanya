@@ -1,8 +1,7 @@
 /**
- * Title: CampaignHistoryServiceImpl.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
- * @Project Name: TanyaProduct
- * @Package: com.srct.service.tanya.product.service.impl
+ * Title: CampaignHistoryServiceImpl.java Description: Copyright: Copyright (c) 2019 Company:
+ * Sharp @Project Name: TanyaProduct @Package: com.srct.service.tanya.product.service.impl
+ *
  * @author sharuopeng
  * @date 2019-03-04 20:49:48
  */
@@ -14,7 +13,6 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistory;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistoryExample;
-import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.vo.QueryReqVO;
@@ -28,12 +26,12 @@ import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 @Service
 public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implements CampaignHistoryService {
@@ -42,52 +40,53 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     public QueryRespVO<CampaignHistoryRespVO> getCampaignHistory(ProductBO<QueryReqVO> campaignHistory) {
         validateQuery(campaignHistory);
         List<TraderInfo> traderInfoList = super.getTraderInfo(campaignHistory);
-        List<Integer> salesmanInfoIdList = buildSalesmanTraderMapSalesmanIdList(campaignHistory, traderInfoList);
+        List<Integer> traderInfoIdList = buildTraderInfoIdList(traderInfoList);
+        if (campaignHistory.getTraderId() != null) {
+            if (traderInfoIdList.contains(campaignHistory.getTraderId())) {
+                traderInfoList.clear();
+                traderInfoList.add(traderInfoDao.getTraderInfobyId(campaignHistory.getTraderId()));
+            } else {
+                throw new ServiceException("不允许查看销售人员[" + campaignHistory.getTraderId() + "]的信息");
+            }
+        }
+        List<Integer> salesmanInfoIdList = super.buildSalesmanTraderMapSalesmanIdList(campaignHistory, traderInfoList);
 
         if (campaignHistory.getSalesmanId() != null) {
             if (salesmanInfoIdList.contains(campaignHistory.getSalesmanId())) {
                 salesmanInfoIdList.clear();
                 salesmanInfoIdList.add(campaignHistory.getSalesmanId());
             } else {
-                throw new ServiceException("dont allow to query salesmanId " + campaignHistory.getSalesmanId());
+                throw new ServiceException("不允许查看促销人员[" + campaignHistory.getSalesmanId() + "]的信息");
             }
         }
         CampaignHistoryExample campaignHistoryExample =
-            buildCampaignHistoryExample(campaignHistory, salesmanInfoIdList);
-        QueryRespVO<CampaignHistoryRespVO> res = buildResByExample(campaignHistory, campaignHistoryExample);
-
-        return res;
+                buildCampaignHistoryExample(campaignHistory, salesmanInfoIdList);
+        return buildResByExample(campaignHistory, campaignHistoryExample);
     }
 
-    /**
-     * @param campaignHistory
-     * @param campaignHistoryExample
-     * @return
-     */
-    private QueryRespVO<CampaignHistoryRespVO>
-        buildResByExample(ProductBO<QueryReqVO> history, CampaignHistoryExample campaignHistoryExample) {
+    private List<Integer> buildTraderInfoIdList(List<TraderInfo> traderInfoList) {
+        List<Integer> idList = new ArrayList<>();
+        traderInfoList.forEach(traderInfo -> idList.add(traderInfo.getId()));
+        return idList;
+    }
+
+    private QueryRespVO<CampaignHistoryRespVO> buildResByExample(ProductBO<QueryReqVO> history,
+            CampaignHistoryExample campaignHistoryExample) {
         PageInfo<?> pageInfo = super.buildPage(history);
         List<CampaignHistory> campaignHistoryList =
-            campaignHistoryDao.getCampaignHistoryByExample(campaignHistoryExample, pageInfo);
+                campaignHistoryDao.getCampaignHistoryByExample(campaignHistoryExample, pageInfo);
 
-        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<CampaignHistoryRespVO>();
+        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, history);
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
 
-        campaignHistoryList.forEach(campaignHistory -> {
-            res.getInfo().add(buildCampaignHistoryRespVO(campaignHistory));
-        });
+        campaignHistoryList.forEach(campaignHistory -> res.getInfo().add(buildCampaignHistoryRespVO(campaignHistory)));
         return res;
     }
 
-    /**
-     * @param campaignHistory
-     * @param salesmanInfoIdList
-     * @return
-     */
-    private CampaignHistoryExample
-        buildCampaignHistoryExample(ProductBO<QueryReqVO> campaignHistory, List<Integer> salesmanInfoIdList) {
+    private CampaignHistoryExample buildCampaignHistoryExample(ProductBO<QueryReqVO> campaignHistory,
+            List<Integer> salesmanInfoIdList) {
         CampaignHistoryExample campaignHistoryExample = new CampaignHistoryExample();
         CampaignHistoryExample.Criteria criteria = campaignHistoryExample.createCriteria();
         criteria.andSalesmanIdIn(salesmanInfoIdList);
@@ -109,25 +108,24 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     public QueryRespVO<CampaignHistoryRespVO> updateCampaignHistory(ProductBO<CampaignHistoryReqVO> history) {
         validateUpdate(history);
         UserInfo userInfo = history.getCreaterInfo();
-        SalesmanInfo salesmanInfo = salesmanRoleService.getSalesmanInfoByUser(userInfo);
-
+        List<Integer> salesmanInfoIdList = super.getSalesmanInfoIdListByUserInfo(userInfo);
         if (history.getReq().getCampaignHistory().getId() != null) {
             CampaignHistory campaignHistory =
-                campaignHistoryDao.getCampaignHistorybyId(history.getReq().getCampaignHistory().getId());
-            if (campaignHistory.getSalesmanId() != salesmanInfo.getId()) {
-                throw new ServiceException("Dont allow to update the history: "
-                    + history.getReq().getCampaignHistory().getId() + " by salesman: " + salesmanInfo.getId());
+                    campaignHistoryDao.getCampaignHistorybyId(history.getReq().getCampaignHistory().getId());
+            if (!salesmanInfoIdList.contains(campaignHistory.getSalesmanId())) {
+                throw new ServiceException(
+                        "不允许" + "[促销员" + userInfo.getName() + "]更新促销历史:" + history.getReq().getCampaignHistory()
+                                .getId());
             }
         }
 
         CampaignHistory campaignHistory = new CampaignHistory();
         BeanUtil.copyProperties(history.getReq().getCampaignHistory(), campaignHistory);
-        campaignHistory.setSalesmanId(salesmanInfo.getId());
         campaignHistory.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         campaignHistoryDao.updateCampaignHistory(campaignHistory);
 
-        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<CampaignHistoryRespVO>();
+        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildCampaignHistoryRespVO(campaignHistory));
         return res;
     }
@@ -136,14 +134,15 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     public QueryRespVO<CampaignHistoryRespVO> confirmCampaignHistory(ProductBO<QueryReqVO> history, Integer rewards) {
         validateConfirm(history);
         List<TraderInfo> traderInfoList = super.getTraderInfo(history);
-        //only trader allow to confirm
+        // only trader allow to confirm
         TraderInfo traderInfo = traderInfoList.get(0);
         List<Integer> salesmanInfoIdList = buildSalesmanTraderMapSalesmanIdList(history, traderInfoList);
 
         CampaignHistory campaignHistory = campaignHistoryDao.getCampaignHistorybyId(history.getProductId());
         if (!salesmanInfoIdList.contains(campaignHistory.getSalesmanId())) {
-            throw new ServiceException("dont allow to approve/reject campaign history : " + campaignHistory.getId()
-                + " by trader " + traderInfo.getId());
+            throw new ServiceException(
+                    "dont allow to approve/reject campaign history : " + campaignHistory.getId() + " by trader "
+                            + traderInfo.getId());
         }
 
         if (history.getApproved()) {
@@ -158,8 +157,9 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
             campaignHistory.setRewards(0);
         }
         campaignHistory.setConfirmAt(new Date());
+        campaignHistory.setConfirmBy(super.getRoleInfoVOByReq(history).getId());
         campaignHistoryDao.updateCampaignHistory(campaignHistory);
-        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<CampaignHistoryRespVO>();
+        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildCampaignHistoryRespVO(campaignHistory));
         return res;
     }
@@ -173,9 +173,11 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
         RoleInfoVO salesmanInfoVO = super.getRoleInfoVO(campaignHistory.getSalesmanId(), "salesman");
         CampaignInfoVO campaignInfoVO = super.getCampaignInfoVObyId(campaignHistory.getCampaignId());
+        RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(campaignHistory.getConfirmBy(), "trader");
         res.setCampaignInfoVO(campaignInfoVO);
         res.setCampaignHistoryVO(campaignHistoryVO);
         res.setSalesmanInfoVO(salesmanInfoVO);
+        res.setConfirmRoleInfoVO(confirmRoleInfoVO);
         return res;
     }
 
@@ -183,11 +185,10 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     public QueryRespVO<CampaignHistoryRespVO> delCampaignHistory(ProductBO<CampaignHistoryReqVO> campaignHistory) {
         validateDelete(campaignHistory);
         UserInfo userInfo = campaignHistory.getCreaterInfo();
-        SalesmanInfo salesmanInfo = salesmanRoleService.getSalesmanInfoByUser(userInfo);
         CampaignHistory history = campaignHistoryDao.getCampaignHistorybyId(campaignHistory.getProductId());
-        if (history.getSalesmanId() != salesmanInfo.getId()) {
-            throw new ServiceException(
-                "Dont allow to del the history: " + history.getId() + " by salesman: " + salesmanInfo.getId());
+        List<Integer> salesmanInfoIdList = super.getSalesmanInfoIdListByUserInfo(userInfo);
+        if (!salesmanInfoIdList.contains(history.getSalesmanId())) {
+            throw new ServiceException("不允许促销员[" + userInfo.getName() + "]删除促销历史: " + history.getId());
         }
 
         if (history.getConfirmStatus().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
@@ -196,7 +197,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
         campaignHistoryDao.delCampaignHistory(history);
 
-        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<CampaignHistoryRespVO>();
+        QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildCampaignHistoryRespVO(history));
         return res;
     }
@@ -204,8 +205,8 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     @Override
     protected void validateQuery(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
-        if (!roleType.equals("trader")) {
-            throw new ServiceException("dont allow to confirm campaign history by role " + roleType);
+        if (roleType.equals("merchant")) {
+            throw new ServiceException("角色[" + roleType + "]不允许查看促销历史");
         }
     }
 
@@ -213,26 +214,23 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     protected void validateUpdate(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
         if (!roleType.equals("salesman")) {
-            throw new ServiceException("dont allow to report campaign history by role " + roleType);
+            throw new ServiceException("角色[" + roleType + "]不允许更新促销历史");
         }
-
     }
 
     @Override
     protected void validateConfirm(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
         if (!roleType.equals("trader")) {
-            throw new ServiceException("dont allow to confirm campaign history by role " + roleType);
+            throw new ServiceException("角色[" + roleType + "]不允许确认促销历史");
         }
-
     }
 
     @Override
     protected void validateDelete(ProductBO<?> req) {
         String roleType = req.getCreaterRole().getRole();
         if (!roleType.equals("salesman")) {
-            throw new ServiceException("dont allow to delete campaign history by role " + roleType);
+            throw new ServiceException("角色[" + roleType + "]不允许删除促销历史");
         }
     }
-
 }
