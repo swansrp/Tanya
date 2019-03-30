@@ -237,6 +237,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         UserInfo targetUserInfo = userInfoDao.getUserInfobyId(target.getUserId());
         List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
 
+        Log.ii(targetRoleInfoList);
         if (targetRoleInfoList == null || targetRoleInfoList.size() == 0) {
             throw new ServiceException("guid " + bo.getTargetGuid() + " dont have a role ");
         }
@@ -245,7 +246,9 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         target.setContact(null);
         salesmanInfoDao.updateSalesmanInfoStrict(target);
 
-        userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
+        if (targetRoleInfoList.size() - 1 == 0) {
+            userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
+        }
 
         RoleInfoBO resBO = new RoleInfoBO();
         resBO.setRoleType(getRoleType());
@@ -267,7 +270,11 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
                                     .getRole());
                 }
             }
-
+        }
+        TraderInfo creator = getTraderInfoByCreater(bo.getCreaterInfo());
+        List<TraderInfo> superiorList = getTraderInfoByUser(targetUserInfo);
+        if (superiorList.contains(creator)) {
+            throw new ServiceException("已经是" + creator.getTitle() + "的促销员了");
         }
 
         SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());

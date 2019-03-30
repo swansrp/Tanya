@@ -51,6 +51,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
             List<Integer> factoryMerchantMapIdList) {
         DiscountInfoExample discountExample = super.makeQueryExample(discount, DiscountInfoExample.class);
         DiscountInfoExample.Criteria discountCriteria = discountExample.getOredCriteria().get(0);
+        if (factoryMerchantMapIdList.size() == 0) {
+            factoryMerchantMapIdList.add(0);
+        }
         discountCriteria.andFactoryMetchatMapIdIn(factoryMerchantMapIdList);
         if (discount.getProductId() != null) {
             discountCriteria.andIdEqualTo(discount.getProductId());

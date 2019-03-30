@@ -13,6 +13,7 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistory;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistoryExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.vo.QueryReqVO;
@@ -59,8 +60,10 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
                 throw new ServiceException("不允许查看促销人员[" + campaignHistory.getSalesmanId() + "]的信息");
             }
         }
+
+        List<Integer> campaignInfoIdList = super.buildCampaignInfoIdListByTraderList(campaignHistory, traderInfoList);
         CampaignHistoryExample campaignHistoryExample =
-                buildCampaignHistoryExample(campaignHistory, salesmanInfoIdList);
+                buildCampaignHistoryExample(campaignHistory, salesmanInfoIdList, campaignInfoIdList);
         return buildResByExample(campaignHistory, campaignHistoryExample);
     }
 
@@ -86,10 +89,20 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     }
 
     private CampaignHistoryExample buildCampaignHistoryExample(ProductBO<QueryReqVO> campaignHistory,
-            List<Integer> salesmanInfoIdList) {
+            List<Integer> salesmanInfoIdList, List<Integer> campaignInfoIdList) {
         CampaignHistoryExample campaignHistoryExample = new CampaignHistoryExample();
         CampaignHistoryExample.Criteria criteria = campaignHistoryExample.createCriteria();
+
+        if (salesmanInfoIdList.size() == 0) {
+            salesmanInfoIdList.add(0);
+        }
         criteria.andSalesmanIdIn(salesmanInfoIdList);
+
+        if (campaignInfoIdList.size() == 0) {
+            campaignInfoIdList.add(0);
+        }
+        criteria.andCampaignIdIn(campaignInfoIdList);
+
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         if (campaignHistory.getApproved() != null) {
             if (campaignHistory.getApproved()) {
@@ -119,8 +132,25 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
             }
         }
 
+        CampaignSalesmanMapExample campaignSalesmanMapExample =
+                super.makeQueryExample(history, CampaignSalesmanMapExample.class);
+        CampaignSalesmanMapExample.Criteria campaignSalesmanMapCriteria =
+                campaignSalesmanMapExample.getOredCriteria().get(0);
+        if (salesmanInfoIdList.size() == 0) {
+            salesmanInfoIdList.add(0);
+        }
+        campaignSalesmanMapCriteria.andSalesmanIdIn(salesmanInfoIdList);
+        Integer salesmanId;
+        try {
+            salesmanId = campaignSalesmanMapDao.getCampaignSalesmanMapByExample(campaignSalesmanMapExample).get(0)
+                    .getSalesmanId();
+        } catch (Exception e) {
+            throw new ServiceException(
+                    "不允许" + "[促销员" + userInfo.getName() + "]更新促销历史:" + history.getReq().getCampaignHistory().getId());
+        }
         CampaignHistory campaignHistory = new CampaignHistory();
         BeanUtil.copyProperties(history.getReq().getCampaignHistory(), campaignHistory);
+        campaignHistory.setSalesmanId(salesmanId);
         campaignHistory.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         campaignHistoryDao.updateCampaignHistory(campaignHistory);

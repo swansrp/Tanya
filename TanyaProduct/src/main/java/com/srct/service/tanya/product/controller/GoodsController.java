@@ -68,25 +68,10 @@ public class GoodsController {
 
     @ApiOperation(value = "获取药品", notes = "获取药品详情,无id则返回渠道药品列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    @ApiImplicitParams({
-            @ApiImplicitParam(
-                    paramType = "body",
-                    dataType = "QueryReqVO",
-                    name = "req",
-                    value = "基本请求"),
-            @ApiImplicitParam(
-                    paramType = "query",
-                    dataType = "Interger",
-                    name = "id",
-                    value = "商品id"),
-            @ApiImplicitParam(
-                    paramType = "query",
-                    dataType = "Boolean",
-                    name = "withdiscount",
-                    value = "是否需要活动信息")
-    })
-    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> getGoods(
-            @RequestBody QueryReqVO req,
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "id", value = "商品id"),
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "withdiscount", value = "是否需要活动信息")})
+    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> getGoods(@RequestBody QueryReqVO req,
             @RequestParam(value = "id", required = false) Integer goodsId,
             @RequestParam(value = "withdiscount", required = false) Boolean withDiscount) {
         UserInfo info = (UserInfo) request.getAttribute("user");
@@ -112,13 +97,7 @@ public class GoodsController {
 
     @ApiOperation(value = "删除商品", notes = "非salesman等级可以删除商品")
     @ApiImplicitParams({
-            @ApiImplicitParam(
-                    paramType = "query",
-                    dataType = "Interger",
-                    name = "goodsid",
-                    value = "商品id",
-                    required = true)
-    })
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "goodsid", value = "商品id", required = true)})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> del(
             @RequestParam(value = "goodsid") Integer goodsId) {

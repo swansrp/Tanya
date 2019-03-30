@@ -13,6 +13,7 @@ import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
@@ -219,9 +220,15 @@ public abstract class ProductServiceBaseImpl {
         TraderFactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
 
         List<Integer> factoryIdList = new ArrayList<>();
+
         factoryInfoList.forEach(factoryInfo -> {
             factoryIdList.add(factoryInfo.getId());
         });
+
+        if (factoryIdList.size() == 0) {
+            factoryIdList.add(0);
+        }
+
         mapCriteria.andFactoryIdIn(factoryIdList);
         List<TraderFactoryMerchantMap> maps =
                 traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(mapExample);
@@ -237,9 +244,14 @@ public abstract class ProductServiceBaseImpl {
         FactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
 
         List<Integer> factoryInfoIdList = new ArrayList<>();
+
         factoryInfoList.forEach(factoryInfo -> {
             factoryInfoIdList.add(factoryInfo.getId());
         });
+
+        if (factoryInfoIdList.size() == 0) {
+            factoryInfoIdList.get(0);
+        }
 
         mapCriteria.andFactoryIdIn(factoryInfoIdList);
         List<FactoryMerchantMap> maps = factoryMerchantMapDao.getFactoryMerchantMapByExample(mapExample);
@@ -266,6 +278,23 @@ public abstract class ProductServiceBaseImpl {
             salesTraderMapIdList.add(map.getSalesmanId());
         });
         return salesTraderMapIdList;
+    }
+
+    public List<Integer> buildCampaignInfoIdListByTraderList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
+        List<Integer> traderInfoIdList = new ArrayList<>();
+        traderInfoList.forEach(traderInfo -> traderInfoIdList.add(traderInfo.getId()));
+
+        CampaignInfoExample example = makeQueryExample(req, CampaignInfoExample.class);
+        CampaignInfoExample.Criteria criteria = example.getOredCriteria().get(0);
+        if (traderInfoIdList.size() == 0) {
+            traderInfoIdList.add(0);
+        }
+        criteria.andTraderIdIn(traderInfoIdList);
+
+        List<CampaignInfo> campaignInfoList = campaignInfoDao.getCampaignInfoByExample(example);
+        List<Integer> res = new ArrayList<>();
+        campaignInfoList.forEach(campaignInfo -> res.add(campaignInfo.getId()));
+        return res;
     }
 
     private List<SalesmanTraderMap> buildSalesmanTraderMapList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
@@ -311,16 +340,15 @@ public abstract class ProductServiceBaseImpl {
             example = clazz.newInstance();
             Method method = example.getClass().getMethod(CRITERIA_CREAT_METHOD);
             Object criteria = method.invoke(example);
-
             method = criteria.getClass().getMethod(CRITERIA_STARTAT_BEFORE_METHOD, Date.class);
-            if (req.getQueryEndAt() == null) {
+            if (req == null || req.getQueryEndAt() == null) {
                 // method.invoke(criteria, now);
             } else {
                 method.invoke(criteria, req.getQueryEndAt());
             }
 
             method = criteria.getClass().getMethod(CRITERIA_ENDAT_AFTER_METHOD, Date.class);
-            if (req.getQueryStartAt() == null) {
+            if (req == null || req.getQueryStartAt() == null) {
                 method.invoke(criteria, now);
             } else {
                 method.invoke(criteria, req.getQueryStartAt());

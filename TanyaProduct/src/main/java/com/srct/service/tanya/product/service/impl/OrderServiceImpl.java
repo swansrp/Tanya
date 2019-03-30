@@ -57,6 +57,12 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     private OrderInfoExample buildOrderInfoExample(ProductBO<?> order, List<Integer> traderFactoryMerchantMapIdList) {
         OrderInfoExample orderExample = super.makeQueryExample(order, OrderInfoExample.class);
         OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
+
+
+        if (traderFactoryMerchantMapIdList.size() == 0) {
+            traderFactoryMerchantMapIdList.add(0);
+        }
+
         orderCriteria.andTraderFactoryMerchantIdIn(traderFactoryMerchantMapIdList);
         if (order.getProductId() != null) {
             orderCriteria.andIdEqualTo(order.getProductId());

@@ -49,6 +49,10 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
             CampaignSalesmanMapExample.Criteria campaignSalesmanMapCriteria =
                     campaignSalesmanMapExample.getOredCriteria().get(0);
 
+            if (salesmanInfoIdList.size() == 0) {
+                salesmanInfoIdList.add(0);
+            }
+
             campaignSalesmanMapCriteria.andSalesmanIdIn(salesmanInfoIdList);
             if (campaign.getProductId() != null) {
                 campaignSalesmanMapCriteria.andCampaignIdEqualTo(campaign.getProductId());
@@ -95,6 +99,11 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
             List<Integer> salesmanTraderMapTraderIdList) {
         CampaignInfoExample campaignInfoExample = super.makeQueryExample(campaign, CampaignInfoExample.class);
         CampaignInfoExample.Criteria campaignCriteria = campaignInfoExample.getOredCriteria().get(0);
+
+        if (salesmanTraderMapTraderIdList.size() == 0) {
+            salesmanTraderMapTraderIdList.add(0);
+        }
+
         campaignCriteria.andTraderIdIn(salesmanTraderMapTraderIdList);
 
         if (campaign.getProductId() != null) {

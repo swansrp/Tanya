@@ -30,9 +30,9 @@ public class SessionServiceImpl implements SessionService {
 
     private static final String RETRY_KEY = BASE_KEY + "RetryLimit:";
 
-    private static final String AUTHTOKEN_KEY = BASE_KEY + AUTH_PREFIX + "Token:";
+    private static final String AUTH_TOKEN_KEY = BASE_KEY + AUTH_PREFIX + "Token:";
 
-    private static final String WECHATTOKEN_KEY = BASE_KEY + WECHAT_PREFIX + "Token:";
+    private static final String WECHAT_TOKEN_KEY = BASE_KEY + WECHAT_PREFIX + "Token:";
 
     private static final String SESSION_KEY = BASE_KEY + AUTH_PREFIX + "Session:";
 
@@ -53,27 +53,27 @@ public class SessionServiceImpl implements SessionService {
 
         String oldToken = redisService.get(WECHAT_SESSION_KEY + guid, String.class);
         if (oldToken != null) {
-            Log.i("already login {} focus to logoff", guid);
-            redisService.delete(WECHATTOKEN_KEY + oldToken);
+            Log.i("wechat already login {} focus to logoff", guid);
+            redisService.delete(WECHAT_TOKEN_KEY + oldToken);
             redisService.delete(WECHAT_SESSION_KEY + guid);
         }
-        redisService.set(WECHATTOKEN_KEY + token, SESSION_TIMEOUT, guid);
-        redisService.set(WECHAT_SESSION_KEY + guid, SESSION_TIMEOUT, WECHATTOKEN_KEY + token);
+        redisService.set(WECHAT_TOKEN_KEY + token, SESSION_TIMEOUT, guid);
+        redisService.set(WECHAT_SESSION_KEY + guid, SESSION_TIMEOUT, token);
         redisService.delete(RETRY_KEY + guid);
         return token;
     }
 
     @Override
     public String genToken(String guid) {
-        String token = "AUTH" + RandomUtil.getUUID();
+        String token = AUTH_PREFIX + RandomUtil.getUUID();
 
         String oldToken = redisService.get(SESSION_KEY + guid, String.class);
         if (oldToken != null) {
             Log.i("already login {} focus to logoff", guid);
-            redisService.delete(AUTHTOKEN_KEY + oldToken);
+            redisService.delete(AUTH_TOKEN_KEY + oldToken);
             redisService.delete(SESSION_KEY + guid);
         }
-        redisService.set(AUTHTOKEN_KEY + token, SESSION_TIMEOUT, guid);
+        redisService.set(AUTH_TOKEN_KEY + token, SESSION_TIMEOUT, guid);
         redisService.set(SESSION_KEY + guid, SESSION_TIMEOUT, token);
         redisService.delete(RETRY_KEY + guid);
         return token;
@@ -82,9 +82,9 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public String getGuidByToken(String token) {
         if (token.startsWith(WECHAT_PREFIX)) {
-            return redisService.get(WECHATTOKEN_KEY + token, String.class);
+            return redisService.get(WECHAT_TOKEN_KEY + token, String.class);
         } else {
-            return redisService.get(AUTHTOKEN_KEY + token, String.class);
+            return redisService.get(AUTH_TOKEN_KEY + token, String.class);
         }
     }
 

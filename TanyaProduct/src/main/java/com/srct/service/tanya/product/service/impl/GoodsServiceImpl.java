@@ -83,6 +83,9 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         goodsFactoryMerchantMapList.forEach(map -> goodsIdList.add(map.getGoodsId()));
         GoodsInfoExample example = new GoodsInfoExample();
         GoodsInfoExample.Criteria criteria = example.createCriteria();
+        if (goodsIdList.size() == 0) {
+            goodsIdList.add(0);
+        }
         criteria.andIdIn(goodsIdList);
         PageInfo<?> pageInfo = super.buildPage(req);
         List<GoodsInfo> goodsInfoList = goodsInfoDao.getGoodsInfoByExample(example, pageInfo);
@@ -171,7 +174,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         GoodsInfoRespVO goodsInfoRespVO = new GoodsInfoRespVO();
         GoodsInfoVO vo = new GoodsInfoVO();
         BeanUtil.copyProperties(goodsInfo, vo);
-        vo.setAmount(discountInfo.getAmount());
+        //vo.setAmount(discountInfo.getAmount());
         BeanUtil.copyProperties(goodsInfo, goodsInfoRespVO);
         goodsInfoRespVO.setGoodsInfoVO(vo);
         goodsInfoRespVO.setUnit(discountInfo.getGoodsNumber());
