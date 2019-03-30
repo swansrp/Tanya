@@ -13,6 +13,7 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistory;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistoryExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
@@ -59,6 +60,11 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
             } else {
                 throw new ServiceException("不允许查看促销人员[" + campaignHistory.getSalesmanId() + "]的信息");
             }
+        }
+
+        if (campaignHistory.getCreaterRole().getRole().equals("salesman")) {
+            salesmanInfoIdList.clear();
+            salesmanInfoIdList.addAll(super.getSalesmanInfoIdListByUserInfo(campaignHistory.getCreaterInfo()));
         }
 
         List<Integer> campaignInfoIdList = super.buildCampaignInfoIdListByTraderList(campaignHistory, traderInfoList);
@@ -140,11 +146,16 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
             salesmanInfoIdList.add(0);
         }
         campaignSalesmanMapCriteria.andSalesmanIdIn(salesmanInfoIdList);
-        Integer salesmanId;
-        try {
-            salesmanId = campaignSalesmanMapDao.getCampaignSalesmanMapByExample(campaignSalesmanMapExample).get(0)
-                    .getSalesmanId();
-        } catch (Exception e) {
+        Integer salesmanId = null;
+        List<CampaignSalesmanMap> campaignSalesmanMapList =
+                campaignSalesmanMapDao.getCampaignSalesmanMapByExample(campaignSalesmanMapExample);
+        for (CampaignSalesmanMap map : campaignSalesmanMapList) {
+            if (map.getCampaignId().equals(history.getReq().getCampaignHistory().getCampaignId())) {
+                salesmanId = map.getSalesmanId();
+                break;
+            }
+        }
+        if (salesmanId == null) {
             throw new ServiceException(
                     "不允许" + "[促销员" + userInfo.getName() + "]更新促销历史:" + history.getReq().getCampaignHistory().getId());
         }

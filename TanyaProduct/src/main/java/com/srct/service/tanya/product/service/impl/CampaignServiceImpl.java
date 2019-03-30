@@ -69,15 +69,23 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
 
     private QueryRespVO<CampaignInfoRespVO> buildResByCampaignSalesmanMapExample(ProductBO<QueryReqVO> campaign,
             CampaignSalesmanMapExample campaignSalesmanMapExample) {
-        PageInfo<?> pageInfo = super.buildPage(campaign);
+
         List<CampaignSalesmanMap> campaignSalesmanMapList =
                 campaignSalesmanMapDao.getCampaignSalesmanMapByExample(campaignSalesmanMapExample);
+        List<Integer> campaignIdList = new ArrayList<>();
+        campaignSalesmanMapList.forEach(campaignSalesmanMap -> campaignIdList.add(campaignSalesmanMap.getCampaignId()));
+        if (campaignIdList.size() == 0) {
+            campaignIdList.add(0);
+        }
+        CampaignInfoExample campaignInfoExample = super.makeQueryExample(campaign, CampaignInfoExample.class);
+        campaignInfoExample.getOredCriteria().get(0).andIdIn(campaignIdList);
+        PageInfo<?> pageInfo = super.buildPage(campaign);
+        List<CampaignInfo> campaignInfoList = campaignInfoDao.getCampaignInfoByExample(campaignInfoExample);
         QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
         super.buildRespbyReq(res, campaign);
         res.setPageSize(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
-        campaignSalesmanMapList.forEach(campaignSalesmanMap -> res.getInfo().add(buildCampaignInfoRespVO(
-                campaignInfoDao.getCampaignInfobyId(campaignSalesmanMap.getCampaignId()))));
+        campaignInfoList.forEach(campaignInfo -> res.getInfo().add(buildCampaignInfoRespVO(campaignInfo)));
         return res;
     }
 
