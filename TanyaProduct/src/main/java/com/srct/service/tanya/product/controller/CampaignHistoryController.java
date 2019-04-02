@@ -72,11 +72,13 @@ public class CampaignHistoryController {
     @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "salesmanid", value = "促销员id"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "traderid", value = "销售id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "上报进展id")})
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "上报进展id"),
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 -1全部 null未操作")})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignHistoryRespVO>>.Resp> getCampaign(
             @RequestBody QueryReqVO req, @RequestParam(value = "salesmanid", required = false) Integer salesmanId,
             @RequestParam(value = "traderid", required = false) Integer traderId,
-            @RequestParam(value = "id", required = false) Integer campaignHistoryId) {
+            @RequestParam(value = "id", required = false) Integer campaignHistoryId,
+            @RequestParam(value = "confirmed", required = false) Byte confirmed) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***getCampaignHistory***");
@@ -89,6 +91,7 @@ public class CampaignHistoryController {
         history.setProductId(campaignHistoryId);
         history.setSalesmanId(salesmanId);
         history.setTraderId(traderId);
+        history.setApproved(confirmed);
         QueryRespVO<CampaignHistoryRespVO> campaignHistoryVOList = campaignHistoryService.getCampaignHistory(history);
 
         return TanyaExceptionHandler.generateResponse(campaignHistoryVOList);
@@ -98,10 +101,10 @@ public class CampaignHistoryController {
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "上报进展id", required = true),
-            @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "confirmed", value = "true/false", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意", required = true),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "rewards", value = "该笔促销累计积分")})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignHistoryRespVO>>.Resp> confirm(
-            @RequestParam(value = "id") Integer id, @RequestParam(value = "confirmed") boolean confirmed,
+            @RequestParam(value = "id") Integer id, @RequestParam(value = "confirmed") Byte confirmed,
             @RequestParam(value = "rewards", required = false) Integer rewards) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");

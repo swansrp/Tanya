@@ -67,6 +67,22 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         if (order.getProductId() != null) {
             orderCriteria.andIdEqualTo(order.getProductId());
         }
+
+        if (order.getCreaterRole().getRole().equals("factory")) {
+            if (order.getApproved() == null) {
+                orderCriteria.andFactoryConfirmAtIsNull();
+            } else if (!DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(order.getApproved())) {
+                orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
+            }
+        } else if (order.getCreaterRole().getRole().equals("merchant")) {
+            orderCriteria.andFactoryConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+            if (order.getApproved() == null) {
+                orderCriteria.andMerchantConfirmAtIsNull();
+            } else if (DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(order.getApproved())) {
+                orderCriteria.andMerchantConfirmStatusEqualTo(order.getApproved());
+            }
+        }
+
         return orderExample;
     }
 
@@ -158,13 +174,18 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             } else if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getFactoryConfirmStatus())) {
                 throw new ServiceException("merchant dont allow to approve/reject order without factory confirm");
             }
-            if (order.getApproved()) {
+            if (DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(order.getApproved())) {
                 orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             } else {
                 orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
             }
             orderInfo.setMerchantConfirmAt(new Date());
             orderInfo.setMerchantConfirmBy(super.getRoleInfoVOByReq(order).getId());
+            if (order.getNumber() != null && order.getNumber() < orderInfo.getGoodsNumber()) {
+                orderInfo.setMerchantConfirmNumber(order.getNumber());
+            } else {
+                orderInfo.setMerchantConfirmNumber(orderInfo.getGoodsNumber());
+            }
             orderInfoDao.updateOrderInfo(orderInfo);
         } else if (roleType.equals("factory")) {
             FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
@@ -172,14 +193,12 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 throw new ServiceException("dont allow to approve order by factory " + factoryInfo.getId());
             }
             if (DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getMerchantConfirmStatus())) {
-                if (!order.getApproved()) {
+                if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(order.getApproved())) {
                     throw new ServiceException("merchant dont allow to reject order when merchant has confirmed");
                 }
             }
-            if (order.getApproved()) {
-                orderInfo.setFactoryConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            } else {
-                orderInfo.setFactoryConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+            if (order.getApproved() != null) {
+                orderInfo.setFactoryConfirmStatus(order.getApproved());
             }
             orderInfo.setFactoryConfirmAt(new Date());
             orderInfo.setFactoryConfirmBy(super.getRoleInfoVOByReq(order).getId());

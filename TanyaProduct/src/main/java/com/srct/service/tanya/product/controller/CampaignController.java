@@ -1,6 +1,6 @@
 /**
  * Title: CampaignController.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.controller
  * @author sharuopeng
@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author sharuopeng
- *
  */
 @Api(value = "促销活动(药店促销员)")
 @RestController("CampaignController")
@@ -52,10 +51,10 @@ public class CampaignController {
 
     @ApiOperation(value = "新增/更新促销活动", notes = "只有trader等级可以添加促销活动 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
-    modifyCampaign(@RequestBody CampaignInfoReqVO req) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> modifyCampaign(
+            @RequestBody CampaignInfoReqVO req) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***modifyCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
@@ -69,8 +68,8 @@ public class CampaignController {
 
     @ApiOperation(value = "绑定促销活动", notes = "只有trader等级可以绑定促销活动")
     @RequestMapping(value = "/bind", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
-    bindCampaign(@RequestBody CampaignInfoReqVO req) {
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> bindCampaign(
+            @RequestBody CampaignInfoReqVO req) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***bindCampaign***");
@@ -89,14 +88,14 @@ public class CampaignController {
 
     @ApiOperation(value = "获取促销活动", notes = "获取促销活动详情,无id则返回渠道促销活动列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
-            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid", value = "促销活动id")})
-    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> getCampaign(
-        @RequestBody QueryReqVO req,
-        @RequestParam(value = "campaignid", required = false) Integer campaignId) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "campaignid", value = "促销活动id"),
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝, 1同意, null未操作, -1全部")})
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> getCampaign(@RequestBody QueryReqVO req,
+            @RequestParam(value = "campaignid", required = false) Integer campaignId,
+            @RequestParam(value = "confirmed", required = false) Byte confirmed) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***getCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
@@ -105,6 +104,7 @@ public class CampaignController {
         campaign.setCreaterInfo(info);
         campaign.setCreaterRole(role);
         campaign.setProductId(campaignId);
+        campaign.setApproved(confirmed);
         QueryRespVO<CampaignInfoRespVO> campaignInfoVOList = campaignService.getCampaignInfo(campaign);
 
         return TanyaExceptionHandler.generateResponse(campaignInfoVOList);
@@ -113,15 +113,12 @@ public class CampaignController {
     @ApiOperation(value = "审批促销活动", notes = "审批促销活动  同意或拒绝")
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid", value = "订单id",
-            required = true),
-        @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "confirmed", value = "true/false",
-            required = true)})
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "campaignid", value = "订单id", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意", required = true)})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> confirm(
-            @RequestParam(value = "campaignid") Integer campaignId,
-            @RequestParam(value = "confirmed") boolean confirmed) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+            @RequestParam(value = "campaignid") Integer campaignId, @RequestParam(value = "confirmed") Byte confirmed) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***confirmCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
@@ -137,13 +134,13 @@ public class CampaignController {
     }
 
     @ApiOperation(value = "删除促销活动", notes = "只有trader等级可以删除促销活动")
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignid",
-        value = "促销活动id", required = true)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "campaignid", value = "促销活动id", required = true)})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
-    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp>
-    del(@RequestParam(value = "campaignid") Integer campaignId) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> del(
+            @RequestParam(value = "campaignid") Integer campaignId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***DelCampaign***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 

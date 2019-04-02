@@ -114,6 +114,12 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
 
         campaignCriteria.andTraderIdIn(salesmanTraderMapTraderIdList);
 
+        if (campaign.getApproved() == null) {
+            campaignCriteria.andConfirmAtIsNull();
+        } else if (!DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(campaign.getApproved())) {
+            campaignCriteria.andConfirmStatusEqualTo(campaign.getApproved());
+        }
+
         if (campaign.getProductId() != null) {
             campaignCriteria.andIdEqualTo(campaign.getProductId());
         }
@@ -202,10 +208,8 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         validateConfirm(campaign);
 
         CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfobyId(campaign.getProductId());
-        if (campaign.getApproved()) {
-            campaignInfo.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        } else {
-            campaignInfo.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        if (campaign.getApproved() != null) {
+            campaignInfo.setConfirmStatus(campaign.getApproved());
         }
         campaignInfo.setConfirmAt(new Date());
         campaignInfo.setConfirmBy(getRoleInfoVOByReq(campaign).getId());

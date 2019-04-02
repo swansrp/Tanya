@@ -110,13 +110,13 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
         criteria.andCampaignIdIn(campaignInfoIdList);
 
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        if (campaignHistory.getApproved() != null) {
-            if (campaignHistory.getApproved()) {
-                criteria.andConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            } else {
-                criteria.andConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-            }
+
+        if (campaignHistory.getApproved() == null) {
+            criteria.andConfirmAtIsNull();
+        } else if (!DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(campaignHistory.getApproved())) {
+            criteria.andConfirmStatusEqualTo(campaignHistory.getApproved());
         }
+
         if (campaignHistory.getProductId() != null) {
             criteria.andIdEqualTo(campaignHistory.getProductId());
         }
@@ -186,7 +186,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
                             + traderInfo.getId());
         }
 
-        if (history.getApproved()) {
+        if (history.getApproved().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
             campaignHistory.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
             if (rewards != null) {
                 campaignHistory.setRewards(rewards);

@@ -56,6 +56,7 @@ import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.log.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.InvocationTargetException;
@@ -119,44 +120,52 @@ public abstract class ProductServiceBaseImpl {
     // private final static String CRITERIA_STARTAT_AFTER_METHOD = "andStartAtGreaterThanOrEqualTo";
 
     public List<FactoryInfo> getFactoryInfoList(ProductBO<?> bo) {
-        List<FactoryInfo> facotoryInfoList = new ArrayList<>();
+        List<FactoryInfo> factoryInfoList = new ArrayList<>();
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
-        if (roleType.equals("trader")) {
-            facotoryInfoList.add(traderRoleService.getFactoryInfoByUser(userInfo));
-        } else if (roleType.equals("factory")) {
-            facotoryInfoList.add(factoryRoleService.getFactoryInfoByUser(userInfo));
-        } else if (roleType.equals("merchant")) {
-            if (bo.getFactoryId() != null) {
-                facotoryInfoList.add(factoryInfoDao.getFactoryInfobyId(bo.getFactoryId()));
-            } else {
-                MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
-                facotoryInfoList.addAll(factoryRoleService.getFactoryInfoListByMerchantInfo(merchantInfo));
-
-            }
+        switch (roleType) {
+            case "trader":
+                factoryInfoList.add(traderRoleService.getFactoryInfoByUser(userInfo));
+                break;
+            case "factory":
+                factoryInfoList.add(factoryRoleService.getFactoryInfoByUser(userInfo));
+                break;
+            case "merchant":
+                if (bo.getFactoryId() != null) {
+                    factoryInfoList.add(factoryInfoDao.getFactoryInfobyId(bo.getFactoryId()));
+                } else {
+                    MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
+                    factoryInfoList.addAll(factoryRoleService.getFactoryInfoListByMerchantInfo(merchantInfo));
+                }
+                break;
         }
-        if (facotoryInfoList == null || facotoryInfoList.size() == 0) {
+        if (0 == factoryInfoList.size()) {
             throw new ServiceException(
                     "cant get factory info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
         }
 
-        return facotoryInfoList;
+        return factoryInfoList;
     }
 
     public List<TraderInfo> getTraderInfo(ProductBO<?> bo) {
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
         List<TraderInfo> traderInfoList = new ArrayList<>();
-        if (roleType.equals("trader")) {
-            traderInfoList.add(traderRoleService.getTraderInfoByUser(userInfo));
-        } else if (roleType.equals("salesman")) {
-            traderInfoList.addAll(salesmanRoleService.getTraderInfoByUser(userInfo));
-        } else if (roleType.equals("factory")) {
-            FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
-            traderInfoList.addAll(traderRoleService.getTraderInfoList(factoryInfo));
-        } else {
-            throw new ServiceException(
-                    "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
+        switch (roleType) {
+            case "trader":
+                traderInfoList.add(traderRoleService.getTraderInfoByUser(userInfo));
+                break;
+            case "salesman":
+                traderInfoList.addAll(salesmanRoleService.getTraderInfoByUser(userInfo));
+                break;
+            case "factory":
+                FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
+                traderInfoList.addAll(traderRoleService.getTraderInfoList(factoryInfo));
+                break;
+            default:
+                throw new ServiceException(
+                        "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole()
+                                .getRole());
         }
         return traderInfoList;
     }
@@ -171,12 +180,11 @@ public abstract class ProductServiceBaseImpl {
     public List<SalesmanInfo> getSalesmanInfo(ProductBO<?> bo) {
         UserInfo userInfo = bo.getCreaterInfo();
         String roleType = bo.getCreaterRole().getRole();
-        List<SalesmanInfo> salesmanInfoList = new ArrayList<>();
-        if (roleType.equals("trader")) {
-            salesmanInfoList.addAll(traderRoleService.getSalesmanInfoListByTraderInfo(userInfo));
-        } else {
+        List<SalesmanInfo> salesmanInfoList =
+                new ArrayList<>(traderRoleService.getSalesmanInfoListByTraderInfo(userInfo));
+        if (!roleType.equals("trader")) {
             throw new ServiceException(
-                    "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
+                    "cant get salesman info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
         }
         return salesmanInfoList;
     }
@@ -225,7 +233,7 @@ public abstract class ProductServiceBaseImpl {
             factoryIdList.add(factoryInfo.getId());
         });
 
-        if (factoryIdList.size() == 0) {
+        if (0 == factoryIdList.size()) {
             factoryIdList.add(0);
         }
 
@@ -249,8 +257,8 @@ public abstract class ProductServiceBaseImpl {
             factoryInfoIdList.add(factoryInfo.getId());
         });
 
-        if (factoryInfoIdList.size() == 0) {
-            factoryInfoIdList.get(0);
+        if (0 == factoryInfoIdList.size()) {
+            factoryInfoIdList.add(0);
         }
 
         mapCriteria.andFactoryIdIn(factoryInfoIdList);
@@ -286,7 +294,7 @@ public abstract class ProductServiceBaseImpl {
 
         CampaignInfoExample example = makeQueryExample(req, CampaignInfoExample.class);
         CampaignInfoExample.Criteria criteria = example.getOredCriteria().get(0);
-        if (traderInfoIdList.size() == 0) {
+        if (0 == traderInfoIdList.size()) {
             traderInfoIdList.add(0);
         }
         criteria.andTraderIdIn(traderInfoIdList);
@@ -305,8 +313,7 @@ public abstract class ProductServiceBaseImpl {
             traderInfoIdList.add(traderInfo.getId());
         });
         mapCriteria.andTraderIdIn(traderInfoIdList);
-        List<SalesmanTraderMap> maps = salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
-        return maps;
+        return salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
     }
 
     public void makeDefaultPeriod(Object obj) {
@@ -316,18 +323,15 @@ public abstract class ProductServiceBaseImpl {
         c.set(DEFAULT_PERIOD_TYPE, c.get(DEFAULT_PERIOD_TYPE) + DEFAULT_PERIOD_VALUE);
         Date endAt = c.getTime();
 
-        Method method = null;
+        Method method;
         try {
             method = obj.getClass().getMethod("setStartAt", Date.class);
             method.invoke(obj, startAt);
 
             method = obj.getClass().getMethod("setEndAt", Date.class);
             method.invoke(obj, endAt);
-        } catch (NoSuchMethodException | SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            e.printStackTrace();
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Log.i(e);
         }
     }
 
@@ -341,9 +345,7 @@ public abstract class ProductServiceBaseImpl {
             Method method = example.getClass().getMethod(CRITERIA_CREAT_METHOD);
             Object criteria = method.invoke(example);
             method = criteria.getClass().getMethod(CRITERIA_STARTAT_BEFORE_METHOD, Date.class);
-            if (req == null || req.getQueryEndAt() == null) {
-                // method.invoke(criteria, now);
-            } else {
+            if (req != null && req.getQueryEndAt() != null) {
                 method.invoke(criteria, req.getQueryEndAt());
             }
 
@@ -356,12 +358,8 @@ public abstract class ProductServiceBaseImpl {
 
             method = criteria.getClass().getMethod(CRITERIA_VALID_METHOD, Byte.class);
             method.invoke(criteria, DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
+            Log.i(e);
         }
         return (T) example;
     }

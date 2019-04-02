@@ -46,7 +46,6 @@ import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 
 @Api(value = "权限相关操作")
@@ -64,8 +63,8 @@ public class RoleController {
     @ApiOperation(value = "创建新角色", notes = "根据传入人员角色创建角色。")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> createRole(@RequestBody CreateRoleVO vo) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***createRole***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
@@ -77,7 +76,7 @@ public class RoleController {
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.create(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
@@ -86,20 +85,18 @@ public class RoleController {
     }
 
     @ApiOperation(value = "更新角色信息", notes = "更新制定角色详细信息")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "goodsnum", value = "商品数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "tradernum", value = "销售员数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "discountnum", value = "商品活动数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "campaignnum", value = "促销活动数量")})
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Integer", name = "goodsnum", value = "商品数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "tradernum", value = "销售员数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "discountnum", value = "商品活动数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "campaignnum", value = "促销活动数量")})
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> updateRole(
-            @RequestBody RoleDetailsVO vo,
+    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> updateRole(@RequestBody RoleDetailsVO vo,
             @RequestParam(value = "goodsnum", required = false) Integer goodsNumber,
             @RequestParam(value = "tradernum", required = false) Integer traderNumber,
             @RequestParam(value = "discountnum", required = false) Integer discountNumber,
             @RequestParam(value = "campaignnum", required = false) Integer campaignNumber) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***updateRole***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
@@ -118,7 +115,7 @@ public class RoleController {
         permissionBO.setCampaignNumber(campaignNumber);
         bo.setPermissionDetails(permissionBO);
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.update(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
@@ -128,18 +125,18 @@ public class RoleController {
 
     @ApiOperation(value = "获取下属信息", notes = "根据传入人员角色获取下属信息。")
     @RequestMapping(value = "/subordinate", method = RequestMethod.GET)
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "roletype",
-        value = "角色类型 {admin, merchant, factory, trader, salesman}", required = false)})
-    public ResponseEntity<CommonResponse<List<RoleInfoVO>>.Resp>
-        getSubordinate(@RequestParam(value = "roletype", required = false) String roletype) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}", required = false)})
+    public ResponseEntity<CommonResponse<List<RoleInfoVO>>.Resp> getSubordinate(
+            @RequestParam(value = "roletype", required = false) String roletype) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
 
         String roleType = getTargetRoleType(roletype, role);
         Log.i("***getSubordinate***");
         Log.i("guid {}, role type {} target type {}", info.getGuid(), role.getComment(), roleType);
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(roleType + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(roleType + "RoleServiceImpl");
         if (role.getRole().equals("superAdmin"))
             info = null;
         List<RoleInfoBO> resBOList = roleService.getSubordinate(info);
@@ -154,12 +151,12 @@ public class RoleController {
 
     @ApiOperation(value = "邀请成为下属", notes = "通过扫描对方二维码邀请成为下属")
     @RequestMapping(value = "/invite", method = RequestMethod.POST)
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "String", name = "target",
-        value = "邀请对象guid，从二维码获取", required = true)})
-    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp>
-    invite(@RequestBody ModifyRoleVO vo, @RequestParam(value = "target") String targetGuid) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "target", value = "邀请对象guid，从二维码获取", required = true)})
+    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> invite(@RequestBody ModifyRoleVO vo,
+            @RequestParam(value = "target") String targetGuid) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
 
         ModifyRoleBO bo = new ModifyRoleBO();
 
@@ -170,7 +167,7 @@ public class RoleController {
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.invite(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
@@ -181,8 +178,8 @@ public class RoleController {
     @ApiOperation(value = "剔除下属", notes = "将某个下属人员剔除")
     @RequestMapping(value = "/kickout", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> kickout(@RequestBody ModifyRoleVO vo) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
 
         ModifyRoleBO bo = new ModifyRoleBO();
 
@@ -192,7 +189,7 @@ public class RoleController {
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.kickout(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
@@ -203,8 +200,8 @@ public class RoleController {
     @ApiOperation(value = "删除下属角色", notes = "将某个下属空角色删除")
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> del(@RequestBody ModifyRoleVO vo) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
 
         ModifyRoleBO bo = new ModifyRoleBO();
 
@@ -214,7 +211,7 @@ public class RoleController {
 
         bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
         RoleInfoBO resBO = roleService.del(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
@@ -225,20 +222,19 @@ public class RoleController {
     @ApiOperation(value = "获取下属详细信息", notes = "根据传入人员角色获取下属信息。")
     @RequestMapping(value = "/details", method = RequestMethod.GET)
     @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "roletype",
-            value = "角色类型 {admin, merchant, factory, trader, salesman}", required = true),
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "id", value = "角色id", required = true)})
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "角色id", required = true)})
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> getDetails(
-        @RequestParam(value = "roletype", required = false) String roletype,
-        @RequestParam(value = "id", required = false) Integer id) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+            @RequestParam(value = "roletype", required = false) String roletype,
+            @RequestParam(value = "id", required = false) Integer id) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
 
         String roleType = getTargetRoleType(roletype, role);
         Log.i("***getDetails***");
         Log.i("guid {}, role type {} target type {}", info.getGuid(), role.getComment(), roleType);
 
-        RoleService roleService = (RoleService)BeanUtil.getBean(roleType + "RoleServiceImpl");
+        RoleService roleService = (RoleService) BeanUtil.getBean(roleType + "RoleServiceImpl");
 
         GetRoleDetailsBO bo = new GetRoleDetailsBO();
         if (role.getRole().equals("superAdmin"))

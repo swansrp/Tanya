@@ -44,6 +44,10 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(discount);
         List<Integer> factoryMerchantMapIdList = super.buildFactoryMerchantMapIdList(discount, factoryInfoList);
         DiscountInfoExample discountExample = buildDiscountInfoExample(discount, factoryMerchantMapIdList);
+        if (discount.getApproved() != null && !discount.getApproved()
+                .equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+            discountExample.getOredCriteria().get(0).andConfirmStatusEqualTo(discount.getApproved());
+        }
         return buildResByExample(discount, discountExample);
     }
 
@@ -58,6 +62,13 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         if (discount.getProductId() != null) {
             discountCriteria.andIdEqualTo(discount.getProductId());
         }
+
+        if (discount.getApproved() == null) {
+            discountCriteria.andConfirmAtIsNull();
+        } else if (DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(discount.getApproved())) {
+            discountCriteria.andConfirmStatusEqualTo(discount.getApproved());
+        }
+
         return discountExample;
     }
 
@@ -131,7 +142,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         validateConfirm(discount);
 
         DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(discount.getProductId());
-        if (discount.getApproved()) {
+        if (discount.getApproved().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
             discountInfo.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         } else {
             discountInfo.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
@@ -159,6 +170,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         Date now = new Date();
         DiscountInfoExample example = new DiscountInfoExample();
         DiscountInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         criteria.andGoodsIdEqualTo(goodsId);
         criteria.andEndAtGreaterThan(now);
         criteria.andStartAtLessThan(now);
@@ -182,7 +194,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
                 if (discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmAt() != null
                         && discountInfoDao.getDiscountInfoByExample(discountExample).get(0).getConfirmStatus()
                         .equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
-                    throw new ServiceException("alreday confirmed discount dont allow to update ");
+                    throw new ServiceException("already confirmed discount dont allow to update ");
                 }
             } catch (Exception e) {
                 throw new ServiceException(
