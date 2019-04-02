@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author sharuopeng
  */
-@Api(value = "促销活动(药店促销员)")
+@Api(value = "促销活动(药店促销员)", tags = "促销活动(药店促销员)")
 @RestController("CampaignController")
 @RequestMapping(value = "/campaign")
 @CrossOrigin(origins = "*")

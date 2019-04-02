@@ -48,7 +48,7 @@ import java.util.List;
  * @author Sharp
  */
 
-@Api(value = "权限相关操作")
+@Api(value = "权限相关操作", tags = "权限操作")
 @RestController("RoleController")
 @RequestMapping(value = "/role")
 @CrossOrigin(origins = "*")
@@ -126,7 +126,7 @@ public class RoleController {
     @ApiOperation(value = "获取下属信息", notes = "根据传入人员角色获取下属信息。")
     @RequestMapping(value = "/subordinate", method = RequestMethod.GET)
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}", required = false)})
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}")})
     public ResponseEntity<CommonResponse<List<RoleInfoVO>>.Resp> getSubordinate(
             @RequestParam(value = "roletype", required = false) String roletype) {
         UserInfo info = (UserInfo) request.getAttribute("user");

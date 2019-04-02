@@ -1,6 +1,6 @@
 /**
  * Title: BaseResVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.vo
  * @author sharuopeng
@@ -8,25 +8,26 @@
  */
 package com.srct.service.tanya.common.vo;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import lombok.Data;
 
 /**
  * @author sharuopeng
  *
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class QueryRespVO<T> extends QueryReqVO {
 
-    public QueryRespVO() {
-        info = new ArrayList<>();
-    }
-
+    List<T> info;
     private Integer totalPages;
 
     private Long totalSize;
 
-    List<T> info;
+    public QueryRespVO() {
+        info = new ArrayList<>();
+    }
 }

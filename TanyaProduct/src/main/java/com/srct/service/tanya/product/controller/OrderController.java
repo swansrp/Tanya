@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author sharuopeng
  */
-@Api(value = "订单(药厂-渠道)")
+@Api(value = "订单(药厂-渠道)", tags = "订单(药厂-渠道)")
 @RestController("OrderController")
 @RequestMapping(value = "/order")
 @CrossOrigin(origins = "*")
@@ -58,7 +58,7 @@ public class OrderController {
         Log.i("***modifyGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<OrderInfoReqVO> order = new ProductBO<OrderInfoReqVO>();
+        ProductBO<OrderInfoReqVO> order = new ProductBO<>();
         order.setProductType("order");
         order.setReq(req);
         order.setCreaterInfo(info);
@@ -83,7 +83,7 @@ public class OrderController {
         Log.i("***getOrder***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> order = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> order = new ProductBO<>();
         order.setProductType("order");
         order.setCreaterInfo(info);
         order.setCreaterRole(role);
@@ -110,7 +110,7 @@ public class OrderController {
         Log.i("***confirmOrder***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> order = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> order = new ProductBO<>();
         order.setProductType("order");
         order.setCreaterInfo(info);
         order.setCreaterRole(role);
@@ -127,13 +127,13 @@ public class OrderController {
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "orderid", value = "订单id", required = true)})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity<CommonResponse<QueryRespVO<OrderInfoRespVO>>.Resp> del(
-            @RequestParam(value = "orderid", required = true) Integer orderId) {
+            @RequestParam(value = "orderid") Integer orderId) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***DelOrder***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<OrderInfoReqVO> order = new ProductBO<OrderInfoReqVO>();
+        ProductBO<OrderInfoReqVO> order = new ProductBO<>();
         order.setCreaterInfo(info);
         order.setCreaterRole(role);
         order.setProductId(orderId);

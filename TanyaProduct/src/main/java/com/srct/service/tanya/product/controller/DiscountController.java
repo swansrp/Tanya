@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author sharuopeng
  */
-@Api(value = "折扣活动(药厂-渠道)")
+@Api(value = "折扣活动(药厂-渠道)", tags = "折扣活动(药厂-渠道)")
 @RestController("DiscountController")
 @RequestMapping(value = "/discount")
 @CrossOrigin(origins = "*")
@@ -58,7 +58,7 @@ public class DiscountController {
         Log.i("***modifyDiscount***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<DiscountInfoReqVO> discount = new ProductBO<DiscountInfoReqVO>();
+        ProductBO<DiscountInfoReqVO> discount = new ProductBO<>();
         discount.setReq(req);
         discount.setCreaterInfo(info);
         discount.setCreaterRole(role);
@@ -84,7 +84,7 @@ public class DiscountController {
         Log.i("***getDiscount***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> discount = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> discount = new ProductBO<>();
         discount.setCreaterInfo(info);
         discount.setCreaterRole(role);
         discount.setReq(req);
@@ -103,14 +103,13 @@ public class DiscountController {
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "discountid", value = "订单id", required = true),
             @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意", required = true)})
     public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp> confirm(
-            @RequestParam(value = "discountid", required = true) Integer discountId,
-            @RequestParam(value = "confirmed", required = true) Byte confirmed) {
+            @RequestParam(value = "discountid") Integer discountId, @RequestParam(value = "confirmed") Byte confirmed) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***confirmDiscount***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> discount = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> discount = new ProductBO<>();
         discount.setProductType("discount");
         discount.setCreaterInfo(info);
         discount.setCreaterRole(role);
@@ -126,13 +125,13 @@ public class DiscountController {
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "discountid", value = "折扣活动id", required = true)})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp> del(
-            @RequestParam(value = "discountid", required = true) Integer discountId) {
+            @RequestParam(value = "discountid") Integer discountId) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***DelDiscount***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<DiscountInfoReqVO> discount = new ProductBO<DiscountInfoReqVO>();
+        ProductBO<DiscountInfoReqVO> discount = new ProductBO<>();
         discount.setCreaterInfo(info);
         discount.setCreaterRole(role);
         discount.setProductId(discountId);

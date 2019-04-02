@@ -7,14 +7,13 @@
  */
 package com.srct.service.tanya.common.vo;
 
-import javax.validation.constraints.NotBlank;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @author Sharp
- *
  */
 @Data
 public class UserRegReqVO {
@@ -22,16 +21,16 @@ public class UserRegReqVO {
     @ApiModelProperty(name = "名字", notes = "Sharp", required = true)
     private String name;
 
-    @ApiModelProperty(name = "密码", notes = "123qwe", required = false)
+    @ApiModelProperty(name = "密码", notes = "123qwe")
     private String password;
 
-    @ApiModelProperty(name = "电话", notes = "13912345678", required = false)
+    @ApiModelProperty(name = "电话", notes = "13912345678")
     private String phone;
 
     @NotBlank(message = "email cant be null")
     @ApiModelProperty(name = "邮箱", notes = "1@qq.com", required = true)
     private String email;
 
-    @ApiModelProperty(name = "备注", notes = "超级管理员", required = false)
+    @ApiModelProperty(name = "备注", notes = "超级管理员")
     private String comment;
 }

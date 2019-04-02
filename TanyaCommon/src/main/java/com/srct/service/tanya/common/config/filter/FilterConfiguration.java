@@ -1,6 +1,6 @@
 /**
  * Title: FilterConfiguration.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.config.filter
  * @author Sharp
@@ -8,15 +8,14 @@
  */
 package com.srct.service.tanya.common.config.filter;
 
-import javax.servlet.Filter;
-
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.servlet.Filter;
+
 /**
  * @author Sharp
- *
  */
 @Configuration
 public class FilterConfiguration {
@@ -28,10 +27,11 @@ public class FilterConfiguration {
         registration.setFilter(roleFilter());
         registration.addUrlPatterns("/*");
         // 拦截规则
-        registration.addInitParameter("exclusions", "/portal/admin/*,"
-            + "/login,/logout,/register,/test/*,/reset,/qrcode,"
-            + "/swagger-ui.html,/swagger-resources,/v2/api-docs,/webjars/springfox-swagger-ui/*,/configuration/*,/public/*,"
-            + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
+        registration.addInitParameter("exclusions",
+                "/portal/admin/*," + "/login,/logout,/register,/test/*,/reset,/qrcode,"
+                        + "/swagger-ui.html,/swagger-resources,/swagger-resources/*,/v2/api-docs,"
+                        + "/webjars/springfox-swagger-ui/*,/configuration/*,/public/*,/csrf,"
+                        + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
         // 拦截规则
         registration.addInitParameter("roleRequired", "/role/*," + "/goods/*,/order/*,/discount/*,/campaign/*,/shop/*");
         // 过滤器名称
@@ -43,11 +43,6 @@ public class FilterConfiguration {
         return registration;
     }
 
-    /**
-     * 创建一个bean
-     * 
-     * @return
-     */
     @Bean(name = "sessionFilter")
     public Filter roleFilter() {
         return new RoleFilter();

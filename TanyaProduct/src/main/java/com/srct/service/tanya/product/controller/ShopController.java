@@ -1,23 +1,12 @@
 /**
  * Title: ShopController.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.controller
  * @author sharuopeng
  * @date 2019-02-22 09:29:59
  */
 package com.srct.service.tanya.product.controller;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
@@ -30,17 +19,25 @@ import com.srct.service.tanya.product.service.ShopService;
 import com.srct.service.tanya.product.vo.ShopInfoReqVO;
 import com.srct.service.tanya.product.vo.ShopInfoRespVO;
 import com.srct.service.utils.log.Log;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author sharuopeng
- *
  */
-@Api(value = "药店信息")
+@Api(value = "药店信息", tags = "药店信息")
 @RestController("ShopController")
 @RequestMapping(value = "/shop")
 @CrossOrigin(origins = "*")
@@ -55,12 +52,12 @@ public class ShopController {
     @ApiOperation(value = "新增/更新药店", notes = "salesman不可以添加药店 若传入id则为更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp> modifyShop(@RequestBody ShopInfoReqVO req) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***modifyShop***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<ShopInfoReqVO> shop = new ProductBO<ShopInfoReqVO>();
+        ProductBO<ShopInfoReqVO> shop = new ProductBO<>();
         shop.setProductType("shop");
         shop.setReq(req);
         shop.setCreaterInfo(info);
@@ -72,22 +69,18 @@ public class ShopController {
 
     @ApiOperation(value = "获取订单", notes = "获取订单详情,无id则返回渠道订单列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    @ApiImplicitParams({
-        @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = false),
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "订单id",
-            required = false),
-        @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "factoryid", value = "药厂id",
-            required = false)})
-    public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp> getShop(
-        @RequestBody QueryReqVO req,
-        @RequestParam(value = "shopid", required = false) Integer shopId,
-        @RequestParam(value = "factoryid", required = false) Integer factoryId) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "订单id"),
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "factoryid", value = "药厂id")})
+    public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp> getShop(@RequestBody QueryReqVO req,
+            @RequestParam(value = "shopid", required = false) Integer shopId,
+            @RequestParam(value = "factoryid", required = false) Integer factoryId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***getShop***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<QueryReqVO> shop = new ProductBO<QueryReqVO>();
+        ProductBO<QueryReqVO> shop = new ProductBO<>();
         shop.setProductType("shop");
         shop.setCreaterInfo(info);
         shop.setCreaterRole(role);
@@ -101,17 +94,17 @@ public class ShopController {
     }
 
     @ApiOperation(value = "删除药店", notes = "非salesman等级可以删除药店")
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "药店id",
-        required = true)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Interger", name = "shopid", value = "药店id", required = true)})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
-    public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp>
-        del(@RequestParam(value = "shopid", required = true) Integer shopId) {
-        UserInfo info = (UserInfo)request.getAttribute("user");
-        RoleInfo role = (RoleInfo)request.getAttribute("role");
+    public ResponseEntity<CommonResponse<QueryRespVO<ShopInfoRespVO>>.Resp> del(
+            @RequestParam(value = "shopid") Integer shopId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***DelShop***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        ProductBO<ShopInfoReqVO> shop = new ProductBO<ShopInfoReqVO>();
+        ProductBO<ShopInfoReqVO> shop = new ProductBO<>();
         shop.setCreaterInfo(info);
         shop.setCreaterRole(role);
         shop.setProductId(shopId);

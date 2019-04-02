@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author Sharp
  */
-@Api(value = "商品")
+@Api(value = "商品", tags = "商品")
 @RestController("GoodsController")
 @RequestMapping(value = "/goods")
 @CrossOrigin(origins = "*")
