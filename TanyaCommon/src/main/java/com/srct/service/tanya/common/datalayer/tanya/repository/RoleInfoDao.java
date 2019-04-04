@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/02/23
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.RoleInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: RoleInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaRoleInfoDao")
 public class RoleInfoDao {
@@ -52,7 +50,7 @@ public class RoleInfoDao {
             roleInfo.setUpdateAt(new Date());
             res = roleInfoMapper.updateByPrimaryKeySelective(roleInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update RoleInfo error");
         }
         return roleInfo;
@@ -68,7 +66,7 @@ public class RoleInfoDao {
             roleInfo.setUpdateAt(new Date());
             res = roleInfoMapper.updateByPrimaryKey(roleInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update RoleInfo error");
         }
         return roleInfo;
@@ -116,28 +114,42 @@ public class RoleInfoDao {
     public List<RoleInfo> getAllRoleInfoList(Byte valid) {
         RoleInfoExample example = new RoleInfoExample();
         RoleInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return roleInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<RoleInfo> getAllRoleInfoList(Byte valid, PageInfo<?> pageInfo) {
+        RoleInfoExample example = new RoleInfoExample();
+        RoleInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<RoleInfo> res = roleInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<RoleInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "RoleInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public RoleInfo getRoleInfobyId(Integer id) {
+    public RoleInfo getRoleInfoById(Integer id) {
         return roleInfoMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<RoleInfo> getShopInfoSelective(RoleInfo roleInfo, PageInfo<?> pageInfo) {
+    public List<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo, PageInfo<?> pageInfo) {
         RoleInfoExample example = getRoleInfoExample(roleInfo);
         PageHelper.startPage(pageInfo);
         List<RoleInfo> res = roleInfoMapper.selectByExample(example);
         pageInfo = new PageInfo<RoleInfo>(res);
         return res;
     }
+
     @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo) {
@@ -152,6 +164,7 @@ public class RoleInfoDao {
         pageInfo = new PageInfo<RoleInfo>(res);
         return res;
     }
+
     public List<RoleInfo> getRoleInfoByExample(RoleInfoExample example) {
         List<RoleInfo> res = roleInfoMapper.selectByExample(example);
         return res;

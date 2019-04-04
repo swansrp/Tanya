@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/03/20
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.DiscountInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: DiscountInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaDiscountInfoDao")
 public class DiscountInfoDao {
@@ -52,7 +50,7 @@ public class DiscountInfoDao {
             discountInfo.setUpdateAt(new Date());
             res = discountInfoMapper.updateByPrimaryKeySelective(discountInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update DiscountInfo error");
         }
         return discountInfo;
@@ -68,7 +66,7 @@ public class DiscountInfoDao {
             discountInfo.setUpdateAt(new Date());
             res = discountInfoMapper.updateByPrimaryKey(discountInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update DiscountInfo error");
         }
         return discountInfo;
@@ -116,28 +114,42 @@ public class DiscountInfoDao {
     public List<DiscountInfo> getAllDiscountInfoList(Byte valid) {
         DiscountInfoExample example = new DiscountInfoExample();
         DiscountInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return discountInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<DiscountInfo> getAllDiscountInfoList(Byte valid, PageInfo<?> pageInfo) {
+        DiscountInfoExample example = new DiscountInfoExample();
+        DiscountInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<DiscountInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "DiscountInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public DiscountInfo getDiscountInfobyId(Integer id) {
+    public DiscountInfo getDiscountInfoById(Integer id) {
         return discountInfoMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<DiscountInfo> getShopInfoSelective(DiscountInfo discountInfo, PageInfo<?> pageInfo) {
+    public List<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo, PageInfo<?> pageInfo) {
         DiscountInfoExample example = getDiscountInfoExample(discountInfo);
         PageHelper.startPage(pageInfo);
         List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
         pageInfo = new PageInfo<DiscountInfo>(res);
         return res;
     }
+
     @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo) {
@@ -152,6 +164,7 @@ public class DiscountInfoDao {
         pageInfo = new PageInfo<DiscountInfo>(res);
         return res;
     }
+
     public List<DiscountInfo> getDiscountInfoByExample(DiscountInfoExample example) {
         List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
         return res;

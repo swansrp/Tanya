@@ -40,7 +40,6 @@ import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 @Service
 public class UserServiceImpl implements UserService {
@@ -109,7 +108,7 @@ public class UserServiceImpl implements UserService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.common.service.UserService#regbyOpenId(java.lang.String)
      */
     @Override
@@ -130,7 +129,7 @@ public class UserServiceImpl implements UserService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String, java.lang.String)
      */
     @Override
@@ -175,7 +174,7 @@ public class UserServiceImpl implements UserService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String, java.lang.String)
      */
     @Override
@@ -236,7 +235,7 @@ public class UserServiceImpl implements UserService {
         } else {
             userRoleList.forEach(userRole -> {
                 if (userRole.getRoleId() != null) {
-                    RoleInfo roleInfo = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
+                    RoleInfo roleInfo = roleInfoDao.getRoleInfoById(userRole.getRoleId());
                     if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
                         res.getRole().add(roleInfo);
                 }
@@ -248,7 +247,7 @@ public class UserServiceImpl implements UserService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.srct.service.tanya.common.service.UserService#getRole(com.srct.service.tanya.common.datalayer.tanya.entity.
      * UserInfo)
@@ -260,7 +259,7 @@ public class UserServiceImpl implements UserService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.common.service.UserService#getUserbyGuid(java.lang.String)
      */
     @Override
@@ -294,7 +293,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfo getUserbyUserId(Integer userId) {
 
-        UserInfo userInfo = userInfoDao.getUserInfobyId(userId);
+        UserInfo userInfo = userInfoDao.getUserInfoById(userId);
 
         if (userInfo == null)
             throw new NoSuchUserException("No such user with id " + userId);
@@ -304,7 +303,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserInfo cleanUserPassword(UserInfo userInfo) {
-        UserInfo info = userInfoDao.getUserInfobyId(userInfo.getId());
+        UserInfo info = userInfoDao.getUserInfoById(userInfo.getId());
         info.setPassword("");
         return userInfoDao.updateUserInfo(info);
     }
@@ -338,7 +337,7 @@ public class UserServiceImpl implements UserService {
 
         userRoleList.forEach(userRole -> {
             if (userRole.getRoleId() != null) {
-                RoleInfo role = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
+                RoleInfo role = roleInfoDao.getRoleInfoById(userRole.getRoleId());
                 if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
                     res.add(roleInfo);
             }
@@ -377,7 +376,7 @@ public class UserServiceImpl implements UserService {
 
         userRoleList.forEach(userRole -> {
             if (userRole.getRoleId() != null) {
-                RoleInfo role = roleInfoDao.getRoleInfobyId(userRole.getRoleId());
+                RoleInfo role = roleInfoDao.getRoleInfoById(userRole.getRoleId());
                 if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
                     res.add(roleInfo);
             }

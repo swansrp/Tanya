@@ -7,14 +7,6 @@
  */
 package com.srct.service.tanya.common.service.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -28,10 +20,16 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.tanya.common.service.ShiroService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Sharp
- *
  */
 @Service
 public class ShiroServiceImpl implements ShiroService {
@@ -86,7 +84,7 @@ public class ShiroServiceImpl implements ShiroService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.srct.service.tanya.common.service.ShiroService#insert(com.srct.service.tanya.common.datalayer.tanya.entity.
      * UserInfo)
@@ -106,7 +104,7 @@ public class ShiroServiceImpl implements ShiroService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.common.service.ShiroService#del(java.lang.String)
      */
     @Override
@@ -118,7 +116,7 @@ public class ShiroServiceImpl implements ShiroService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.srct.service.tanya.common.service.ShiroService#findRolesByUser(com.srct.service.tanya.common.datalayer.tanya.
      * entity.UserInfo)
@@ -140,14 +138,14 @@ public class ShiroServiceImpl implements ShiroService {
 
         Set<RoleInfo> roleInfoSet = new HashSet<>();
         for (UserRoleMap map : userRoleMapList) {
-            roleInfoSet.add(roleInfoDao.getRoleInfobyId(map.getRoleId()));
+            roleInfoSet.add(roleInfoDao.getRoleInfoById(map.getRoleId()));
         }
         return roleInfoSet;
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.common.service.ShiroService#findPermissionsByRole(java.util.Set)
      */
     @Override
@@ -157,9 +155,9 @@ public class ShiroServiceImpl implements ShiroService {
             RolePermissionMap rolePermissionMap = new RolePermissionMap();
             rolePermissionMap.setRoleId(role.getId());
             List<RolePermissionMap> rolePermissionMaps =
-                rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMap);
+                    rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMap);
             for (RolePermissionMap map : rolePermissionMaps) {
-                permissionInfoSet.add(permissionInfoDao.getPermissionInfobyId(map.getPerimissionId()));
+                permissionInfoSet.add(permissionInfoDao.getPermissionInfoById(map.getPerimissionId()));
             }
         }
         return permissionInfoSet;

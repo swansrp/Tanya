@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/02/23
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.ShopInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: ShopInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaShopInfoDao")
 public class ShopInfoDao {
@@ -52,7 +50,7 @@ public class ShopInfoDao {
             shopInfo.setUpdateAt(new Date());
             res = shopInfoMapper.updateByPrimaryKeySelective(shopInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update ShopInfo error");
         }
         return shopInfo;
@@ -68,7 +66,7 @@ public class ShopInfoDao {
             shopInfo.setUpdateAt(new Date());
             res = shopInfoMapper.updateByPrimaryKey(shopInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update ShopInfo error");
         }
         return shopInfo;
@@ -116,16 +114,29 @@ public class ShopInfoDao {
     public List<ShopInfo> getAllShopInfoList(Byte valid) {
         ShopInfoExample example = new ShopInfoExample();
         ShopInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return shopInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<ShopInfo> getAllShopInfoList(Byte valid, PageInfo<?> pageInfo) {
+        ShopInfoExample example = new ShopInfoExample();
+        ShopInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<ShopInfo> res = shopInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<ShopInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "ShopInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public ShopInfo getShopInfobyId(Integer id) {
+    public ShopInfo getShopInfoById(Integer id) {
         return shopInfoMapper.selectByPrimaryKey(id);
     }
 
@@ -138,6 +149,7 @@ public class ShopInfoDao {
         pageInfo = new PageInfo<ShopInfo>(res);
         return res;
     }
+
     @Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<ShopInfo> getShopInfoSelective(ShopInfo shopInfo) {
@@ -152,6 +164,7 @@ public class ShopInfoDao {
         pageInfo = new PageInfo<ShopInfo>(res);
         return res;
     }
+
     public List<ShopInfo> getShopInfoByExample(ShopInfoExample example) {
         List<ShopInfo> res = shopInfoMapper.selectByExample(example);
         return res;

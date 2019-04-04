@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/03/16
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.AdminInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: AdminInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaAdminInfoDao")
 public class AdminInfoDao {
@@ -52,7 +50,7 @@ public class AdminInfoDao {
             adminInfo.setUpdateAt(new Date());
             res = adminInfoMapper.updateByPrimaryKeySelective(adminInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update AdminInfo error");
         }
         return adminInfo;
@@ -68,7 +66,7 @@ public class AdminInfoDao {
             adminInfo.setUpdateAt(new Date());
             res = adminInfoMapper.updateByPrimaryKey(adminInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update AdminInfo error");
         }
         return adminInfo;
@@ -116,28 +114,42 @@ public class AdminInfoDao {
     public List<AdminInfo> getAllAdminInfoList(Byte valid) {
         AdminInfoExample example = new AdminInfoExample();
         AdminInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return adminInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<AdminInfo> getAllAdminInfoList(Byte valid, PageInfo<?> pageInfo) {
+        AdminInfoExample example = new AdminInfoExample();
+        AdminInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<AdminInfo> res = adminInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<AdminInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "AdminInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public AdminInfo getAdminInfobyId(Integer id) {
+    public AdminInfo getAdminInfoById(Integer id) {
         return adminInfoMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<AdminInfo> getShopInfoSelective(AdminInfo adminInfo, PageInfo<?> pageInfo) {
+    public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo, PageInfo<?> pageInfo) {
         AdminInfoExample example = getAdminInfoExample(adminInfo);
         PageHelper.startPage(pageInfo);
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
         pageInfo = new PageInfo<AdminInfo>(res);
         return res;
     }
+
     @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo) {
@@ -152,6 +164,7 @@ public class AdminInfoDao {
         pageInfo = new PageInfo<AdminInfo>(res);
         return res;
     }
+
     public List<AdminInfo> getAdminInfoByExample(AdminInfoExample example) {
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
         return res;

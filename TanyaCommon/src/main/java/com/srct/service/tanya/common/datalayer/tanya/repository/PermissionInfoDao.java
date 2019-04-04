@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/02/23
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.PermissionInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: PermissionInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaPermissionInfoDao")
 public class PermissionInfoDao {
@@ -52,7 +50,7 @@ public class PermissionInfoDao {
             permissionInfo.setUpdateAt(new Date());
             res = permissionInfoMapper.updateByPrimaryKeySelective(permissionInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update PermissionInfo error");
         }
         return permissionInfo;
@@ -68,7 +66,7 @@ public class PermissionInfoDao {
             permissionInfo.setUpdateAt(new Date());
             res = permissionInfoMapper.updateByPrimaryKey(permissionInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update PermissionInfo error");
         }
         return permissionInfo;
@@ -116,28 +114,42 @@ public class PermissionInfoDao {
     public List<PermissionInfo> getAllPermissionInfoList(Byte valid) {
         PermissionInfoExample example = new PermissionInfoExample();
         PermissionInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return permissionInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "PermissionInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<PermissionInfo> getAllPermissionInfoList(Byte valid, PageInfo<?> pageInfo) {
+        PermissionInfoExample example = new PermissionInfoExample();
+        PermissionInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<PermissionInfo> res = permissionInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<PermissionInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "PermissionInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public PermissionInfo getPermissionInfobyId(Integer id) {
+    public PermissionInfo getPermissionInfoById(Integer id) {
         return permissionInfoMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "PermissionInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<PermissionInfo> getShopInfoSelective(PermissionInfo permissionInfo, PageInfo<?> pageInfo) {
+    public List<PermissionInfo> getPermissionInfoSelective(PermissionInfo permissionInfo, PageInfo<?> pageInfo) {
         PermissionInfoExample example = getPermissionInfoExample(permissionInfo);
         PageHelper.startPage(pageInfo);
         List<PermissionInfo> res = permissionInfoMapper.selectByExample(example);
         pageInfo = new PageInfo<PermissionInfo>(res);
         return res;
     }
+
     @Cacheable(value = "PermissionInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<PermissionInfo> getPermissionInfoSelective(PermissionInfo permissionInfo) {
@@ -152,6 +164,7 @@ public class PermissionInfoDao {
         pageInfo = new PageInfo<PermissionInfo>(res);
         return res;
     }
+
     public List<PermissionInfo> getPermissionInfoByExample(PermissionInfoExample example) {
         List<PermissionInfo> res = permissionInfoMapper.selectByExample(example);
         return res;

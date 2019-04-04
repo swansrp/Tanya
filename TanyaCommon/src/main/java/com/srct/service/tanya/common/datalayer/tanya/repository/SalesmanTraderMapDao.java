@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/02/23
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.SalesmanTraderMapMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: SalesmanTraderMapDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaSalesmanTraderMapDao")
 public class SalesmanTraderMapDao {
@@ -52,7 +50,7 @@ public class SalesmanTraderMapDao {
             salesmanTraderMap.setUpdateAt(new Date());
             res = salesmanTraderMapMapper.updateByPrimaryKeySelective(salesmanTraderMap);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update SalesmanTraderMap error");
         }
         return salesmanTraderMap;
@@ -68,19 +66,21 @@ public class SalesmanTraderMapDao {
             salesmanTraderMap.setUpdateAt(new Date());
             res = salesmanTraderMapMapper.updateByPrimaryKey(salesmanTraderMap);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update SalesmanTraderMap error");
         }
         return salesmanTraderMap;
     }
 
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
-    public Integer updateSalesmanTraderMapByExample(SalesmanTraderMap salesmanTraderMap, SalesmanTraderMapExample example) {
+    public Integer updateSalesmanTraderMapByExample(SalesmanTraderMap salesmanTraderMap,
+            SalesmanTraderMapExample example) {
         return salesmanTraderMapMapper.updateByExampleSelective(salesmanTraderMap, example);
     }
 
     @CacheEvict(value = "SalesmanTraderMap", allEntries = true)
-    public Integer updateSalesmanTraderMapByExampleStrict(SalesmanTraderMap salesmanTraderMap, SalesmanTraderMapExample example) {
+    public Integer updateSalesmanTraderMapByExampleStrict(SalesmanTraderMap salesmanTraderMap,
+            SalesmanTraderMapExample example) {
         return salesmanTraderMapMapper.updateByExample(salesmanTraderMap, example);
     }
 
@@ -116,28 +116,43 @@ public class SalesmanTraderMapDao {
     public List<SalesmanTraderMap> getAllSalesmanTraderMapList(Byte valid) {
         SalesmanTraderMapExample example = new SalesmanTraderMapExample();
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return salesmanTraderMapMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<SalesmanTraderMap> getAllSalesmanTraderMapList(Byte valid, PageInfo<?> pageInfo) {
+        SalesmanTraderMapExample example = new SalesmanTraderMapExample();
+        SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<SalesmanTraderMap>(res);
+        return res;
     }
 
     @Cacheable(value = "SalesmanTraderMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public SalesmanTraderMap getSalesmanTraderMapbyId(Integer id) {
+    public SalesmanTraderMap getSalesmanTraderMapById(Integer id) {
         return salesmanTraderMapMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<SalesmanTraderMap> getShopInfoSelective(SalesmanTraderMap salesmanTraderMap, PageInfo<?> pageInfo) {
+    public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap,
+            PageInfo<?> pageInfo) {
         SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
         PageHelper.startPage(pageInfo);
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
         pageInfo = new PageInfo<SalesmanTraderMap>(res);
         return res;
     }
+
     @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap) {
@@ -146,12 +161,14 @@ public class SalesmanTraderMapDao {
         return res;
     }
 
-    public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example, PageInfo<?> pageInfo) {
+    public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example,
+            PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
         pageInfo = new PageInfo<SalesmanTraderMap>(res);
         return res;
     }
+
     public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example) {
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
         return res;

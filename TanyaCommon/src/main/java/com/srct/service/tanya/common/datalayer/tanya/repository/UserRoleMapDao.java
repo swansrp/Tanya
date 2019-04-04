@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/02/23
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserRoleMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.UserRoleMapMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: UserRoleMapDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaUserRoleMapDao")
 public class UserRoleMapDao {
@@ -52,7 +50,7 @@ public class UserRoleMapDao {
             userRoleMap.setUpdateAt(new Date());
             res = userRoleMapMapper.updateByPrimaryKeySelective(userRoleMap);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update UserRoleMap error");
         }
         return userRoleMap;
@@ -68,7 +66,7 @@ public class UserRoleMapDao {
             userRoleMap.setUpdateAt(new Date());
             res = userRoleMapMapper.updateByPrimaryKey(userRoleMap);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update UserRoleMap error");
         }
         return userRoleMap;
@@ -116,28 +114,42 @@ public class UserRoleMapDao {
     public List<UserRoleMap> getAllUserRoleMapList(Byte valid) {
         UserRoleMapExample example = new UserRoleMapExample();
         UserRoleMapExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return userRoleMapMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<UserRoleMap> getAllUserRoleMapList(Byte valid, PageInfo<?> pageInfo) {
+        UserRoleMapExample example = new UserRoleMapExample();
+        UserRoleMapExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
+        pageInfo = new PageInfo<UserRoleMap>(res);
+        return res;
     }
 
     @Cacheable(value = "UserRoleMap", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public UserRoleMap getUserRoleMapbyId(Integer id) {
+    public UserRoleMap getUserRoleMapById(Integer id) {
         return userRoleMapMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<UserRoleMap> getShopInfoSelective(UserRoleMap userRoleMap, PageInfo<?> pageInfo) {
+    public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap, PageInfo<?> pageInfo) {
         UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
         PageHelper.startPage(pageInfo);
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
         pageInfo = new PageInfo<UserRoleMap>(res);
         return res;
     }
+
     @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap) {
@@ -152,6 +164,7 @@ public class UserRoleMapDao {
         pageInfo = new PageInfo<UserRoleMap>(res);
         return res;
     }
+
     public List<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example) {
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
         return res;

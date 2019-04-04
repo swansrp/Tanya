@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/03/16
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.MerchantInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: MerchantInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaMerchantInfoDao")
 public class MerchantInfoDao {
@@ -52,7 +50,7 @@ public class MerchantInfoDao {
             merchantInfo.setUpdateAt(new Date());
             res = merchantInfoMapper.updateByPrimaryKeySelective(merchantInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update MerchantInfo error");
         }
         return merchantInfo;
@@ -68,7 +66,7 @@ public class MerchantInfoDao {
             merchantInfo.setUpdateAt(new Date());
             res = merchantInfoMapper.updateByPrimaryKey(merchantInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update MerchantInfo error");
         }
         return merchantInfo;
@@ -116,28 +114,42 @@ public class MerchantInfoDao {
     public List<MerchantInfo> getAllMerchantInfoList(Byte valid) {
         MerchantInfoExample example = new MerchantInfoExample();
         MerchantInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return merchantInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<MerchantInfo> getAllMerchantInfoList(Byte valid, PageInfo<?> pageInfo) {
+        MerchantInfoExample example = new MerchantInfoExample();
+        MerchantInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<MerchantInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "MerchantInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public MerchantInfo getMerchantInfobyId(Integer id) {
+    public MerchantInfo getMerchantInfoById(Integer id) {
         return merchantInfoMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<MerchantInfo> getShopInfoSelective(MerchantInfo merchantInfo, PageInfo<?> pageInfo) {
+    public List<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo, PageInfo<?> pageInfo) {
         MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
         PageHelper.startPage(pageInfo);
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
         pageInfo = new PageInfo<MerchantInfo>(res);
         return res;
     }
+
     @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo) {
@@ -152,6 +164,7 @@ public class MerchantInfoDao {
         pageInfo = new PageInfo<MerchantInfo>(res);
         return res;
     }
+
     public List<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example) {
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
         return res;

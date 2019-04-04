@@ -1,6 +1,7 @@
 
 package com.srct.service.tanya.portal.vo.admin.tanya;
 
+import com.srct.service.vo.QueryReqVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,10 +12,9 @@ import java.util.Date;
 * 根据需要删减无效参数
  * 
 * @author: sharuopeng
-* @create: 2019/03/16
  **/
 @Data
-public class FactoryInfoEntityVO {
+public class FactoryInfoEntityVO extends QueryReqVO {
  
     @ApiModelProperty(value = "")
     private Integer id;

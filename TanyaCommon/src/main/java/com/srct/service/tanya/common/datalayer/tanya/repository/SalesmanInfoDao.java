@@ -1,23 +1,12 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.common.datalayer.tanya.repository 
- * @author: sharuopeng   
- * @date: 2019/03/16
+ * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
+ * @author: sharuopeng
+ * @date: 2019/04/04
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,14 +16,23 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.mapper.SalesmanInfoMapper;
-
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * @ClassName: SalesmanInfoDao
- * @Description: TODO
+ * @Description: Basic Repository 
  */
 @Repository("tanyaSalesmanInfoDao")
 public class SalesmanInfoDao {
@@ -52,7 +50,7 @@ public class SalesmanInfoDao {
             salesmanInfo.setUpdateAt(new Date());
             res = salesmanInfoMapper.updateByPrimaryKeySelective(salesmanInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update SalesmanInfo error");
         }
         return salesmanInfo;
@@ -68,7 +66,7 @@ public class SalesmanInfoDao {
             salesmanInfo.setUpdateAt(new Date());
             res = salesmanInfoMapper.updateByPrimaryKey(salesmanInfo);
         }
-        if(res == 0) {
+        if (res == 0) {
             throw new ServiceException("update SalesmanInfo error");
         }
         return salesmanInfo;
@@ -116,28 +114,42 @@ public class SalesmanInfoDao {
     public List<SalesmanInfo> getAllSalesmanInfoList(Byte valid) {
         SalesmanInfoExample example = new SalesmanInfoExample();
         SalesmanInfoExample.Criteria criteria = example.createCriteria();
-        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
-
         return salesmanInfoMapper.selectByExample(example);
+    }
+
+    @Cacheable(value = "SalesmanInfo", keyGenerator = "CacheKeyByParam")
+    @CacheExpire(expire = 3600L)
+    public List<SalesmanInfo> getAllSalesmanInfoList(Byte valid, PageInfo<?> pageInfo) {
+        SalesmanInfoExample example = new SalesmanInfoExample();
+        SalesmanInfoExample.Criteria criteria = example.createCriteria();
+        if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
+            criteria.andValidEqualTo(valid);
+        }
+        PageHelper.startPage(pageInfo);
+        List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
+        pageInfo = new PageInfo<SalesmanInfo>(res);
+        return res;
     }
 
     @Cacheable(value = "SalesmanInfo", key = "'id_' + #id")
     @CacheExpire(expire = 24 * 3600L)
-    public SalesmanInfo getSalesmanInfobyId(Integer id) {
+    public SalesmanInfo getSalesmanInfoById(Integer id) {
         return salesmanInfoMapper.selectByPrimaryKey(id);
     }
 
     @Cacheable(value = "SalesmanInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<SalesmanInfo> getShopInfoSelective(SalesmanInfo salesmanInfo, PageInfo<?> pageInfo) {
+    public List<SalesmanInfo> getSalesmanInfoSelective(SalesmanInfo salesmanInfo, PageInfo<?> pageInfo) {
         SalesmanInfoExample example = getSalesmanInfoExample(salesmanInfo);
         PageHelper.startPage(pageInfo);
         List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
         pageInfo = new PageInfo<SalesmanInfo>(res);
         return res;
     }
+
     @Cacheable(value = "SalesmanInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<SalesmanInfo> getSalesmanInfoSelective(SalesmanInfo salesmanInfo) {
@@ -152,6 +164,7 @@ public class SalesmanInfoDao {
         pageInfo = new PageInfo<SalesmanInfo>(res);
         return res;
     }
+
     public List<SalesmanInfo> getSalesmanInfoByExample(SalesmanInfoExample example) {
         List<SalesmanInfo> res = salesmanInfoMapper.selectByExample(example);
         return res;
