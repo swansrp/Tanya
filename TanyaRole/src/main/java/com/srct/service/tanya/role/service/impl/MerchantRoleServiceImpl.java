@@ -7,6 +7,7 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
@@ -20,23 +21,23 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.QuerySubordinateBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.MerchantRoleService;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 @Service
 public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService {
@@ -58,7 +59,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.role.service.RoleService#getRoleType()
      */
     @Override
@@ -73,7 +74,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.srct.service.tanya.role.service.RoleService#create(com.srct.service.tanya.role.bo.CreateRoleBO)
      */
     @Override
@@ -102,26 +103,28 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
     }
 
     @Override
-    public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
+    public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
 
-        List<MerchantInfo> merchatInfoList =
-            merchantInfoDao.getAllMerchantInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<RoleInfoBO> boList = new ArrayList<>();
+        PageInfo pageInfo = buildPageInfo(req);
+        List<MerchantInfo> merchantInfoList =
+                merchantInfoDao.getAllMerchantInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.buildPageInfo(pageInfo);
 
-        for (MerchantInfo merchant : merchatInfoList) {
+        for (MerchantInfo merchant : merchantInfoList) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(merchant, bo);
             bo.setRoleType(getRoleType());
-            boList.add(bo);
+            res.getInfo().add(bo);
 
         }
-        return boList;
+        return res;
 
     }
 
     @Override
     public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getId());
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(merchantInfo, res);
         res.setRoleType(getRoleType());
@@ -131,14 +134,14 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
     @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
         Integer id = getRoleIdbyUser(userInfo);
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(id);
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(id);
         return makeRoleInfoBO(merchantInfo);
     }
 
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
 
-        MerchantInfo target = merchantInfoDao.getMerchantInfobyId(bo.getId());
+        MerchantInfo target = merchantInfoDao.getMerchantInfoById(bo.getId());
         if (target == null) {
             Log.e("role {} id {} is not exsited", bo.getRoleType(), bo.getId());
             throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " is not exstied");
@@ -149,7 +152,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
             throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " Dont have user");
         }
 
-        UserInfo targetUserInfo = userInfoDao.getUserInfobyId(target.getUserId());
+        UserInfo targetUserInfo = userInfoDao.getUserInfoById(target.getUserId());
         List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
 
         if (targetRoleInfoList == null || targetRoleInfoList.size() == 0) {
@@ -176,10 +179,10 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
         if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
             throw new ServiceException(
-                "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
         }
 
-        MerchantInfo merchant = merchantInfoDao.getMerchantInfobyId(bo.getId());
+        MerchantInfo merchant = merchantInfoDao.getMerchantInfoById(bo.getId());
         merchant.setUserId(targetUserInfo.getId());
         merchant.setContact(targetUserInfo.getPhone());
         merchant.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -197,7 +200,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
     @Override
     public RoleInfoBO update(UpdateRoleInfoBO bo) {
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getTargetId());
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getTargetId());
         BeanUtil.copyProperties(bo, merchantInfo);
 
         merchantInfo = merchantInfoDao.updateMerchantInfo(merchantInfo);
@@ -208,7 +211,7 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
             updateSubRoleBO.setEndAt(bo.getEndAt());
             updateSubRoleBO.setSuperiorId(merchantInfo.getId());
             RoleService subordinateService =
-                (RoleService)BeanUtil.getBean(getSubordinateRoleType() + "RoleServiceImpl");
+                    (RoleService) BeanUtil.getBean(getSubordinateRoleType() + "RoleServiceImpl");
             subordinateService.update(updateSubRoleBO);
         }
 
@@ -243,10 +246,11 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
     @Override
     public RoleInfoBO del(ModifyRoleBO bo) {
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfobyId(bo.getId());
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getId());
         if (merchantInfo.getUserId() != null) {
-            throw new ServiceException("Dont allow to del role " + merchantInfo.getId() + " without kickout the user "
-                + merchantInfo.getUserId());
+            throw new ServiceException(
+                    "Dont allow to del role " + merchantInfo.getId() + " without kickout the user " + merchantInfo
+                            .getUserId());
         }
         merchantInfoDao.delMerchantInfo(merchantInfo);
         return makeRoleInfoBO(merchantInfo);

@@ -7,6 +7,7 @@
  */
 package com.srct.service.tanya.role.service;
 
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -15,17 +16,18 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.QuerySubordinateBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 public interface RoleService {
 
@@ -37,7 +39,7 @@ public interface RoleService {
 
     RoleInfoBO update(UpdateRoleInfoBO bo);
 
-    List<RoleInfoBO> getSubordinate(UserInfo userInfo);
+    QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO bo);
 
     RoleInfoBO getDetails(GetRoleDetailsBO bo);
 
@@ -70,4 +72,14 @@ public interface RoleService {
         }
     }
 
+    default PageInfo<?> buildPageInfo(QueryReqVO req) {
+        PageInfo<?> pageInfo = new PageInfo<>();
+        if (req.getCurrentPage() != null) {
+            pageInfo.setPageNum(req.getCurrentPage());
+        }
+        if (req.getPageSize() != null) {
+            pageInfo.setPageSize(req.getPageSize());
+        }
+        return pageInfo;
+    }
 }

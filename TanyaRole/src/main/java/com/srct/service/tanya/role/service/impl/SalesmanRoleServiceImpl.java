@@ -7,6 +7,7 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
@@ -25,12 +26,14 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.QuerySubordinateBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -80,7 +83,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     public RoleInfoBO create(CreateRoleBO bo) {
         TraderInfo traderInfo;
         try {
-            traderInfo = getTraderInfoByCreater(bo.getCreaterInfo());
+            traderInfo = getTraderInfoByCreator(bo.getCreaterInfo());
         } catch (Exception e) {
             throw new ServiceException(
                     "creater role " + bo.getCreaterRole().getRole() + " dont allow create " + getRoleType());
@@ -116,11 +119,11 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return salesmanInfo;
     }
 
-    private TraderInfo getTraderInfoByCreater(UserInfo creater) {
+    private TraderInfo getTraderInfoByCreator(UserInfo creator) {
         TraderInfo traderInfo;
         TraderInfoExample example = new TraderInfoExample();
         TraderInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(creater.getId());
+        criteria.andUserIdEqualTo(creator.getId());
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
             traderInfo = traderInfoDao.getTraderInfoByExample(example).get(0);
@@ -136,36 +139,37 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
      * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
      */
     @Override
-    public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
+    public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
+        UserInfo userInfo = req.getUserInfo();
         if (userInfo == null) {
-            return getAllSalesman();
+            return getAllSalesman(req);
         }
 
         TraderInfo traderInfo;
         try {
-            traderInfo = getTraderInfoByCreater(userInfo);
+            traderInfo = getTraderInfoByCreator(userInfo);
         } catch (Exception e) {
             Log.e("dont find the user id {} for {}", userInfo.getId(), "factory");
             throw new ServiceException("dont find the user id " + userInfo.getId() + " for factory");
         }
-
+        PageInfo pageInfo = buildPageInfo(req);
         SalesmanTraderMap salesmanTraderMapEx = new SalesmanTraderMap();
         salesmanTraderMapEx.setTraderId(traderInfo.getId());
         salesmanTraderMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         List<SalesmanTraderMap> salesmanTraderMapList =
-                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMapEx);
+                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMapEx, pageInfo);
 
-        List<RoleInfoBO> boList = new ArrayList<>();
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.buildPageInfo(pageInfo);
 
         for (SalesmanTraderMap salesmanTraderMap : salesmanTraderMapList) {
-            SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(salesmanTraderMap.getSalesmanId());
+            SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(salesmanTraderMap.getSalesmanId());
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(salesmanInfo, bo);
             bo.setRoleType(getRoleType());
-            boList.add(bo);
-
+            res.getInfo().add(bo);
         }
-        return boList;
+        return res;
     }
 
     @Override
@@ -174,7 +178,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         if (userInfo != null) {
             TraderInfo traderInfo;
             try {
-                traderInfo = getTraderInfoByCreater(userInfo);
+                traderInfo = getTraderInfoByCreator(userInfo);
             } catch (Exception e) {
                 Log.e("dont find the user id {} for {}", userInfo.getId(), "trader");
                 throw new ServiceException("dont find the user id " + userInfo.getId() + " for trader");
@@ -191,7 +195,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
             }
         }
 
-        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(bo.getId());
         RoleInfoBO res = new RoleInfoBO();
         BeanUtil.copyProperties(salesmanInfo, res);
         res.setRoleType(getRoleType());
@@ -201,29 +205,31 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
         Integer id = getRoleIdbyUser(userInfo);
-        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(id);
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(id);
         return makeRoleInfoBO(salesmanInfo);
     }
 
-    private List<RoleInfoBO> getAllSalesman() {
+    private QueryRespVO<RoleInfoBO> getAllSalesman(QuerySubordinateBO req) {
+        PageInfo pageInfo = buildPageInfo(req);
         List<SalesmanInfo> salesmanInfoList =
-                salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<RoleInfoBO> boList = new ArrayList<>();
+                salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.setPageSize(pageInfo.getPages());
+        res.setTotalSize(pageInfo.getTotal());
 
         for (SalesmanInfo salesman : salesmanInfoList) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(salesman, bo);
             bo.setRoleType(getRoleType());
-            boList.add(bo);
-
+            res.getInfo().add(bo);
         }
-        return boList;
+        return res;
     }
 
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
 
-        SalesmanInfo target = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
+        SalesmanInfo target = salesmanInfoDao.getSalesmanInfoById(bo.getId());
         if (target == null) {
             Log.e("role {} id {} is not exsited", bo.getRoleType(), bo.getId());
             throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " is not exstied");
@@ -234,7 +240,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
             throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " Dont have user");
         }
 
-        UserInfo targetUserInfo = userInfoDao.getUserInfobyId(target.getUserId());
+        UserInfo targetUserInfo = userInfoDao.getUserInfoById(target.getUserId());
         List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
 
         Log.ii(targetRoleInfoList);
@@ -271,13 +277,13 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
                 }
             }
         }
-        TraderInfo creator = getTraderInfoByCreater(bo.getCreaterInfo());
+        TraderInfo creator = getTraderInfoByCreator(bo.getCreaterInfo());
         List<TraderInfo> superiorList = getTraderInfoByUser(targetUserInfo);
         if (superiorList.contains(creator)) {
             throw new ServiceException("已经是" + creator.getTitle() + "的促销员了");
         }
 
-        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(bo.getId());
         salesmanInfo.setUserId(targetUserInfo.getId());
         salesmanInfo.setContact(targetUserInfo.getPhone());
         salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -296,7 +302,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     @Override
     public RoleInfoBO update(UpdateRoleInfoBO bo) {
 
-        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getTargetId());
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(bo.getTargetId());
         BeanUtil.copyProperties(bo, salesmanInfo);
 
         salesmanInfo = salesmanInfoDao.updateSalesmanInfo(salesmanInfo);
@@ -330,7 +336,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     public List<TraderInfo> getTraderInfoByUser(UserInfo userInfo) {
         List<TraderInfo> res = new ArrayList<>();
         getSalesmanTraderMap(userInfo).forEach(
-                salesmanTraderMap -> res.add(traderInfoDao.getTraderInfobyId(salesmanTraderMap.getTraderId())));
+                salesmanTraderMap -> res.add(traderInfoDao.getTraderInfoById(salesmanTraderMap.getTraderId())));
         return res;
     }
 
@@ -345,7 +351,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
         //criteria.andEndAtGreaterThanOrEqualTo(now);
         //criteria.andStartAtLessThanOrEqualTo(now);
-        if (salesmanIdList != null && salesmanIdList.size() > 1) {
+        if (salesmanIdList.size() > 1) {
             criteria.andSalesmanIdIn(salesmanIdList);
         }
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -358,7 +364,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
 
     @Override
     public RoleInfoBO del(ModifyRoleBO bo) {
-        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfobyId(bo.getId());
+        SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(bo.getId());
         if (salesmanInfo.getUserId() != null) {
             throw new ServiceException(
                     "Dont allow to del role " + salesmanInfo.getId() + " without kickout the user " + salesmanInfo

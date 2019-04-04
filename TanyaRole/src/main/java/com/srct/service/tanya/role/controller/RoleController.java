@@ -17,6 +17,7 @@ import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
 import com.srct.service.tanya.role.bo.PermissionDetailsBO;
+import com.srct.service.tanya.role.bo.QuerySubordinateBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
@@ -27,6 +28,7 @@ import com.srct.service.tanya.role.vo.RoleDetailsVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryRespVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -41,8 +43,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Sharp
@@ -56,7 +56,6 @@ public class RoleController {
 
     @Autowired
     private HttpServletRequest request;
-
     @Autowired
     private UserService userService;
 
@@ -126,27 +125,37 @@ public class RoleController {
     @ApiOperation(value = "获取下属信息", notes = "根据传入人员角色获取下属信息。")
     @RequestMapping(value = "/subordinate", method = RequestMethod.GET)
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}")})
-    public ResponseEntity<CommonResponse<List<RoleInfoVO>>.Resp> getSubordinate(
-            @RequestParam(value = "roletype", required = false) String roletype) {
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "currentPage", value = "当前页"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "pageSize", value = "每页条目数量"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roleType", value = "角色类型 {admin, merchant, factory, trader, salesman}")})
+    public ResponseEntity<CommonResponse<QueryRespVO<RoleInfoVO>>.Resp> getSubordinate(
+            @RequestParam(value = "currentPage", required = false) Integer currentPage,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+            @RequestParam(value = "roleType", required = false) String targetRoleType) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
 
-        String roleType = getTargetRoleType(roletype, role);
+        String roleType = getTargetRoleType(targetRoleType, role);
         Log.i("***getSubordinate***");
         Log.i("guid {}, role type {} target type {}", info.getGuid(), role.getComment(), roleType);
 
         RoleService roleService = (RoleService) BeanUtil.getBean(roleType + "RoleServiceImpl");
-        if (role.getRole().equals("superAdmin"))
-            info = null;
-        List<RoleInfoBO> resBOList = roleService.getSubordinate(info);
+        QuerySubordinateBO req = new QuerySubordinateBO();
+        req.setCurrentPage(currentPage);
+        req.setPageSize(pageSize);
+        if (!role.getRole().equals("superAdmin"))
+            req.setUserInfo(info);
+        QueryRespVO<RoleInfoBO> resBO = roleService.getSubordinate(req);
 
-        List<RoleInfoVO> resVOList = new ArrayList<>();
-        for (RoleInfoBO resBO : resBOList) {
-            RoleInfoVO resVO = convertRoleInfoVO(resBO);
-            resVOList.add(resVO);
+        QueryRespVO<RoleInfoVO> resVO = new QueryRespVO<>();
+        resVO.setTotalSize(resBO.getTotalSize());
+        resVO.setTotalPages(resBO.getTotalPages());
+        for (RoleInfoBO bo : resBO.getInfo()) {
+            RoleInfoVO vo = convertRoleInfoVO(bo);
+            resVO.getInfo().add(vo);
         }
-        return TanyaExceptionHandler.generateResponse(resVOList);
+
+        return TanyaExceptionHandler.generateResponse(resVO);
     }
 
     @ApiOperation(value = "邀请成为下属", notes = "通过扫描对方二维码邀请成为下属")
@@ -313,5 +322,4 @@ public class RoleController {
         }
         return resVO;
     }
-
 }

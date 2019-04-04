@@ -1,6 +1,6 @@
 /**
  * Title: MerchantRoleService.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.service
  * @author sharuopeng
@@ -16,6 +16,5 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
  *
  */
 public interface MerchantRoleService {
-
-    public MerchantInfo getMerchantInfoByUser(UserInfo userInfo);
+    MerchantInfo getMerchantInfoByUser(UserInfo userInfo);
 }

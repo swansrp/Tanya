@@ -7,6 +7,7 @@
  */
 package com.srct.service.tanya.role.service.impl;
 
+import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.AdminInfo;
@@ -20,22 +21,22 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.role.bo.CreateRoleBO;
 import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
 import com.srct.service.tanya.role.bo.ModifyRoleBO;
+import com.srct.service.tanya.role.bo.QuerySubordinateBO;
 import com.srct.service.tanya.role.bo.RoleInfoBO;
 import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 @Service
 public class AdminRoleServiceImpl implements RoleService {
@@ -91,32 +92,33 @@ public class AdminRoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleInfoBO> getSubordinate(UserInfo userInfo) {
+    public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
+        PageInfo pageInfo = buildPageInfo(req);
         List<AdminInfo> adminInfoList =
-            adminInfoDao.getAllAdminInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<RoleInfoBO> boList = new ArrayList<>();
+                adminInfoDao.getAllAdminInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.buildPageInfo(pageInfo);
 
         for (AdminInfo admin : adminInfoList) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(admin, bo);
             bo.setRoleType(getRoleType());
-            boList.add(bo);
-
+            res.getInfo().add(bo);
         }
-        return boList;
+        return res;
 
     }
 
     @Override
     public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
-        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getId());
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getId());
         return makeRoleInfoBO(adminInfo);
     }
 
     @Override
     public RoleInfoBO kickout(ModifyRoleBO bo) {
 
-        AdminInfo target = adminInfoDao.getAdminInfobyId(bo.getId());
+        AdminInfo target = adminInfoDao.getAdminInfoById(bo.getId());
         if (target == null) {
             Log.e("role {} id {} is not exsited", bo.getRoleType(), bo.getId());
             throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " is not exstied");
@@ -127,7 +129,7 @@ public class AdminRoleServiceImpl implements RoleService {
             throw new ServiceException("role " + bo.getRoleType() + " id " + bo.getId() + " Dont have user");
         }
 
-        UserInfo targetUserInfo = userInfoDao.getUserInfobyId(target.getUserId());
+        UserInfo targetUserInfo = userInfoDao.getUserInfoById(target.getUserId());
         List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
 
         if (targetRoleInfoList == null || targetRoleInfoList.size() == 0) {
@@ -154,10 +156,10 @@ public class AdminRoleServiceImpl implements RoleService {
 
         if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
             throw new ServiceException(
-                "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
         }
 
-        AdminInfo admin = adminInfoDao.getAdminInfobyId(bo.getId());
+        AdminInfo admin = adminInfoDao.getAdminInfoById(bo.getId());
         admin.setUserId(targetUserInfo.getId());
         admin.setContact(targetUserInfo.getPhone());
         admin.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -175,7 +177,7 @@ public class AdminRoleServiceImpl implements RoleService {
 
     @Override
     public RoleInfoBO update(UpdateRoleInfoBO bo) {
-        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getTargetId());
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getTargetId());
         BeanUtil.copyProperties(bo, adminInfo);
 
         adminInfo = adminInfoDao.updateAdminInfo(adminInfo);
@@ -206,10 +208,11 @@ public class AdminRoleServiceImpl implements RoleService {
 
     @Override
     public RoleInfoBO del(ModifyRoleBO bo) {
-        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(bo.getId());
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getId());
         if (adminInfo.getUserId() != null) {
             throw new ServiceException(
-                "Dont allow to del role " + adminInfo.getId() + " without kickout the user " + adminInfo.getUserId());
+                    "Dont allow to del role " + adminInfo.getId() + " without kickout the user " + adminInfo
+                            .getUserId());
         }
         adminInfoDao.delAdminInfo(adminInfo);
         return makeRoleInfoBO(adminInfo);
@@ -218,7 +221,7 @@ public class AdminRoleServiceImpl implements RoleService {
     @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
         Integer id = getRoleIdbyUser(userInfo);
-        AdminInfo adminInfo = adminInfoDao.getAdminInfobyId(id);
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(id);
         return makeRoleInfoBO(adminInfo);
     }
 

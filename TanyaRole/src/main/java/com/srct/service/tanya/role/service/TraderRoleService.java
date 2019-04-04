@@ -1,6 +1,6 @@
 /**
  * Title: TraderRoleService.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.service
  * @author sharuopeng
@@ -33,5 +33,7 @@ public interface TraderRoleService {
     List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo);
 
     List<SalesmanInfo> getSalesmanInfoListByTraderInfo(UserInfo userInfo);
+
+    List<SalesmanInfo> getSalesmanInfoListByTraderInfo(TraderInfo traderInfo);
 
 }
