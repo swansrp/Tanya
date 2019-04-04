@@ -181,7 +181,6 @@ public class ShopInfoDao {
                     String criteriaMethodName = "and" + StringUtil.firstUpperCamelCase(field.getName()) + "EqualTo";
                     criteriaMethod = criteria.getClass().getMethod(criteriaMethodName, field.getType());
                 } catch (NoSuchMethodException | SecurityException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 if (criteriaMethod == null)
@@ -189,7 +188,6 @@ public class ShopInfoDao {
                 try {
                     criteriaMethod.invoke(criteria, valueMap.get(field.getName()));
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }

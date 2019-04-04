@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * @ClassName: ShopFactoryMerchantMapDao
- * @Description: Basic Repository
+ * @Description: Basic Repository 
  */
 @Repository("tanyaShopFactoryMerchantMapDao")
 public class ShopFactoryMerchantMapDao {
@@ -187,7 +187,6 @@ public class ShopFactoryMerchantMapDao {
                     String criteriaMethodName = "and" + StringUtil.firstUpperCamelCase(field.getName()) + "EqualTo";
                     criteriaMethod = criteria.getClass().getMethod(criteriaMethodName, field.getType());
                 } catch (NoSuchMethodException | SecurityException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 if (criteriaMethod == null)
@@ -195,7 +194,6 @@ public class ShopFactoryMerchantMapDao {
                 try {
                     criteriaMethod.invoke(criteria, valueMap.get(field.getName()));
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
