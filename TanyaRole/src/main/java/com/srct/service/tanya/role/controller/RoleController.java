@@ -7,6 +7,7 @@
  */
 package com.srct.service.tanya.role.controller;
 
+import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
@@ -44,10 +45,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static com.srct.service.config.annotation.Auth.AuthType.USER;
+
 /**
  * @author Sharp
  */
-
+@Auth(role = USER)
 @Api(value = "权限相关操作", tags = "权限操作")
 @RestController("RoleController")
 @RequestMapping(value = "/role")
@@ -84,16 +87,10 @@ public class RoleController {
     }
 
     @ApiOperation(value = "更新角色信息", notes = "更新制定角色详细信息")
-    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "Integer", name = "goodsnum", value = "商品数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "tradernum", value = "销售员数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "discountnum", value = "商品活动数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "campaignnum", value = "促销活动数量")})
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "body", dataType = "RoleDetailsVO", name = "details", value = "角色基本详情")})
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> updateRole(@RequestBody RoleDetailsVO vo,
-            @RequestParam(value = "goodsnum", required = false) Integer goodsNumber,
-            @RequestParam(value = "tradernum", required = false) Integer traderNumber,
-            @RequestParam(value = "discountnum", required = false) Integer discountNumber,
-            @RequestParam(value = "campaignnum", required = false) Integer campaignNumber) {
+    public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> updateRole(@RequestBody RoleDetailsVO details) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***updateRole***");
@@ -101,17 +98,14 @@ public class RoleController {
 
         UpdateRoleInfoBO bo = new UpdateRoleInfoBO();
 
-        BeanUtil.copyProperties(vo, bo);
+        BeanUtil.copyProperties(details, bo);
         bo.setCreaterInfo(info);
         bo.setCreaterRole(role);
 
-        bo.setTargetId(vo.getId());
-        bo.setRoleType(getTargetRoleType(vo.getRoleType(), role));
+        bo.setTargetId(details.getId());
+        bo.setRoleType(getTargetRoleType(details.getRoleType(), role));
         PermissionDetailsBO permissionBO = new PermissionDetailsBO();
-        permissionBO.setGoodsNumber(goodsNumber);
-        permissionBO.setTraderNumber(traderNumber);
-        permissionBO.setDiscountNumber(discountNumber);
-        permissionBO.setCampaignNumber(campaignNumber);
+        BeanUtil.copyProperties(details.getPermission(), permissionBO);
         bo.setPermissionDetails(permissionBO);
 
         RoleService roleService = (RoleService) BeanUtil.getBean(bo.getRoleType() + "RoleServiceImpl");
@@ -146,14 +140,15 @@ public class RoleController {
         if (!role.getRole().equals("superAdmin"))
             req.setUserInfo(info);
         QueryRespVO<RoleInfoBO> resBO = roleService.getSubordinate(req);
-
         QueryRespVO<RoleInfoVO> resVO = new QueryRespVO<>();
-        resVO.setTotalSize(resBO.getTotalSize());
         resVO.setTotalPages(resBO.getTotalPages());
-        for (RoleInfoBO bo : resBO.getInfo()) {
+        resVO.setTotalSize(resBO.getTotalSize());
+        resVO.setPageSize(resBO.getPageSize());
+        resVO.setCurrentPage(resBO.getCurrentPage());
+        resBO.getInfo().forEach(bo -> {
             RoleInfoVO vo = convertRoleInfoVO(bo);
             resVO.getInfo().add(vo);
-        }
+        });
 
         return TanyaExceptionHandler.generateResponse(resVO);
     }
@@ -231,8 +226,8 @@ public class RoleController {
     @ApiOperation(value = "获取下属详细信息", notes = "根据传入人员角色获取下属信息。")
     @RequestMapping(value = "/details", method = RequestMethod.GET)
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}", required = true),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "角色id", required = true)})
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "roletype", value = "角色类型 {admin, merchant, factory, trader, salesman}"),
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "角色id")})
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> getDetails(
             @RequestParam(value = "roletype", required = false) String roletype,
             @RequestParam(value = "id", required = false) Integer id) {
@@ -318,6 +313,7 @@ public class RoleController {
         if (resVO.getUserId() != null) {
             UserInfo user = userService.getUserbyUserId(resVO.getUserId());
             resVO.setUserName(user.getName());
+            resVO.setContact(user.getPhone());
             resVO.setUserComment(user.getComment());
         }
         return resVO;

@@ -8,7 +8,7 @@
  */
 package com.srct.service.tanya.product.vo;
 
-import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.vo.QueryReqVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -29,6 +29,6 @@ public class CampaignInfoReqVO extends QueryReqVO {
     private List<Integer> bindSalesmanIdList;
 
     @ApiModelProperty(value = "未绑定促销员")
-    private List<Integer> undbindSalesmanIdList;
+    private List<Integer> unbindSalesmanIdList;
 
 }

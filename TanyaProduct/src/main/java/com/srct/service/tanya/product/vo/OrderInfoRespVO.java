@@ -24,7 +24,7 @@ public class OrderInfoRespVO {
     private OrderInfoVO orderInfoVO;
 
     @ApiModelProperty(value = "药厂确认状态")
-    private Date factoryConfirmStatus;
+    private Byte factoryConfirmStatus;
 
     @ApiModelProperty(value = "药厂确认时间")
     private Date factoryConfirmAt;
@@ -33,7 +33,7 @@ public class OrderInfoRespVO {
     private RoleInfoVO factoryConfirmRoleInfoVO;
 
     @ApiModelProperty(value = "渠道确认状态")
-    private Date merchantConfirmStatus;
+    private Byte merchantConfirmStatus;
 
     @ApiModelProperty(value = "渠道确认时间")
     private Date merchantConfirmAt;

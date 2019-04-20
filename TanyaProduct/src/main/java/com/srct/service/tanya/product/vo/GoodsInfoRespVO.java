@@ -8,6 +8,8 @@
  */
 package com.srct.service.tanya.product.vo;
 
+import com.srct.service.tanya.role.vo.RoleInfoVO;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -16,10 +18,16 @@ import lombok.Data;
 @Data
 public class GoodsInfoRespVO {
 
+    @ApiModelProperty(value = "商品信息")
     private GoodsInfoVO goodsInfoVO;
 
+    @ApiModelProperty(value = "商品单位数量")
     private Integer unit;
 
+    @ApiModelProperty(value = "商品活动信息")
     private DiscountInfoVO discountInfoVO;
+
+    @ApiModelProperty(value = "所属渠道")
+    private RoleInfoVO merchantRoleInfoVO;
 
 }

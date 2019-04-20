@@ -8,7 +8,7 @@
  */
 package com.srct.service.tanya.product.vo.backup;
 
-import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.vo.QueryReqVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

@@ -12,6 +12,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
+import com.srct.service.tanya.common.config.FeatureConstant;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
@@ -19,8 +20,6 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.OrderService;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
@@ -30,6 +29,9 @@ import com.srct.service.tanya.product.vo.OrderInfoRespVO;
 import com.srct.service.tanya.product.vo.OrderInfoVO;
 import com.srct.service.tanya.product.vo.ShopInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.DateUtils;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -47,6 +49,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     @Override
     public QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order) {
+        validateQuery(order);
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(order);
         List<Integer> traderFactoryMerchantMapIdList =
                 super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
@@ -55,9 +58,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     }
 
     private OrderInfoExample buildOrderInfoExample(ProductBO<?> order, List<Integer> traderFactoryMerchantMapIdList) {
+        String role = order.getCreatorRole().getRole();
         OrderInfoExample orderExample = super.makeQueryExample(order, OrderInfoExample.class);
         OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
-
 
         if (traderFactoryMerchantMapIdList.size() == 0) {
             traderFactoryMerchantMapIdList.add(0);
@@ -68,34 +71,36 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             orderCriteria.andIdEqualTo(order.getProductId());
         }
 
-        if (order.getCreaterRole().getRole().equals("factory")) {
-            if (order.getApproved() == null) {
-                orderCriteria.andFactoryConfirmAtIsNull();
-            } else if (!DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(order.getApproved())) {
-                orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
-            }
-        } else if (order.getCreaterRole().getRole().equals("merchant")) {
-            orderCriteria.andFactoryConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            if (order.getApproved() == null) {
-                orderCriteria.andMerchantConfirmAtIsNull();
-            } else if (DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(order.getApproved())) {
-                orderCriteria.andMerchantConfirmStatusEqualTo(order.getApproved());
-            }
+        switch (role) {
+            case "merchant":
+                orderCriteria.andFactoryConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
+                    orderCriteria.andMerchantConfirmAtIsNull();
+                } else if (order.getApproved() != null) {
+                    orderCriteria.andMerchantConfirmStatusEqualTo(order.getApproved());
+                }
+                break;
+            case "factory":
+            case "trader":
+                if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
+                    orderCriteria.andFactoryConfirmAtIsNull();
+                } else if (order.getApproved() != null) {
+                    orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
+                }
+                break;
         }
 
         return orderExample;
     }
 
     private QueryRespVO<OrderInfoRespVO> buildResByExample(ProductBO<QueryReqVO> order, OrderInfoExample orderExample) {
-        PageInfo<?> pageInfo = super.buildPage(order);
-        List<OrderInfo> orderInfoList = orderInfoDao.getOrderInfoByExample(orderExample, pageInfo);
-
+        PageInfo<OrderInfo> pageInfo = super.buildPage(order);
+        pageInfo = orderInfoDao.getOrderInfoByExample(orderExample, pageInfo);
         QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
-        super.buildRespbyReq(res, order);
-        res.setPageSize(pageInfo.getPages());
+        super.buildRespByReq(res, order);
+        res.setTotalPages(pageInfo.getPages());
         res.setTotalSize(pageInfo.getTotal());
-
-        orderInfoList.forEach(orderInfo -> res.getInfo().add(buildOrderInfoRespVO(orderInfo)));
+        pageInfo.getList().forEach(orderInfo -> res.getInfo().add(buildOrderInfoRespVO(orderInfo)));
         return res;
     }
 
@@ -107,8 +112,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         BeanUtil.copyProperties(order.getReq().getOrder(), orderInfo);
 
         if (orderInfo.getStartAt() == null && orderInfo.getEndAt() == null) {
-            super.makeDefaultPeriod(orderInfo);
+            super.makeDefaultPeriod(orderInfo, FeatureConstant.ORDER_DEFAULT_PERIOD, "365");
         }
+        orderInfo.setEndAt(DateUtils.addSeconds(DateUtils.addDate(orderInfo.getEndAt(), 1), -1));
 
         TraderFactoryMerchantMap map = super.getTraderFactoryMerchantMap(order);
         orderInfo.setTraderFactoryMerchantId(map.getId());
@@ -133,13 +139,13 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         OrderInfoRespVO res = new OrderInfoRespVO();
         BeanUtil.copyProperties(orderInfo, res);
 
-        DiscountInfoVO discountInfoVO = super.getDiscountInfoVObyId(orderInfo.getDiscountId());
-        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVObyId(orderInfo.getGoodsId());
-        ShopInfoVO shopInfoVO = super.getShopInfoVObyId(orderInfo.getShopId());
+        DiscountInfoVO discountInfoVO = super.getDiscountInfoVOById(orderInfo.getDiscountId());
+        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVOById(orderInfo.getGoodsId());
+        ShopInfoVO shopInfoVO = super.getShopInfoVOById(orderInfo.getShopId());
         TraderFactoryMerchantMap map =
-                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapbyId(orderInfo.getTraderFactoryMerchantId());
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapById(orderInfo.getTraderFactoryMerchantId());
         FactoryMerchantMap factoryMerchantMap =
-                factoryMerchantMapDao.getFactoryMerchantMapbyId(map.getFactoryMerchantMapId());
+                factoryMerchantMapDao.getFactoryMerchantMapById(map.getFactoryMerchantMapId());
         RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
         RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
         RoleInfoVO traderInfoVO = super.getRoleInfoVO(map.getTraderId(), "trader");
@@ -160,19 +166,21 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     @Override
     public QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order) {
         validateConfirm(order);
-        String roleType = order.getCreaterRole().getRole();
-        UserInfo userInfo = order.getCreaterInfo();
-        OrderInfo orderInfo = orderInfoDao.getOrderInfobyId(order.getProductId());
+        String roleType = order.getCreatorRole().getRole();
+        UserInfo userInfo = order.getCreatorInfo();
+        OrderInfo orderInfo = orderInfoDao.getOrderInfoById(order.getProductId());
         TraderFactoryMerchantMap traderFactoryMerchantMap =
-                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapbyId(orderInfo.getTraderFactoryMerchantId());
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapById(orderInfo.getTraderFactoryMerchantId());
         if (roleType.equals("merchant")) {
             MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
             FactoryMerchantMap factoryMerchantMap =
-                    factoryMerchantMapDao.getFactoryMerchantMapbyId(traderFactoryMerchantMap.getFactoryMerchantMapId());
+                    factoryMerchantMapDao.getFactoryMerchantMapById(traderFactoryMerchantMap.getFactoryMerchantMapId());
             if (!factoryMerchantMap.getMerchantId().equals(merchantInfo.getId())) {
-                throw new ServiceException("dont allow to approve order by merchant " + merchantInfo.getId());
+                throw new ServiceException(
+                        "不允许" + order.getCreatorRole().getComment() + "[" + merchantInfo.getId() + "]审批订单[" + order
+                                .getProductId() + "]");
             } else if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getFactoryConfirmStatus())) {
-                throw new ServiceException("merchant dont allow to approve/reject order without factory confirm");
+                throw new ServiceException("不允许" + order.getCreatorRole().getComment() + "审批/拒绝未经下游单位审批的订单");
             }
             if (DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(order.getApproved())) {
                 orderInfo.setMerchantConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -190,11 +198,13 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         } else if (roleType.equals("factory")) {
             FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
             if (!traderFactoryMerchantMap.getFactoryId().equals(factoryInfo.getId())) {
-                throw new ServiceException("dont allow to approve order by factory " + factoryInfo.getId());
+                throw new ServiceException(
+                        "不允许" + order.getCreatorRole().getComment() + "[" + factoryInfo.getId() + "]审批订单[" + order
+                                .getProductId() + "]");
             }
             if (DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(orderInfo.getMerchantConfirmStatus())) {
                 if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(order.getApproved())) {
-                    throw new ServiceException("merchant dont allow to reject order when merchant has confirmed");
+                    throw new ServiceException("不允许" + order.getCreatorRole().getComment() + "拒绝上游单位已经审批的订单");
                 }
             }
             if (order.getApproved() != null) {
@@ -212,7 +222,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     @Override
     public QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order) {
         validateDelete(order);
-        OrderInfo orderInfo = orderInfoDao.getOrderInfobyId(order.getProductId());
+        OrderInfo orderInfo = orderInfoDao.getOrderInfoById(order.getProductId());
         orderInfoDao.delOrderInfo(orderInfo);
         QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildOrderInfoRespVO(orderInfo));
@@ -221,9 +231,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     @Override
     protected void validateDelete(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (roleType.equals("salesman")) {
-            throw new ServiceException("dont allow to delete order by role " + roleType);
+            throw new ServiceException("不允许角色[" + req.getCreatorRole().getComment() + "]删除" + req.getProductType());
         }
 
         ProductBO<OrderInfoReqVO> order = (ProductBO<OrderInfoReqVO>) req;
@@ -236,7 +246,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         try {
             orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
         } catch (Exception e) {
-            throw new ServiceException("cant delete the order id " + order.getReq().getOrder().getId());
+            throw new ServiceException("不能删除" + order.getProductType() + order.getReq().getOrder().getId());
         }
         if (orderExsited.getFactoryConfirmAt() != null) {
             throw new ServiceException("dont allow to delete already confirmed order by factory " + DF
@@ -250,7 +260,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     @Override
     protected void validateQuery(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (roleType.equals("salesman")) {
             throw new ServiceException("dont allow to query campaign by role " + roleType);
         }
@@ -258,7 +268,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     @Override
     protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("trader")) {
             throw new ServiceException("dont allow to update order by role " + roleType);
         }
@@ -286,7 +296,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
 
     @Override
     protected void validateConfirm(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (roleType.equals("salesman") || roleType.equals("trader")) {
             throw new ServiceException("dont allow to confirm order by role " + roleType);
         }

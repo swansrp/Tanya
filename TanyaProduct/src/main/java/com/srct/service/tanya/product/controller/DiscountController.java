@@ -8,17 +8,18 @@
  */
 package com.srct.service.tanya.product.controller;
 
+import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.DiscountService;
 import com.srct.service.tanya.product.vo.DiscountInfoReqVO;
 import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -34,14 +35,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static com.srct.service.config.annotation.Auth.AuthType.USER;
+
 /**
  * @author sharuopeng
  */
+@Auth(role = USER)
 @Api(value = "折扣活动(药厂-渠道)", tags = "折扣活动(药厂-渠道)")
 @RestController("DiscountController")
 @RequestMapping(value = "/discount")
 @CrossOrigin(origins = "*")
 public class DiscountController {
+
+    private final static String productType = "折扣活动";
 
     @Autowired
     private HttpServletRequest request;
@@ -59,9 +65,10 @@ public class DiscountController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<DiscountInfoReqVO> discount = new ProductBO<>();
+        discount.setProductType(productType);
         discount.setReq(req);
-        discount.setCreaterInfo(info);
-        discount.setCreaterRole(role);
+        discount.setCreatorInfo(info);
+        discount.setCreatorRole(role);
         QueryRespVO<DiscountInfoRespVO> discountInfoVOList = discountService.updateDiscountInfo(discount);
 
         return TanyaExceptionHandler.generateResponse(discountInfoVOList);
@@ -85,8 +92,9 @@ public class DiscountController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<QueryReqVO> discount = new ProductBO<>();
-        discount.setCreaterInfo(info);
-        discount.setCreaterRole(role);
+        discount.setProductType(productType);
+        discount.setCreatorInfo(info);
+        discount.setCreatorRole(role);
         discount.setReq(req);
         discount.setFactoryId(factoryId);
         discount.setProductId(discountId);
@@ -110,9 +118,9 @@ public class DiscountController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<QueryReqVO> discount = new ProductBO<>();
-        discount.setProductType("discount");
-        discount.setCreaterInfo(info);
-        discount.setCreaterRole(role);
+        discount.setProductType(productType);
+        discount.setCreatorInfo(info);
+        discount.setCreatorRole(role);
         discount.setProductId(discountId);
         discount.setApproved(confirmed);
         QueryRespVO<DiscountInfoRespVO> discountInfoVO = discountService.confirmDiscountInfo(discount);
@@ -132,8 +140,9 @@ public class DiscountController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<DiscountInfoReqVO> discount = new ProductBO<>();
-        discount.setCreaterInfo(info);
-        discount.setCreaterRole(role);
+        discount.setProductType(productType);
+        discount.setCreatorInfo(info);
+        discount.setCreatorRole(role);
         discount.setProductId(discountId);
         QueryRespVO<DiscountInfoRespVO> goodsInfoVOList = discountService.delDiscountInfo(discount);
 

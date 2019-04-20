@@ -3,7 +3,7 @@
  * Description:
  * Copyright: Copyright (c) 2019
  * Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.bo
  * @author Sharp
@@ -16,7 +16,6 @@ import lombok.Data;
 
 /**
  * @author Sharp
- *
  */
 @Data
 public class RoleInfoBO extends RoleInfoBaseBO {

@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * @author sharuopeng
- *
  */
 public interface TraderRoleService {
 
@@ -29,6 +28,10 @@ public interface TraderRoleService {
     TraderInfo getTraderInfoByUser(UserInfo userInfo);
 
     TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo);
+
+    TraderFactoryMerchantMap getTraderFactoryMerchantMap(TraderInfo traderInfo);
+
+    List<TraderFactoryMerchantMap> getTraderFactoryMerchantMap(FactoryInfo factoryInfo);
 
     List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo);
 

@@ -26,4 +26,7 @@ public class ShopInfoVO {
     @ApiModelProperty(value = "药店备注")
     private String comment;
 
+    @ApiModelProperty(value = "所属渠道id")
+    private Integer merchantId;
+
 }

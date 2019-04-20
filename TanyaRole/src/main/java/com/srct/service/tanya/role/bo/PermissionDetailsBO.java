@@ -26,4 +26,10 @@ public class PermissionDetailsBO {
 
     @ApiModelProperty(value = "促销活动数量")
     private Integer campaignNumber;
+
+    @ApiModelProperty(value = "下属工厂数")
+    private Integer factoryNumber;
+
+    @ApiModelProperty(value = "是否签约")
+    private Integer sign;
 }

@@ -42,9 +42,8 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.SalesmanTraderMa
 import com.srct.service.tanya.common.datalayer.tanya.repository.ShopInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.TraderInfoDao;
+import com.srct.service.tanya.common.service.FeatureService;
 import com.srct.service.tanya.common.service.UserService;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
@@ -56,7 +55,10 @@ import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.DateUtils;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.InvocationTargetException;
@@ -115,14 +117,16 @@ public abstract class ProductServiceBaseImpl {
     protected CampaignSalesmanMapDao campaignSalesmanMapDao;
     @Autowired
     protected UserService userService;
+    @Autowired
+    protected FeatureService featureService;
     // private final static String CRITERIA_OR_METHOD = "or";
     // private final static String CRITERIA_ENDAT_BEFORE_METHOD = "andEndAtLessThanOrEqualTo";
     // private final static String CRITERIA_STARTAT_AFTER_METHOD = "andStartAtGreaterThanOrEqualTo";
 
     public List<FactoryInfo> getFactoryInfoList(ProductBO<?> bo) {
         List<FactoryInfo> factoryInfoList = new ArrayList<>();
-        UserInfo userInfo = bo.getCreaterInfo();
-        String roleType = bo.getCreaterRole().getRole();
+        UserInfo userInfo = bo.getCreatorInfo();
+        String roleType = bo.getCreatorRole().getRole();
         switch (roleType) {
             case "trader":
                 factoryInfoList.add(traderRoleService.getFactoryInfoByUser(userInfo));
@@ -132,7 +136,7 @@ public abstract class ProductServiceBaseImpl {
                 break;
             case "merchant":
                 if (bo.getFactoryId() != null) {
-                    factoryInfoList.add(factoryInfoDao.getFactoryInfobyId(bo.getFactoryId()));
+                    factoryInfoList.add(factoryInfoDao.getFactoryInfoById(bo.getFactoryId()));
                 } else {
                     MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
                     factoryInfoList.addAll(factoryRoleService.getFactoryInfoListByMerchantInfo(merchantInfo));
@@ -141,15 +145,15 @@ public abstract class ProductServiceBaseImpl {
         }
         if (0 == factoryInfoList.size()) {
             throw new ServiceException(
-                    "cant get factory info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
+                    "查询[" + bo.getProductType() + "],角色[" + bo.getCreatorRole().getComment() + "]找不到药厂信息");
         }
 
         return factoryInfoList;
     }
 
     public List<TraderInfo> getTraderInfo(ProductBO<?> bo) {
-        UserInfo userInfo = bo.getCreaterInfo();
-        String roleType = bo.getCreaterRole().getRole();
+        UserInfo userInfo = bo.getCreatorInfo();
+        String roleType = bo.getCreatorRole().getRole();
         List<TraderInfo> traderInfoList = new ArrayList<>();
         switch (roleType) {
             case "trader":
@@ -164,27 +168,26 @@ public abstract class ProductServiceBaseImpl {
                 break;
             default:
                 throw new ServiceException(
-                        "cant get trader info for " + bo.getProductType() + " by role " + bo.getCreaterRole()
-                                .getRole());
+                        "查询[" + bo.getProductType() + "],角色[" + bo.getCreatorRole().getComment() + "]找不到销售员信息");
         }
         return traderInfoList;
     }
 
     public RoleInfoVO getRoleInfoVOByReq(ProductBO<?> bo) {
-        UserInfo userInfo = bo.getCreaterInfo();
-        String roleType = bo.getCreaterRole().getRole();
+        UserInfo userInfo = bo.getCreatorInfo();
+        String roleType = bo.getCreatorRole().getRole();
         RoleService roleService = (RoleService) com.srct.service.utils.BeanUtil.getBean(roleType + "RoleServiceImpl");
-        return getRoleInfoVO(roleService.getRoleIdbyUser(userInfo), roleType);
+        return getRoleInfoVO(roleService.getRoleIdByUser(userInfo), roleType);
     }
 
     public List<SalesmanInfo> getSalesmanInfo(ProductBO<?> bo) {
-        UserInfo userInfo = bo.getCreaterInfo();
-        String roleType = bo.getCreaterRole().getRole();
+        UserInfo userInfo = bo.getCreatorInfo();
+        String roleType = bo.getCreatorRole().getRole();
         List<SalesmanInfo> salesmanInfoList =
                 new ArrayList<>(traderRoleService.getSalesmanInfoListByTraderInfo(userInfo));
         if (!roleType.equals("trader")) {
             throw new ServiceException(
-                    "cant get salesman info for " + bo.getProductType() + " by role " + bo.getCreaterRole().getRole());
+                    "查询[" + bo.getProductType() + "],角色[" + bo.getCreatorRole().getComment() + "]找不到促销员信息");
         }
         return salesmanInfoList;
     }
@@ -197,30 +200,63 @@ public abstract class ProductServiceBaseImpl {
     }
 
     public TraderFactoryMerchantMap getTraderFactoryMerchantMap(ProductBO<?> bo) {
-        UserInfo userInfo = bo.getCreaterInfo();
-        String roleType = bo.getCreaterRole().getRole();
+        UserInfo userInfo = bo.getCreatorInfo();
+        String roleType = bo.getCreatorRole().getRole();
 
         if (roleType.equals("trader")) {
             return traderRoleService.getTraderFactoryMerchantMap(userInfo);
         } else {
             throw new ServiceException(
-                    "cant get trader-factory-merchantMap info for " + bo.getProductType() + " by role " + bo
-                            .getCreaterRole().getRole());
+                    "查询[" + bo.getProductType() + "],角色[" + bo.getCreatorRole().getComment() + "]找不到销售员-药厂-渠道联合信息");
         }
     }
 
     public FactoryMerchantMap getFactoryMerchantMap(ProductBO<?> bo) {
-        UserInfo userInfo = bo.getCreaterInfo();
-        String roleType = bo.getCreaterRole().getRole();
-
-        if (roleType.equals("factory")) {
-            FactoryInfo factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
-            return factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
-        } else {
-            throw new ServiceException(
-                    "cant get trader-factory-merchantMap info for " + bo.getProductType() + " by role " + bo
-                            .getCreaterRole().getRole());
+        UserInfo userInfo = bo.getCreatorInfo();
+        String roleType = bo.getCreatorRole().getRole();
+        FactoryInfo factoryInfo;
+        switch (roleType) {
+            case "factory":
+                factoryInfo = factoryRoleService.getFactoryInfoByUser(userInfo);
+                break;
+            case "trader":
+                factoryInfo = traderRoleService.getFactoryInfoByUser(userInfo);
+                break;
+            default:
+                throw new ServiceException(
+                        "查询[" + bo.getProductType() + "],角色[" + bo.getCreatorRole().getRole() + "]找不到商业渠道-药厂信息");
         }
+        return factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
+    }
+
+    protected List<FactoryMerchantMap> getFactoryMerchantMapByMerchantId(Integer merchantId) {
+        return getFactoryMerchantMap(merchantId, null);
+    }
+
+    protected List<FactoryMerchantMap> getFactoryMerchantMapByFactoryId(Integer factoryId) {
+        return getFactoryMerchantMap(null, factoryId);
+    }
+
+    protected FactoryMerchantMap getFactoryMerchantMapByMerchantIdAndFactoryId(Integer merchantId, Integer factoryId) {
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMap(merchantId, factoryId);
+        if (factoryMerchantMapList == null || factoryMerchantMapList.size() != 1) {
+            throw new ServiceException("没有有效的渠道[" + merchantId + "]药厂[" + factoryId + "]关系");
+        }
+        return factoryMerchantMapList.get(0);
+    }
+
+    private List<FactoryMerchantMap> getFactoryMerchantMap(Integer merchantId, Integer factoryId) {
+        FactoryMerchantMapExample factoryMerchantMapExample = new FactoryMerchantMapExample();
+        FactoryMerchantMapExample.Criteria criteria = factoryMerchantMapExample.createCriteria();
+        if (factoryId != null) {
+            criteria.andFactoryIdEqualTo(factoryId);
+        }
+        if (merchantId != null) {
+            criteria.andMerchantIdEqualTo(merchantId);
+        }
+        criteria.andEndAtGreaterThan(new Date());
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return factoryMerchantMapDao.getFactoryMerchantMapByExample(factoryMerchantMapExample);
     }
 
     public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> req, List<FactoryInfo> factoryInfoList) {
@@ -228,16 +264,18 @@ public abstract class ProductServiceBaseImpl {
         TraderFactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
 
         List<Integer> factoryIdList = new ArrayList<>();
-
         factoryInfoList.forEach(factoryInfo -> {
             factoryIdList.add(factoryInfo.getId());
         });
-
         if (0 == factoryIdList.size()) {
             factoryIdList.add(0);
         }
-
         mapCriteria.andFactoryIdIn(factoryIdList);
+
+        if (req.getCreatorRole().getRole().equals("trader")) {
+            mapCriteria.andTraderIdEqualTo(traderRoleService.getTraderInfoByUser(req.getCreatorInfo()).getId());
+        }
+
         List<TraderFactoryMerchantMap> maps =
                 traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(mapExample);
         List<Integer> traderFactoryMerchantMapIdList = new ArrayList<>();
@@ -309,19 +347,18 @@ public abstract class ProductServiceBaseImpl {
         SalesmanTraderMapExample mapExample = makeQueryExample(req, SalesmanTraderMapExample.class);
         SalesmanTraderMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
         List<Integer> traderInfoIdList = new ArrayList<>();
-        traderInfoList.forEach(traderInfo -> {
-            traderInfoIdList.add(traderInfo.getId());
-        });
+        traderInfoList.forEach(traderInfo -> traderInfoIdList.add(traderInfo.getId()));
+        if (0 == traderInfoIdList.size()) {
+            traderInfoIdList.add(0);
+        }
         mapCriteria.andTraderIdIn(traderInfoIdList);
         return salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
     }
 
-    public void makeDefaultPeriod(Object obj) {
+    public void makeDefaultPeriod(Object obj, String periodFeature, String defaultValue) {
         Date startAt = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(startAt);
-        c.set(DEFAULT_PERIOD_TYPE, c.get(DEFAULT_PERIOD_TYPE) + DEFAULT_PERIOD_VALUE);
-        Date endAt = c.getTime();
+        Integer period = Integer.valueOf(featureService.getFeature(periodFeature, defaultValue));
+        Date endAt = DateUtils.addDate(startAt, period);
 
         Method method;
         try {
@@ -364,42 +401,42 @@ public abstract class ProductServiceBaseImpl {
         return (T) example;
     }
 
-    public DiscountInfoVO getDiscountInfoVObyId(Integer id) {
+    public DiscountInfoVO getDiscountInfoVOById(Integer id) {
         if (id == null) {
             return null;
         }
         DiscountInfoVO discountInfoVO = new DiscountInfoVO();
-        DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(id);
+        DiscountInfo discountInfo = discountInfoDao.getDiscountInfoById(id);
         BeanUtil.copyProperties(discountInfo, discountInfoVO);
         return discountInfoVO;
     }
 
-    public ShopInfoVO getShopInfoVObyId(Integer id) {
+    public ShopInfoVO getShopInfoVOById(Integer id) {
         if (id == null) {
             return null;
         }
         ShopInfoVO shopInfoVO = new ShopInfoVO();
-        ShopInfo shopInfo = shopInfoDao.getShopInfobyId(id);
+        ShopInfo shopInfo = shopInfoDao.getShopInfoById(id);
         BeanUtil.copyProperties(shopInfo, shopInfoVO);
         return shopInfoVO;
     }
 
-    public GoodsInfoVO getGoodsInfoVObyId(Integer id) {
+    public GoodsInfoVO getGoodsInfoVOById(Integer id) {
         if (id == null) {
             return null;
         }
         GoodsInfoVO goodsInfoVO = new GoodsInfoVO();
-        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfobyId(id);
+        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfoById(id);
         BeanUtil.copyProperties(goodsInfo, goodsInfoVO);
         return goodsInfoVO;
     }
 
-    public CampaignInfoVO getCampaignInfoVObyId(Integer id) {
+    public CampaignInfoVO getCampaignInfoVOById(Integer id) {
         if (id == null) {
             return null;
         }
         CampaignInfoVO campaignInfoVO = new CampaignInfoVO();
-        CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfobyId(id);
+        CampaignInfo campaignInfo = campaignInfoDao.getCampaignInfoById(id);
         BeanUtil.copyProperties(campaignInfo, campaignInfoVO);
         return campaignInfoVO;
     }
@@ -412,16 +449,16 @@ public abstract class ProductServiceBaseImpl {
         Object targetInfo;
         switch (roleType) {
             case "merchant":
-                targetInfo = merchantInfoDao.getMerchantInfobyId(id);
+                targetInfo = merchantInfoDao.getMerchantInfoById(id);
                 break;
             case "factory":
-                targetInfo = factoryInfoDao.getFactoryInfobyId(id);
+                targetInfo = factoryInfoDao.getFactoryInfoById(id);
                 break;
             case "trader":
-                targetInfo = traderInfoDao.getTraderInfobyId(id);
+                targetInfo = traderInfoDao.getTraderInfoById(id);
                 break;
             case "salesman":
-                targetInfo = salesmanInfoDao.getSalesmanInfobyId(id);
+                targetInfo = salesmanInfoDao.getSalesmanInfoById(id);
                 break;
             default:
                 throw new ServiceException("");
@@ -437,15 +474,15 @@ public abstract class ProductServiceBaseImpl {
 
     }
 
-    public void buildRespbyReq(QueryRespVO<?> resp, ProductBO<?> req) {
+    public void buildRespByReq(QueryRespVO<?> resp, ProductBO<?> req) {
         resp.setCurrentPage(req.getReq().getCurrentPage());
         resp.setPageSize(req.getReq().getPageSize());
         resp.setQueryStartAt(req.getReq().getQueryStartAt());
         resp.setQueryEndAt(req.getReq().getQueryEndAt());
     }
 
-    public PageInfo<?> buildPage(ProductBO<QueryReqVO> req) {
-        PageInfo<?> pageInfo = new PageInfo<>();
+    public <T> PageInfo<T> buildPage(ProductBO<QueryReqVO> req) {
+        PageInfo<T> pageInfo = new PageInfo<>();
         if (req.getReq().getCurrentPage() != null) {
             pageInfo.setPageNum(req.getReq().getCurrentPage());
         }

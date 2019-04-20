@@ -1,6 +1,6 @@
 /**
  * Title: RoleDetailsVO.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.vo
  * @author Sharp
@@ -46,5 +46,8 @@ public class RoleDetailsVO {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endAt;
+
+    @ApiModelProperty(value = "权限控制")
+    private PermissionDetailsVO permission;
 
 }

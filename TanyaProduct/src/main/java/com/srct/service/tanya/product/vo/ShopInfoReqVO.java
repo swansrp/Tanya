@@ -8,15 +8,20 @@
  */
 package com.srct.service.tanya.product.vo;
 
-import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.vo.QueryReqVO;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.List;
 
 /**
  * @author sharuopeng
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class ShopInfoReqVO extends QueryReqVO {
-
+    List<Integer> bindIdList;
+    List<Integer> unbindIdList;
     private ShopInfoVO shop;
 
 }

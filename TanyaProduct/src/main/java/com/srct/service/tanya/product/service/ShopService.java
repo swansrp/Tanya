@@ -1,6 +1,6 @@
 /**
  * Title: ShopService.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service
  * @author sharuopeng
@@ -8,33 +8,24 @@
  */
 package com.srct.service.tanya.product.service;
 
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.vo.ShopInfoReqVO;
 import com.srct.service.tanya.product.vo.ShopInfoRespVO;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 
 /**
  * @author sharuopeng
- *
  */
 public interface ShopService {
 
-    /**
-     * @param shop
-     * @return
-     */
-    public QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> shop);
+    QueryRespVO<ShopInfoRespVO> updateShopInfo(ProductBO<ShopInfoReqVO> req);
 
-    /**
-     * @param shop
-     * @return
-     */
-    public QueryRespVO<ShopInfoRespVO> updateShopInfo(ProductBO<ShopInfoReqVO> shop);
+    QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> req);
 
-    /**
-     * @param shop
-     * @return
-     */
-    public QueryRespVO<ShopInfoRespVO> delShopInfo(ProductBO<ShopInfoReqVO> shop);
+    QueryRespVO<ShopInfoRespVO> delShopInfo(ProductBO<ShopInfoReqVO> req);
+
+    QueryRespVO<ShopInfoRespVO> bindShopInfo(ProductBO<ShopInfoReqVO> req);
+
+    QueryRespVO<ShopInfoRespVO> getShopBindInfo(ProductBO<QueryReqVO> req);
 }

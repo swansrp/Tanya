@@ -8,17 +8,18 @@
  */
 package com.srct.service.tanya.product.controller;
 
+import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.OrderService;
 import com.srct.service.tanya.product.vo.OrderInfoReqVO;
 import com.srct.service.tanya.product.vo.OrderInfoRespVO;
 import com.srct.service.utils.log.Log;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -34,18 +35,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static com.srct.service.config.annotation.Auth.AuthType.USER;
+
 /**
  * @author sharuopeng
  */
+@Auth(role = USER)
 @Api(value = "订单(药厂-渠道)", tags = "订单(药厂-渠道)")
 @RestController("OrderController")
 @RequestMapping(value = "/order")
 @CrossOrigin(origins = "*")
 public class OrderController {
 
+    private final static String productType = "订单";
     @Autowired
     private HttpServletRequest request;
-
     @Autowired
     private OrderService orderService;
 
@@ -59,10 +63,10 @@ public class OrderController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<OrderInfoReqVO> order = new ProductBO<>();
-        order.setProductType("order");
+        order.setProductType(productType);
         order.setReq(req);
-        order.setCreaterInfo(info);
-        order.setCreaterRole(role);
+        order.setCreatorInfo(info);
+        order.setCreatorRole(role);
         QueryRespVO<OrderInfoRespVO> orderInfoVO = orderService.updateOrderInfo(order);
 
         return TanyaExceptionHandler.generateResponse(orderInfoVO);
@@ -84,9 +88,9 @@ public class OrderController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<QueryReqVO> order = new ProductBO<>();
-        order.setProductType("order");
-        order.setCreaterInfo(info);
-        order.setCreaterRole(role);
+        order.setProductType(productType);
+        order.setCreatorInfo(info);
+        order.setCreatorRole(role);
         order.setReq(req);
         order.setFactoryId(factoryId);
         order.setProductId(orderId);
@@ -111,9 +115,9 @@ public class OrderController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<QueryReqVO> order = new ProductBO<>();
-        order.setProductType("order");
-        order.setCreaterInfo(info);
-        order.setCreaterRole(role);
+        order.setProductType(productType);
+        order.setCreatorInfo(info);
+        order.setCreatorRole(role);
         order.setProductId(orderId);
         order.setApproved(confirmed);
         order.setNumber(orderNumber);
@@ -134,8 +138,9 @@ public class OrderController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<OrderInfoReqVO> order = new ProductBO<>();
-        order.setCreaterInfo(info);
-        order.setCreaterRole(role);
+        order.setProductType(productType);
+        order.setCreatorInfo(info);
+        order.setCreatorRole(role);
         order.setProductId(orderId);
         QueryRespVO<OrderInfoRespVO> orderInfoVOList = orderService.delOrderInfo(order);
 

@@ -41,5 +41,5 @@ public class CampaignInfoRespVO {
     private List<RoleInfoVO> bindSalesmanList;
 
     @ApiModelProperty(value = "未绑定促销员")
-    private List<RoleInfoVO> undbindSalesmanList;
+    private List<RoleInfoVO> unbindSalesmanList;
 }

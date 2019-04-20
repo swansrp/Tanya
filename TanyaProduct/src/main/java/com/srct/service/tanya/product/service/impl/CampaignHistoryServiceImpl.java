@@ -17,8 +17,6 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.CampaignHistoryService;
 import com.srct.service.tanya.product.vo.CampaignHistoryReqVO;
@@ -26,6 +24,8 @@ import com.srct.service.tanya.product.vo.CampaignHistoryRespVO;
 import com.srct.service.tanya.product.vo.CampaignHistoryVO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
         if (campaignHistory.getTraderId() != null) {
             if (traderInfoIdList.contains(campaignHistory.getTraderId())) {
                 traderInfoList.clear();
-                traderInfoList.add(traderInfoDao.getTraderInfobyId(campaignHistory.getTraderId()));
+                traderInfoList.add(traderInfoDao.getTraderInfoById(campaignHistory.getTraderId()));
             } else {
                 throw new ServiceException("不允许查看销售人员[" + campaignHistory.getTraderId() + "]的信息");
             }
@@ -62,9 +62,9 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
             }
         }
 
-        if (campaignHistory.getCreaterRole().getRole().equals("salesman")) {
+        if (campaignHistory.getCreatorRole().getRole().equals("salesman")) {
             salesmanInfoIdList.clear();
-            salesmanInfoIdList.addAll(super.getSalesmanInfoIdListByUserInfo(campaignHistory.getCreaterInfo()));
+            salesmanInfoIdList.addAll(super.getSalesmanInfoIdListByUserInfo(campaignHistory.getCreatorInfo()));
         }
 
         List<Integer> campaignInfoIdList = super.buildCampaignInfoIdListByTraderList(campaignHistory, traderInfoList);
@@ -82,15 +82,16 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     private QueryRespVO<CampaignHistoryRespVO> buildResByExample(ProductBO<QueryReqVO> history,
             CampaignHistoryExample campaignHistoryExample) {
         PageInfo<?> pageInfo = super.buildPage(history);
-        List<CampaignHistory> campaignHistoryList =
+        PageInfo<CampaignHistory> campaignHistoryList =
                 campaignHistoryDao.getCampaignHistoryByExample(campaignHistoryExample, pageInfo);
 
         QueryRespVO<CampaignHistoryRespVO> res = new QueryRespVO<>();
-        super.buildRespbyReq(res, history);
-        res.setPageSize(pageInfo.getPages());
-        res.setTotalSize(pageInfo.getTotal());
+        super.buildRespByReq(res, history);
+        res.setTotalPages(campaignHistoryList.getPages());
+        res.setTotalSize(campaignHistoryList.getTotal());
 
-        campaignHistoryList.forEach(campaignHistory -> res.getInfo().add(buildCampaignHistoryRespVO(campaignHistory)));
+        campaignHistoryList.getList()
+                .forEach(campaignHistory -> res.getInfo().add(buildCampaignHistoryRespVO(campaignHistory)));
         return res;
     }
 
@@ -111,9 +112,9 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
-        if (campaignHistory.getApproved() == null) {
+        if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(campaignHistory.getApproved())) {
             criteria.andConfirmAtIsNull();
-        } else if (!DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(campaignHistory.getApproved())) {
+        } else if (campaignHistory.getApproved() != null) {
             criteria.andConfirmStatusEqualTo(campaignHistory.getApproved());
         }
 
@@ -126,11 +127,11 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     @Override
     public QueryRespVO<CampaignHistoryRespVO> updateCampaignHistory(ProductBO<CampaignHistoryReqVO> history) {
         validateUpdate(history);
-        UserInfo userInfo = history.getCreaterInfo();
+        UserInfo userInfo = history.getCreatorInfo();
         List<Integer> salesmanInfoIdList = super.getSalesmanInfoIdListByUserInfo(userInfo);
         if (history.getReq().getCampaignHistory().getId() != null) {
             CampaignHistory campaignHistory =
-                    campaignHistoryDao.getCampaignHistorybyId(history.getReq().getCampaignHistory().getId());
+                    campaignHistoryDao.getCampaignHistoryById(history.getReq().getCampaignHistory().getId());
             if (!salesmanInfoIdList.contains(campaignHistory.getSalesmanId())) {
                 throw new ServiceException(
                         "不允许" + "[促销员" + userInfo.getName() + "]更新促销历史:" + history.getReq().getCampaignHistory()
@@ -179,7 +180,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
         TraderInfo traderInfo = traderInfoList.get(0);
         List<Integer> salesmanInfoIdList = buildSalesmanTraderMapSalesmanIdList(history, traderInfoList);
 
-        CampaignHistory campaignHistory = campaignHistoryDao.getCampaignHistorybyId(history.getProductId());
+        CampaignHistory campaignHistory = campaignHistoryDao.getCampaignHistoryById(history.getProductId());
         if (!salesmanInfoIdList.contains(campaignHistory.getSalesmanId())) {
             throw new ServiceException(
                     "dont allow to approve/reject campaign history : " + campaignHistory.getId() + " by trader "
@@ -213,7 +214,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
         BeanUtil.copyProperties(campaignHistory, res);
 
         RoleInfoVO salesmanInfoVO = super.getRoleInfoVO(campaignHistory.getSalesmanId(), "salesman");
-        CampaignInfoVO campaignInfoVO = super.getCampaignInfoVObyId(campaignHistory.getCampaignId());
+        CampaignInfoVO campaignInfoVO = super.getCampaignInfoVOById(campaignHistory.getCampaignId());
         RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(campaignHistory.getConfirmBy(), "trader");
         res.setCampaignInfoVO(campaignInfoVO);
         res.setCampaignHistoryVO(campaignHistoryVO);
@@ -225,8 +226,8 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
     @Override
     public QueryRespVO<CampaignHistoryRespVO> delCampaignHistory(ProductBO<CampaignHistoryReqVO> campaignHistory) {
         validateDelete(campaignHistory);
-        UserInfo userInfo = campaignHistory.getCreaterInfo();
-        CampaignHistory history = campaignHistoryDao.getCampaignHistorybyId(campaignHistory.getProductId());
+        UserInfo userInfo = campaignHistory.getCreatorInfo();
+        CampaignHistory history = campaignHistoryDao.getCampaignHistoryById(campaignHistory.getProductId());
         List<Integer> salesmanInfoIdList = super.getSalesmanInfoIdListByUserInfo(userInfo);
         if (!salesmanInfoIdList.contains(history.getSalesmanId())) {
             throw new ServiceException("不允许促销员[" + userInfo.getName() + "]删除促销历史: " + history.getId());
@@ -245,7 +246,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
     @Override
     protected void validateQuery(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (roleType.equals("merchant")) {
             throw new ServiceException("角色[" + roleType + "]不允许查看促销历史");
         }
@@ -253,7 +254,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
     @Override
     protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("salesman")) {
             throw new ServiceException("角色[" + roleType + "]不允许更新促销历史");
         }
@@ -261,7 +262,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
     @Override
     protected void validateConfirm(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("trader")) {
             throw new ServiceException("角色[" + roleType + "]不允许确认促销历史");
         }
@@ -269,7 +270,7 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
     @Override
     protected void validateDelete(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("salesman")) {
             throw new ServiceException("角色[" + roleType + "]不允许删除促销历史");
         }

@@ -32,6 +32,12 @@ public class CampaignInfoVO {
     @ApiModelProperty(value = "商品id")
     private String goodsId;
 
+    @ApiModelProperty(value = "数量")
+    private String unitAmount;
+
+    @ApiModelProperty(value = "积分")
+    private String reward;
+
     @ApiModelProperty(value = "有效期起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")

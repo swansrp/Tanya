@@ -3,7 +3,7 @@
  * Description:
  * Copyright: Copyright (c) 2019
  * Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.bo
  * @author Sharp
@@ -11,10 +11,10 @@
  */
 package com.srct.service.tanya.role.bo;
 
-import java.util.Date;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @author Sharp
@@ -28,6 +28,9 @@ public class RoleInfoBaseBO {
 
     @ApiModelProperty(value = "角色名称")
     private String title;
+
+    @ApiModelProperty(value = "角色联系方式")
+    private String contact;
 
     @ApiModelProperty(value = "角色备注")
     private String comment;

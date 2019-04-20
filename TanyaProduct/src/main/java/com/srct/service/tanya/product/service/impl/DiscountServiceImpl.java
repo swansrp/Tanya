@@ -12,14 +12,13 @@ import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
+import com.srct.service.tanya.common.config.FeatureConstant;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.DiscountService;
 import com.srct.service.tanya.product.vo.DiscountInfoReqVO;
@@ -27,6 +26,9 @@ import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.DateUtils;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -44,8 +46,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(discount);
         List<Integer> factoryMerchantMapIdList = super.buildFactoryMerchantMapIdList(discount, factoryInfoList);
         DiscountInfoExample discountExample = buildDiscountInfoExample(discount, factoryMerchantMapIdList);
-        if (discount.getApproved() != null && !discount.getApproved()
-                .equals(DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID)) {
+        if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(discount.getApproved())) {
+            discountExample.getOredCriteria().get(0).andConfirmAtIsNull();
+        } else if (discount.getApproved() != null) {
             discountExample.getOredCriteria().get(0).andConfirmStatusEqualTo(discount.getApproved());
         }
         return buildResByExample(discount, discountExample);
@@ -63,9 +66,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
             discountCriteria.andIdEqualTo(discount.getProductId());
         }
 
-        if (discount.getApproved() == null) {
+        if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(discount.getApproved())) {
             discountCriteria.andConfirmAtIsNull();
-        } else if (DataSourceCommonConstant.DATABASE_COMMON_IGORE_VALID.equals(discount.getApproved())) {
+        } else if (discount.getApproved() != null) {
             discountCriteria.andConfirmStatusEqualTo(discount.getApproved());
         }
 
@@ -75,14 +78,14 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
     private QueryRespVO<DiscountInfoRespVO> buildResByExample(ProductBO<QueryReqVO> discount,
             DiscountInfoExample discountExample) {
         PageInfo<?> pageInfo = super.buildPage(discount);
-        List<DiscountInfo> discountInfoList = discountInfoDao.getDiscountInfoByExample(discountExample, pageInfo);
+        PageInfo<DiscountInfo> discountInfoList = discountInfoDao.getDiscountInfoByExample(discountExample, pageInfo);
 
         QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
-        super.buildRespbyReq(res, discount);
-        res.setPageSize(pageInfo.getPages());
-        res.setTotalSize(pageInfo.getTotal());
+        super.buildRespByReq(res, discount);
+        res.setPageSize(discountInfoList.getPages());
+        res.setTotalSize(discountInfoList.getTotal());
 
-        discountInfoList.forEach(discountInfo -> res.getInfo().add(buildDiscountInfoRespVO(discountInfo)));
+        discountInfoList.getList().forEach(discountInfo -> res.getInfo().add(buildDiscountInfoRespVO(discountInfo)));
         return res;
     }
 
@@ -96,11 +99,15 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
             discountInfo.setGoodsId(discount.getReq().getGoodsId());
         }
         if (discountInfo.getStartAt() == null && discountInfo.getEndAt() == null) {
-            super.makeDefaultPeriod(discountInfo);
+            super.makeDefaultPeriod(discountInfo, FeatureConstant.DISCOUNT_DEFAULT_PERIOD, "365");
         }
+        discountInfo.setEndAt(DateUtils.addSeconds(DateUtils.addDate(discountInfo.getEndAt(), 1), -1));
 
-        FactoryMerchantMap map = super.getFactoryMerchantMap(discount);
-        discountInfo.setFactoryMetchatMapId(map.getId());
+        FactoryMerchantMap factoryMerchantMap = super.getFactoryMerchantMap(discount);
+        if (factoryMerchantMap.getCampaignNumber() == null || factoryMerchantMap.getCampaignNumber() <= 0) {
+            throw new ServiceException("不允许创建商品折扣活动");
+        }
+        discountInfo.setFactoryMetchatMapId(factoryMerchantMap.getId());
         if (discount.getReq().getGoodsId() != null) {
             discountInfo.setGoodsId(discount.getReq().getGoodsId());
         }
@@ -122,9 +129,9 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         DiscountInfoRespVO res = new DiscountInfoRespVO();
         BeanUtil.copyProperties(discountInfo, res);
 
-        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVObyId(discountInfo.getGoodsId());
-        FactoryMerchantMap map = factoryMerchantMapDao.getFactoryMerchantMapbyId(discountInfo.getFactoryMetchatMapId());
-        FactoryMerchantMap factoryMerchantMap = factoryMerchantMapDao.getFactoryMerchantMapbyId(map.getId());
+        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVOById(discountInfo.getGoodsId());
+        FactoryMerchantMap map = factoryMerchantMapDao.getFactoryMerchantMapById(discountInfo.getFactoryMetchatMapId());
+        FactoryMerchantMap factoryMerchantMap = factoryMerchantMapDao.getFactoryMerchantMapById(map.getId());
         RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
         RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
         RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(discountInfo.getConfirmBy(), "merchant");
@@ -141,7 +148,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
     public QueryRespVO<DiscountInfoRespVO> confirmDiscountInfo(ProductBO<QueryReqVO> discount) {
         validateConfirm(discount);
 
-        DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(discount.getProductId());
+        DiscountInfo discountInfo = discountInfoDao.getDiscountInfoById(discount.getProductId());
         if (discount.getApproved().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
             discountInfo.setConfirmStatus(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         } else {
@@ -158,7 +165,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
     @Override
     public QueryRespVO<DiscountInfoRespVO> delDiscountInfo(ProductBO<DiscountInfoReqVO> discount) {
         validateDelete(discount);
-        DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(discount.getProductId());
+        DiscountInfo discountInfo = discountInfoDao.getDiscountInfoById(discount.getProductId());
         discountInfoDao.delDiscountInfo(discountInfo);
         QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildDiscountInfoRespVO(discountInfo));
@@ -180,7 +187,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
     @Override
     protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to update discount by role " + roleType);
         }
@@ -206,7 +213,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
     @Override
     protected void validateConfirm(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("merchant")) {
             throw new ServiceException("dont allow to confirm discount by role " + roleType);
         }
@@ -214,10 +221,10 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
             throw new ServiceException("approve status is null ");
         }
         ProductBO<DiscountInfoReqVO> discount = (ProductBO<DiscountInfoReqVO>) req;
-        UserInfo userInfo = discount.getCreaterInfo();
-        DiscountInfo discountInfo = discountInfoDao.getDiscountInfobyId(discount.getProductId());
+        UserInfo userInfo = discount.getCreatorInfo();
+        DiscountInfo discountInfo = discountInfoDao.getDiscountInfoById(discount.getProductId());
         FactoryMerchantMap factoryMerchantMap =
-                factoryMerchantMapDao.getFactoryMerchantMapbyId(discountInfo.getFactoryMetchatMapId());
+                factoryMerchantMapDao.getFactoryMerchantMapById(discountInfo.getFactoryMetchatMapId());
 
         MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(userInfo);
         if (!factoryMerchantMap.getMerchantId().equals(merchantInfo.getId())) {
@@ -227,7 +234,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
     @Override
     protected void validateDelete(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to delete discount by role " + roleType);
         }
@@ -251,7 +258,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
     @Override
     protected void validateQuery(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (roleType.equals("salesman")) {
             throw new ServiceException("dont allow to query discount by role " + roleType);
         }

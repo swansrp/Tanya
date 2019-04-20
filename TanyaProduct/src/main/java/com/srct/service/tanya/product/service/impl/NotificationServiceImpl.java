@@ -11,12 +11,12 @@ package com.srct.service.tanya.product.service.impl;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
+import com.srct.service.tanya.common.config.FeatureConstant;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.NotificationInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.NotificationInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.repository.NotificationInfoDao;
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
+import com.srct.service.tanya.common.service.FeatureService;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.NotificationService;
 import com.srct.service.tanya.product.vo.NotificationInfoReqVO;
@@ -24,6 +24,9 @@ import com.srct.service.tanya.product.vo.NotificationInfoRespVO;
 import com.srct.service.tanya.product.vo.NotificationInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.DateUtils;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,16 +41,20 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
     @Autowired
     private NotificationInfoDao notificationInfoDao;
 
+    @Autowired
+    private FeatureService featureService;
+
     @Override
     public QueryRespVO<NotificationInfoRespVO> updateNotificationInfo(ProductBO<NotificationInfoReqVO> notification) {
         validateUpdate(notification);
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(notification);
         FactoryInfo factoryInfo = factoryInfoList.get(0);
 
+
         NotificationInfo notificationInfo;
         if (notification.getReq().getNotification().getId() != null) {
             notificationInfo =
-                    notificationInfoDao.getNotificationInfobyId(notification.getReq().getNotification().getId());
+                    notificationInfoDao.getNotificationInfoById(notification.getReq().getNotification().getId());
             if (notificationInfo == null || !notificationInfo.getFactoryId().equals(factoryInfo.getId())) {
                 throw new ServiceException("无权观看此公告");
             }
@@ -55,6 +62,12 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
             notificationInfo = new NotificationInfo();
         }
         BeanUtil.copyProperties(notification.getReq().getNotification(), notificationInfo);
+
+        if (notificationInfo.getStartAt() == null && notificationInfo.getEndAt() == null) {
+            super.makeDefaultPeriod(notificationInfo, FeatureConstant.NOTIFICATION_DEFAULT_PERIOD, "15");
+        }
+        notificationInfo.setEndAt(DateUtils.addSeconds(DateUtils.addDate(notificationInfo.getEndAt(), 1), -1));
+
         notificationInfo.setFactoryId(factoryInfo.getId());
         notificationInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         notificationInfoDao.updateNotificationInfo(notificationInfo);
@@ -77,15 +90,15 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         example.getOredCriteria().get(0).andFactoryIdEqualTo(factoryInfo.getId());
 
         PageInfo<?> pageInfo = super.buildPage(notification);
-        List<NotificationInfo> notificationInfoList =
+        PageInfo<NotificationInfo> notificationInfoList =
                 notificationInfoDao.getNotificationInfoByExample(example, pageInfo);
 
         QueryRespVO<NotificationInfoRespVO> res = new QueryRespVO<>();
-        super.buildRespbyReq(res, notification);
-        res.setTotalPages(pageInfo.getPages());
-        res.setTotalSize(pageInfo.getTotal());
+        super.buildRespByReq(res, notification);
+        res.setTotalPages(notificationInfoList.getPages());
+        res.setTotalSize(notificationInfoList.getTotal());
 
-        notificationInfoList.forEach(notificationInfo -> {
+        notificationInfoList.getList().forEach(notificationInfo -> {
             NotificationInfoRespVO notificationInfoRespVO = buildNotificationInfoRespVO(notificationInfo);
             res.getInfo().add(notificationInfoRespVO);
         });
@@ -108,7 +121,7 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
 
     @Override
     protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to update notification by role " + roleType);
         }
@@ -126,7 +139,7 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
         validateDelete(notification);
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(notification);
         FactoryInfo factoryInfo = factoryInfoList.get(0);
-        NotificationInfo notificationInfo = notificationInfoDao.getNotificationInfobyId(notification.getProductId());
+        NotificationInfo notificationInfo = notificationInfoDao.getNotificationInfoById(notification.getProductId());
         if (!notificationInfo.getFactoryId().equals(factoryInfo.getId())) {
             throw new ServiceException(
                     "Dont allow to delete notification " + notificationInfo.getFactoryId() + " by factory "
@@ -140,7 +153,7 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
 
     @Override
     protected void validateDelete(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (!roleType.equals("factory")) {
             throw new ServiceException("dont allow to delete notification by role " + roleType);
         }
@@ -148,7 +161,7 @@ public class NotificationServiceImpl extends ProductServiceBaseImpl implements N
 
     @Override
     protected void validateQuery(ProductBO<?> req) {
-        String roleType = req.getCreaterRole().getRole();
+        String roleType = req.getCreatorRole().getRole();
         if (roleType.equals("merchant") || roleType.equals("salesman")) {
             throw new ServiceException("dont allow to query notification by role " + roleType);
         }

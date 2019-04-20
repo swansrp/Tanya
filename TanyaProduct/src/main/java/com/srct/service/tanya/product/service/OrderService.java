@@ -1,6 +1,6 @@
 /**
  * Title: OrderService.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaProduct
  * @Package: com.srct.service.tanya.product.service
  * @author sharuopeng
@@ -8,40 +8,23 @@
  */
 package com.srct.service.tanya.product.service;
 
-import com.srct.service.tanya.common.vo.QueryReqVO;
-import com.srct.service.tanya.common.vo.QueryRespVO;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.vo.OrderInfoReqVO;
 import com.srct.service.tanya.product.vo.OrderInfoRespVO;
+import com.srct.service.vo.QueryReqVO;
+import com.srct.service.vo.QueryRespVO;
 
 /**
  * @author sharuopeng
- *
  */
 public interface OrderService {
 
-    /**
-     * @param order
-     * @return
-     */
-    public QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order);
+    QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order);
 
-    /**
-     * @param order
-     * @return
-     */
-    public QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
+    QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
 
-    /**
-     * @param order
-     * @return
-     */
-    public QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order);
+    QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order);
 
-    /**
-     * @param order
-     * @return
-     */
-    public QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order);
+    QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order);
 
 }

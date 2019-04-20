@@ -38,7 +38,13 @@ public class GoodsInfoVO {
     @ApiModelProperty(value = "药品规格")
     private String spec;
 
+    @ApiModelProperty(value = "药品包装")
+    private String unit;
+
     @ApiModelProperty(value = "药品价格")
     private Double amount;
+
+    @ApiModelProperty(value = "所属渠道id")
+    private Integer merchantId;
 
 }

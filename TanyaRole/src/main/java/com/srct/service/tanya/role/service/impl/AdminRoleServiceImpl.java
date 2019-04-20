@@ -94,12 +94,11 @@ public class AdminRoleServiceImpl implements RoleService {
     @Override
     public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
         PageInfo pageInfo = buildPageInfo(req);
-        List<AdminInfo> adminInfoList =
+        PageInfo<AdminInfo> adminInfoList =
                 adminInfoDao.getAllAdminInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(pageInfo);
-
-        for (AdminInfo admin : adminInfoList) {
+        res.buildPageInfo(adminInfoList);
+        for (AdminInfo admin : adminInfoList.getList()) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(admin, bo);
             bo.setRoleType(getRoleType());
@@ -190,7 +189,7 @@ public class AdminRoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Integer getRoleIdbyUser(UserInfo userInfo) {
+    public Integer getRoleIdByUser(UserInfo userInfo) {
         AdminInfoExample example = new AdminInfoExample();
         AdminInfoExample.Criteria criteria = example.createCriteria();
         criteria.andUserIdEqualTo(userInfo.getId());
@@ -220,7 +219,7 @@ public class AdminRoleServiceImpl implements RoleService {
 
     @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
-        Integer id = getRoleIdbyUser(userInfo);
+        Integer id = getRoleIdByUser(userInfo);
         AdminInfo adminInfo = adminInfoDao.getAdminInfoById(id);
         return makeRoleInfoBO(adminInfo);
     }

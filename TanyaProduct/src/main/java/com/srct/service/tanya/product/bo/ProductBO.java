@@ -8,7 +8,7 @@
  */
 package com.srct.service.tanya.product.bo;
 
-import com.srct.service.tanya.common.vo.QueryReqVO;
+import com.srct.service.vo.QueryReqVO;
 import lombok.Data;
 
 /**
@@ -25,4 +25,5 @@ public class ProductBO<T extends QueryReqVO> extends BaseBO {
     private Integer goodsId;
     private Byte approved;
     private Integer number;
+    private String title;
 }

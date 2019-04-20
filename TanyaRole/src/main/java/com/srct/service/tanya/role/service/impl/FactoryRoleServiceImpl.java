@@ -86,7 +86,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
         MerchantInfo merchantInfo;
         try {
-            merchantInfo = getMerchantInfoByCreater(bo.getCreaterInfo());
+            merchantInfo = getMerchantInfoByCreator(bo.getCreaterInfo());
         } catch (Exception e) {
             throw new ServiceException(
                     "creater role " + bo.getCreaterRole().getRole() + " dont allow create " + getRoleType());
@@ -130,7 +130,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         return factoryInfo;
     }
 
-    public MerchantInfo getMerchantInfoByCreater(UserInfo creater) {
+    private MerchantInfo getMerchantInfoByCreator(UserInfo creater) {
         //Date now = new Date();
 
         MerchantInfoExample example = new MerchantInfoExample();
@@ -155,7 +155,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
         MerchantInfo merchantInfo;
         try {
-            merchantInfo = getMerchantInfoByCreater(userInfo);
+            merchantInfo = getMerchantInfoByCreator(userInfo);
         } catch (Exception e) {
             Log.e("dont find the user id {} for {}", userInfo.getId(), "merchant");
             throw new ServiceException("dont find the user id " + userInfo.getId() + " for merchant");
@@ -164,13 +164,13 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
         factoryMerchantMapEx.setMerchantId(merchantInfo.getId());
         factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<FactoryMerchantMap> factoryMerchantMapList =
+        PageInfo<FactoryMerchantMap> factoryMerchantMapList =
                 factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx, pageInfo);
 
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(pageInfo);
+        res.buildPageInfo(factoryMerchantMapList);
 
-        for (FactoryMerchantMap factoryMerchantMap : factoryMerchantMapList) {
+        for (FactoryMerchantMap factoryMerchantMap : factoryMerchantMapList.getList()) {
             FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfoById(factoryMerchantMap.getFactoryId());
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(factoryInfo, bo);
@@ -190,7 +190,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         if (userInfo != null) {
             MerchantInfo merchantInfo;
             try {
-                merchantInfo = getMerchantInfoByCreater(userInfo);
+                merchantInfo = getMerchantInfoByCreator(userInfo);
             } catch (Exception e) {
                 Log.e("dont find the user id {} for {}", userInfo.getId(), "merchant");
                 throw new ServiceException("dont find the user id " + userInfo.getId() + " for merchant");
@@ -221,7 +221,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
     @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
-        Integer id = getRoleIdbyUser(userInfo);
+        Integer id = getRoleIdByUser(userInfo);
         FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
         factoryMerchantMapEx.setFactoryId(id);
         factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -237,12 +237,11 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
     private QueryRespVO<RoleInfoBO> getAllFactory(QuerySubordinateBO req) {
         PageInfo pageInfo = buildPageInfo(req);
-        List<FactoryInfo> factoryInfoList =
+        PageInfo<FactoryInfo> factoryInfoList =
                 factoryInfoDao.getAllFactoryInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(pageInfo);
-
-        for (FactoryInfo factory : factoryInfoList) {
+        res.buildPageInfo(factoryInfoList);
+        for (FactoryInfo factory : factoryInfoList.getList()) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(factory, bo);
             bo.setRoleType(getRoleType());
@@ -318,7 +317,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
             merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getSuperiorId());
         } else if (bo.getCreaterInfo() != null) {
             try {
-                merchantInfo = getMerchantInfoByCreater(bo.getCreaterInfo());
+                merchantInfo = getMerchantInfoByCreator(bo.getCreaterInfo());
             } catch (Exception e) {
                 throw new ServiceException("no such user as role " + bo.getCreaterRole().getRole());
             }
@@ -434,7 +433,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
     }
 
     @Override
-    public Integer getRoleIdbyUser(UserInfo userInfo) {
+    public Integer getRoleIdByUser(UserInfo userInfo) {
         return getFactoryInfoByUser(userInfo).getId();
     }
 

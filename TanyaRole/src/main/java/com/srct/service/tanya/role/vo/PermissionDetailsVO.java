@@ -17,7 +17,7 @@ public class PermissionDetailsVO {
     @ApiModelProperty(value = "商品数量")
     private Integer goodsNumber;
 
-    @ApiModelProperty(value = "销售员数量")
+    @ApiModelProperty(value = "下属销售员数量")
     private Integer traderNumber;
 
     @ApiModelProperty(value = "商品活动数量")
@@ -25,4 +25,10 @@ public class PermissionDetailsVO {
 
     @ApiModelProperty(value = "促销活动数量")
     private Integer campaignNumber;
+
+    @ApiModelProperty(value = "下属工厂数量")
+    private Integer factoryNumber;
+
+    @ApiModelProperty(value = "是否签约")
+    private Byte sign;
 }

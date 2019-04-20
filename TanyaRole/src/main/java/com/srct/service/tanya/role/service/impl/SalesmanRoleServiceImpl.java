@@ -156,13 +156,12 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         SalesmanTraderMap salesmanTraderMapEx = new SalesmanTraderMap();
         salesmanTraderMapEx.setTraderId(traderInfo.getId());
         salesmanTraderMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<SalesmanTraderMap> salesmanTraderMapList =
+        PageInfo<SalesmanTraderMap> salesmanTraderMapList =
                 salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMapEx, pageInfo);
 
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(pageInfo);
-
-        for (SalesmanTraderMap salesmanTraderMap : salesmanTraderMapList) {
+        res.buildPageInfo(salesmanTraderMapList);
+        for (SalesmanTraderMap salesmanTraderMap : salesmanTraderMapList.getList()) {
             SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(salesmanTraderMap.getSalesmanId());
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(salesmanInfo, bo);
@@ -204,20 +203,19 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
 
     @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
-        Integer id = getRoleIdbyUser(userInfo);
+        Integer id = getRoleIdByUser(userInfo);
         SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(id);
         return makeRoleInfoBO(salesmanInfo);
     }
 
     private QueryRespVO<RoleInfoBO> getAllSalesman(QuerySubordinateBO req) {
         PageInfo pageInfo = buildPageInfo(req);
-        List<SalesmanInfo> salesmanInfoList =
+        PageInfo<SalesmanInfo> salesmanInfoList =
                 salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.setPageSize(pageInfo.getPages());
-        res.setTotalSize(pageInfo.getTotal());
+        res.buildPageInfo(salesmanInfoList);
 
-        for (SalesmanInfo salesman : salesmanInfoList) {
+        for (SalesmanInfo salesman : salesmanInfoList.getList()) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(salesman, bo);
             bo.setRoleType(getRoleType());
@@ -315,7 +313,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
     }
 
     @Override
-    public Integer getRoleIdbyUser(UserInfo userInfo) {
+    public Integer getRoleIdByUser(UserInfo userInfo) {
         return getSalesmanInfoListByUser(userInfo).get(0).getId();
     }
 

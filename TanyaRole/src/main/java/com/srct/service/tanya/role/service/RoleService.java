@@ -51,7 +51,7 @@ public interface RoleService {
 
     RoleInfoBO getSelfDetails(UserInfo userInfo);
 
-    Integer getRoleIdbyUser(UserInfo userInfo);
+    Integer getRoleIdByUser(UserInfo userInfo);
 
     default Date getDefaultPeriod(Date date, int defaultType, int defaultValue) {
         Calendar c = Calendar.getInstance();
