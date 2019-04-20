@@ -68,8 +68,9 @@ public class ShopInfoController {
         ShopInfo shopInfo = new ShopInfo();
         BeanUtil.copyProperties(vo, shopInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(shopInfoDao.getShopInfoSelective(shopInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<ShopInfo> shopInfoList = shopInfoDao.getShopInfoSelective(shopInfo, pageInfo);
+        res.getInfo().addAll(shopInfoList.getList());
+        res.buildPageInfo(shopInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class ShopInfoController {
         QueryRespVO<ShopInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(shopInfoDao
-                    .getAllShopInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<ShopInfo> shopInfoList =
+                    shopInfoDao.getAllShopInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(shopInfoList.getList());
+            res.buildPageInfo(shopInfoList);
         } else {
             res.getInfo().add(shopInfoDao.getShopInfoById(id));
         }

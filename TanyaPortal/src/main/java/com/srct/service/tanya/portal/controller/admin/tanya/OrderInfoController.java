@@ -68,8 +68,9 @@ public class OrderInfoController {
         OrderInfo orderInfo = new OrderInfo();
         BeanUtil.copyProperties(vo, orderInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(orderInfoDao.getOrderInfoSelective(orderInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<OrderInfo> orderInfoList = orderInfoDao.getOrderInfoSelective(orderInfo, pageInfo);
+        res.getInfo().addAll(orderInfoList.getList());
+        res.buildPageInfo(orderInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class OrderInfoController {
         QueryRespVO<OrderInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(orderInfoDao
-                    .getAllOrderInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<OrderInfo> orderInfoList =
+                    orderInfoDao.getAllOrderInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(orderInfoList.getList());
+            res.buildPageInfo(orderInfoList);
         } else {
             res.getInfo().add(orderInfoDao.getOrderInfoById(id));
         }

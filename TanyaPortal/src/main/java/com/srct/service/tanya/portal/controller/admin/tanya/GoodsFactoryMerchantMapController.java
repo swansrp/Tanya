@@ -69,8 +69,10 @@ public class GoodsFactoryMerchantMapController {
         GoodsFactoryMerchantMap goodsFactoryMerchantMap = new GoodsFactoryMerchantMap();
         BeanUtil.copyProperties(vo, goodsFactoryMerchantMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList =
+                goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap, pageInfo);
+        res.getInfo().addAll(goodsFactoryMerchantMapList.getList());
+        res.buildPageInfo(goodsFactoryMerchantMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -89,9 +91,10 @@ public class GoodsFactoryMerchantMapController {
         QueryRespVO<GoodsFactoryMerchantMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(goodsFactoryMerchantMapDao
-                    .getAllGoodsFactoryMerchantMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID,
-                            pageInfo));
+            PageInfo<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList = goodsFactoryMerchantMapDao
+                    .getAllGoodsFactoryMerchantMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(goodsFactoryMerchantMapList.getList());
+            res.buildPageInfo(goodsFactoryMerchantMapList);
         } else {
             res.getInfo().add(goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapById(id));
         }

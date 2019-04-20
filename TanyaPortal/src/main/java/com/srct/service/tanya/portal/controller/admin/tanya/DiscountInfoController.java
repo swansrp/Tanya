@@ -68,8 +68,9 @@ public class DiscountInfoController {
         DiscountInfo discountInfo = new DiscountInfo();
         BeanUtil.copyProperties(vo, discountInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(discountInfoDao.getDiscountInfoSelective(discountInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<DiscountInfo> discountInfoList = discountInfoDao.getDiscountInfoSelective(discountInfo, pageInfo);
+        res.getInfo().addAll(discountInfoList.getList());
+        res.buildPageInfo(discountInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class DiscountInfoController {
         QueryRespVO<DiscountInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(discountInfoDao
-                    .getAllDiscountInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<DiscountInfo> discountInfoList = discountInfoDao
+                    .getAllDiscountInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(discountInfoList.getList());
+            res.buildPageInfo(discountInfoList);
         } else {
             res.getInfo().add(discountInfoDao.getDiscountInfoById(id));
         }

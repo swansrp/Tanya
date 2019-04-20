@@ -68,8 +68,9 @@ public class TraderInfoController {
         TraderInfo traderInfo = new TraderInfo();
         BeanUtil.copyProperties(vo, traderInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(traderInfoDao.getTraderInfoSelective(traderInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<TraderInfo> traderInfoList = traderInfoDao.getTraderInfoSelective(traderInfo, pageInfo);
+        res.getInfo().addAll(traderInfoList.getList());
+        res.buildPageInfo(traderInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class TraderInfoController {
         QueryRespVO<TraderInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(traderInfoDao
-                    .getAllTraderInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<TraderInfo> traderInfoList =
+                    traderInfoDao.getAllTraderInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(traderInfoList.getList());
+            res.buildPageInfo(traderInfoList);
         } else {
             res.getInfo().add(traderInfoDao.getTraderInfoById(id));
         }

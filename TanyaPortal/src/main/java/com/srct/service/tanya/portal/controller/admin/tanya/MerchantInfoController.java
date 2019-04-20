@@ -68,8 +68,9 @@ public class MerchantInfoController {
         MerchantInfo merchantInfo = new MerchantInfo();
         BeanUtil.copyProperties(vo, merchantInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(merchantInfoDao.getMerchantInfoSelective(merchantInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<MerchantInfo> merchantInfoList = merchantInfoDao.getMerchantInfoSelective(merchantInfo, pageInfo);
+        res.getInfo().addAll(merchantInfoList.getList());
+        res.buildPageInfo(merchantInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class MerchantInfoController {
         QueryRespVO<MerchantInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(merchantInfoDao
-                    .getAllMerchantInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<MerchantInfo> merchantInfoList = merchantInfoDao
+                    .getAllMerchantInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(merchantInfoList.getList());
+            res.buildPageInfo(merchantInfoList);
         } else {
             res.getInfo().add(merchantInfoDao.getMerchantInfoById(id));
         }

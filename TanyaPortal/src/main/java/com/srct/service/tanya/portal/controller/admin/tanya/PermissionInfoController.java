@@ -68,8 +68,10 @@ public class PermissionInfoController {
         PermissionInfo permissionInfo = new PermissionInfo();
         BeanUtil.copyProperties(vo, permissionInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(permissionInfoDao.getPermissionInfoSelective(permissionInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<PermissionInfo> permissionInfoList =
+                permissionInfoDao.getPermissionInfoSelective(permissionInfo, pageInfo);
+        res.getInfo().addAll(permissionInfoList.getList());
+        res.buildPageInfo(permissionInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +90,10 @@ public class PermissionInfoController {
         QueryRespVO<PermissionInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(permissionInfoDao
-                    .getAllPermissionInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<PermissionInfo> permissionInfoList = permissionInfoDao
+                    .getAllPermissionInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(permissionInfoList.getList());
+            res.buildPageInfo(permissionInfoList);
         } else {
             res.getInfo().add(permissionInfoDao.getPermissionInfoById(id));
         }

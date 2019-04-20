@@ -69,8 +69,10 @@ public class CampaignSalesmanMapController {
         CampaignSalesmanMap campaignSalesmanMap = new CampaignSalesmanMap();
         BeanUtil.copyProperties(vo, campaignSalesmanMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(campaignSalesmanMapDao.getCampaignSalesmanMapSelective(campaignSalesmanMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<CampaignSalesmanMap> campaignSalesmanMapList =
+                campaignSalesmanMapDao.getCampaignSalesmanMapSelective(campaignSalesmanMap, pageInfo);
+        res.getInfo().addAll(campaignSalesmanMapList.getList());
+        res.buildPageInfo(campaignSalesmanMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -89,8 +91,10 @@ public class CampaignSalesmanMapController {
         QueryRespVO<CampaignSalesmanMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(campaignSalesmanMapDao
-                    .getAllCampaignSalesmanMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<CampaignSalesmanMap> campaignSalesmanMapList = campaignSalesmanMapDao
+                    .getAllCampaignSalesmanMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(campaignSalesmanMapList.getList());
+            res.buildPageInfo(campaignSalesmanMapList);
         } else {
             res.getInfo().add(campaignSalesmanMapDao.getCampaignSalesmanMapById(id));
         }

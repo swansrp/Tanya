@@ -69,9 +69,10 @@ public class TraderFactoryMerchantMapController {
         TraderFactoryMerchantMap traderFactoryMerchantMap = new TraderFactoryMerchantMap();
         BeanUtil.copyProperties(vo, traderFactoryMerchantMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo()
-                .addAll(traderFactoryMerchantMapDao.getTraderFactoryMerchantMapSelective(traderFactoryMerchantMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapSelective(traderFactoryMerchantMap, pageInfo);
+        res.getInfo().addAll(traderFactoryMerchantMapList.getList());
+        res.buildPageInfo(traderFactoryMerchantMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -90,9 +91,11 @@ public class TraderFactoryMerchantMapController {
         QueryRespVO<TraderFactoryMerchantMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(traderFactoryMerchantMapDao
+            PageInfo<TraderFactoryMerchantMap> traderFactoryMerchantMapList = traderFactoryMerchantMapDao
                     .getAllTraderFactoryMerchantMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID,
-                            pageInfo));
+                            pageInfo);
+            res.getInfo().addAll(traderFactoryMerchantMapList.getList());
+            res.buildPageInfo(traderFactoryMerchantMapList);
         } else {
             res.getInfo().add(traderFactoryMerchantMapDao.getTraderFactoryMerchantMapById(id));
         }

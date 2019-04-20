@@ -68,8 +68,9 @@ public class RoleInfoController {
         RoleInfo roleInfo = new RoleInfo();
         BeanUtil.copyProperties(vo, roleInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(roleInfoDao.getRoleInfoSelective(roleInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<RoleInfo> roleInfoList = roleInfoDao.getRoleInfoSelective(roleInfo, pageInfo);
+        res.getInfo().addAll(roleInfoList.getList());
+        res.buildPageInfo(roleInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class RoleInfoController {
         QueryRespVO<RoleInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(roleInfoDao
-                    .getAllRoleInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<RoleInfo> roleInfoList =
+                    roleInfoDao.getAllRoleInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(roleInfoList.getList());
+            res.buildPageInfo(roleInfoList);
         } else {
             res.getInfo().add(roleInfoDao.getRoleInfoById(id));
         }

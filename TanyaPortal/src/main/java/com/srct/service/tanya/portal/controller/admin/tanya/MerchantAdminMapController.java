@@ -69,8 +69,10 @@ public class MerchantAdminMapController {
         MerchantAdminMap merchantAdminMap = new MerchantAdminMap();
         BeanUtil.copyProperties(vo, merchantAdminMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<MerchantAdminMap> merchantAdminMapList =
+                merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMap, pageInfo);
+        res.getInfo().addAll(merchantAdminMapList.getList());
+        res.buildPageInfo(merchantAdminMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -89,8 +91,10 @@ public class MerchantAdminMapController {
         QueryRespVO<MerchantAdminMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(merchantAdminMapDao
-                    .getAllMerchantAdminMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<MerchantAdminMap> merchantAdminMapList = merchantAdminMapDao
+                    .getAllMerchantAdminMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(merchantAdminMapList.getList());
+            res.buildPageInfo(merchantAdminMapList);
         } else {
             res.getInfo().add(merchantAdminMapDao.getMerchantAdminMapById(id));
         }

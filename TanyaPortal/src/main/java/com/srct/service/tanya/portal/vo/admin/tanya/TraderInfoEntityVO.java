@@ -3,7 +3,10 @@ package com.srct.service.tanya.portal.vo.admin.tanya;
 
 import com.srct.service.vo.QueryReqVO;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
  
@@ -14,6 +17,9 @@ import java.util.Date;
 * @author: sharuopeng
  **/
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class TraderInfoEntityVO extends QueryReqVO {
  
     @ApiModelProperty(value = "")

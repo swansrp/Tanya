@@ -69,8 +69,10 @@ public class RolePermissionMapController {
         RolePermissionMap rolePermissionMap = new RolePermissionMap();
         BeanUtil.copyProperties(vo, rolePermissionMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<RolePermissionMap> rolePermissionMapList =
+                rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMap, pageInfo);
+        res.getInfo().addAll(rolePermissionMapList.getList());
+        res.buildPageInfo(rolePermissionMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -89,8 +91,10 @@ public class RolePermissionMapController {
         QueryRespVO<RolePermissionMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(rolePermissionMapDao
-                    .getAllRolePermissionMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<RolePermissionMap> rolePermissionMapList = rolePermissionMapDao
+                    .getAllRolePermissionMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(rolePermissionMapList.getList());
+            res.buildPageInfo(rolePermissionMapList);
         } else {
             res.getInfo().add(rolePermissionMapDao.getRolePermissionMapById(id));
         }

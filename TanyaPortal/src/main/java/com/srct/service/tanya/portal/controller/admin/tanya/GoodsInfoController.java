@@ -68,8 +68,9 @@ public class GoodsInfoController {
         GoodsInfo goodsInfo = new GoodsInfo();
         BeanUtil.copyProperties(vo, goodsInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(goodsInfoDao.getGoodsInfoSelective(goodsInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<GoodsInfo> goodsInfoList = goodsInfoDao.getGoodsInfoSelective(goodsInfo, pageInfo);
+        res.getInfo().addAll(goodsInfoList.getList());
+        res.buildPageInfo(goodsInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class GoodsInfoController {
         QueryRespVO<GoodsInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(goodsInfoDao
-                    .getAllGoodsInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<GoodsInfo> goodsInfoList =
+                    goodsInfoDao.getAllGoodsInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(goodsInfoList.getList());
+            res.buildPageInfo(goodsInfoList);
         } else {
             res.getInfo().add(goodsInfoDao.getGoodsInfoById(id));
         }

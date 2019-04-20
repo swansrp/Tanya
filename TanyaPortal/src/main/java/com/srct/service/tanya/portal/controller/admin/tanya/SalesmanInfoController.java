@@ -68,8 +68,9 @@ public class SalesmanInfoController {
         SalesmanInfo salesmanInfo = new SalesmanInfo();
         BeanUtil.copyProperties(vo, salesmanInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(salesmanInfoDao.getSalesmanInfoSelective(salesmanInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<SalesmanInfo> salesmanInfoList = salesmanInfoDao.getSalesmanInfoSelective(salesmanInfo, pageInfo);
+        res.getInfo().addAll(salesmanInfoList.getList());
+        res.buildPageInfo(salesmanInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class SalesmanInfoController {
         QueryRespVO<SalesmanInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(salesmanInfoDao
-                    .getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<SalesmanInfo> salesmanInfoList = salesmanInfoDao
+                    .getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(salesmanInfoList.getList());
+            res.buildPageInfo(salesmanInfoList);
         } else {
             res.getInfo().add(salesmanInfoDao.getSalesmanInfoById(id));
         }

@@ -68,8 +68,9 @@ public class UserInfoController {
         UserInfo userInfo = new UserInfo();
         BeanUtil.copyProperties(vo, userInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(userInfoDao.getUserInfoSelective(userInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfo, pageInfo);
+        res.getInfo().addAll(userInfoList.getList());
+        res.buildPageInfo(userInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class UserInfoController {
         QueryRespVO<UserInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(userInfoDao
-                    .getAllUserInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<UserInfo> userInfoList =
+                    userInfoDao.getAllUserInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(userInfoList.getList());
+            res.buildPageInfo(userInfoList);
         } else {
             res.getInfo().add(userInfoDao.getUserInfoById(id));
         }

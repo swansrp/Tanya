@@ -69,8 +69,10 @@ public class SalesmanTraderMapController {
         SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
         BeanUtil.copyProperties(vo, salesmanTraderMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<SalesmanTraderMap> salesmanTraderMapList =
+                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMap, pageInfo);
+        res.getInfo().addAll(salesmanTraderMapList.getList());
+        res.buildPageInfo(salesmanTraderMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -89,8 +91,10 @@ public class SalesmanTraderMapController {
         QueryRespVO<SalesmanTraderMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(salesmanTraderMapDao
-                    .getAllSalesmanTraderMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<SalesmanTraderMap> salesmanTraderMapList = salesmanTraderMapDao
+                    .getAllSalesmanTraderMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(salesmanTraderMapList.getList());
+            res.buildPageInfo(salesmanTraderMapList);
         } else {
             res.getInfo().add(salesmanTraderMapDao.getSalesmanTraderMapById(id));
         }

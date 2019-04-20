@@ -68,8 +68,9 @@ public class AdminInfoController {
         AdminInfo adminInfo = new AdminInfo();
         BeanUtil.copyProperties(vo, adminInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(adminInfoDao.getAdminInfoSelective(adminInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<AdminInfo> adminInfoList = adminInfoDao.getAdminInfoSelective(adminInfo, pageInfo);
+        res.getInfo().addAll(adminInfoList.getList());
+        res.buildPageInfo(adminInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class AdminInfoController {
         QueryRespVO<AdminInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(adminInfoDao
-                    .getAllAdminInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<AdminInfo> adminInfoList =
+                    adminInfoDao.getAllAdminInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(adminInfoList.getList());
+            res.buildPageInfo(adminInfoList);
         } else {
             res.getInfo().add(adminInfoDao.getAdminInfoById(id));
         }

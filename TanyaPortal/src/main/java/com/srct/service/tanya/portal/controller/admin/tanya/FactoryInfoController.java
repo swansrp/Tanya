@@ -68,8 +68,9 @@ public class FactoryInfoController {
         FactoryInfo factoryInfo = new FactoryInfo();
         BeanUtil.copyProperties(vo, factoryInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(factoryInfoDao.getFactoryInfoSelective(factoryInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<FactoryInfo> factoryInfoList = factoryInfoDao.getFactoryInfoSelective(factoryInfo, pageInfo);
+        res.getInfo().addAll(factoryInfoList.getList());
+        res.buildPageInfo(factoryInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class FactoryInfoController {
         QueryRespVO<FactoryInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(factoryInfoDao
-                    .getAllFactoryInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<FactoryInfo> factoryInfoList = factoryInfoDao
+                    .getAllFactoryInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(factoryInfoList.getList());
+            res.buildPageInfo(factoryInfoList);
         } else {
             res.getInfo().add(factoryInfoDao.getFactoryInfoById(id));
         }

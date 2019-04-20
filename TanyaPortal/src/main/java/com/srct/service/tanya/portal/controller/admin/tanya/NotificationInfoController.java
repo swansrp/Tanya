@@ -69,8 +69,10 @@ public class NotificationInfoController {
         NotificationInfo notificationInfo = new NotificationInfo();
         BeanUtil.copyProperties(vo, notificationInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(notificationInfoDao.getNotificationInfoSelective(notificationInfo));
-        res.buildPageInfo(pageInfo);
+        PageInfo<NotificationInfo> notificationInfoList =
+                notificationInfoDao.getNotificationInfoSelective(notificationInfo, pageInfo);
+        res.getInfo().addAll(notificationInfoList.getList());
+        res.buildPageInfo(notificationInfoList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -89,8 +91,10 @@ public class NotificationInfoController {
         QueryRespVO<NotificationInfo> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(notificationInfoDao
-                    .getAllNotificationInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<NotificationInfo> notificationInfoList = notificationInfoDao
+                    .getAllNotificationInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(notificationInfoList.getList());
+            res.buildPageInfo(notificationInfoList);
         } else {
             res.getInfo().add(notificationInfoDao.getNotificationInfoById(id));
         }

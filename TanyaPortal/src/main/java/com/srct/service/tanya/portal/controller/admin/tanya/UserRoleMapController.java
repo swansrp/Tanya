@@ -68,8 +68,9 @@ public class UserRoleMapController {
         UserRoleMap userRoleMap = new UserRoleMap();
         BeanUtil.copyProperties(vo, userRoleMap);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(userRoleMapDao.getUserRoleMapSelective(userRoleMap));
-        res.buildPageInfo(pageInfo);
+        PageInfo<UserRoleMap> userRoleMapList = userRoleMapDao.getUserRoleMapSelective(userRoleMap, pageInfo);
+        res.getInfo().addAll(userRoleMapList.getList());
+        res.buildPageInfo(userRoleMapList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +89,10 @@ public class UserRoleMapController {
         QueryRespVO<UserRoleMap> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(userRoleMapDao
-                    .getAllUserRoleMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<UserRoleMap> userRoleMapList = userRoleMapDao
+                    .getAllUserRoleMapList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(userRoleMapList.getList());
+            res.buildPageInfo(userRoleMapList);
         } else {
             res.getInfo().add(userRoleMapDao.getUserRoleMapById(id));
         }

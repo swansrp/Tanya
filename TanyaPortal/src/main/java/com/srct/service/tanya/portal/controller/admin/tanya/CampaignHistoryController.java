@@ -68,8 +68,10 @@ public class CampaignHistoryController {
         CampaignHistory campaignHistory = new CampaignHistory();
         BeanUtil.copyProperties(vo, campaignHistory);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        res.getInfo().addAll(campaignHistoryDao.getCampaignHistorySelective(campaignHistory));
-        res.buildPageInfo(pageInfo);
+        PageInfo<CampaignHistory> campaignHistoryList =
+                campaignHistoryDao.getCampaignHistorySelective(campaignHistory, pageInfo);
+        res.getInfo().addAll(campaignHistoryList.getList());
+        res.buildPageInfo(campaignHistoryList);
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -88,8 +90,10 @@ public class CampaignHistoryController {
         QueryRespVO<CampaignHistory> res = new QueryRespVO<>();
         if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
-            res.getInfo().addAll(campaignHistoryDao
-                    .getAllCampaignHistoryList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo));
+            PageInfo<CampaignHistory> campaignHistoryList = campaignHistoryDao
+                    .getAllCampaignHistoryList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
+            res.getInfo().addAll(campaignHistoryList.getList());
+            res.buildPageInfo(campaignHistoryList);
         } else {
             res.getInfo().add(campaignHistoryDao.getCampaignHistoryById(id));
         }
