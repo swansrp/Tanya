@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: FactoryInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaFactoryInfoDao")
 public class FactoryInfoDao {
 
@@ -117,12 +112,13 @@ public class FactoryInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return factoryInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "FactoryInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<FactoryInfo> getAllFactoryInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<FactoryInfo> getAllFactoryInfoList(Byte valid, PageInfo<?> pageInfo) {
         FactoryInfoExample example = new FactoryInfoExample();
         FactoryInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class FactoryInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<FactoryInfo>(res);
-        return res;
+        return new PageInfo<FactoryInfo>(res);
     }
 
     @Cacheable(value = "FactoryInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class FactoryInfoDao {
 
     @Cacheable(value = "FactoryInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<FactoryInfo> getFactoryInfoSelective(FactoryInfo factoryInfo, PageInfo<?> pageInfo) {
+    public PageInfo<FactoryInfo> getFactoryInfoSelective(FactoryInfo factoryInfo, PageInfo<?> pageInfo) {
         FactoryInfoExample example = getFactoryInfoExample(factoryInfo);
         PageHelper.startPage(pageInfo);
         List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<FactoryInfo>(res);
-        return res;
+        return new PageInfo<FactoryInfo>(res);
     }
 
     @Cacheable(value = "FactoryInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class FactoryInfoDao {
         return res;
     }
 
-    public List<FactoryInfo> getFactoryInfoByExample(FactoryInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<FactoryInfo> getFactoryInfoByExample(FactoryInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<FactoryInfo> res = factoryInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<FactoryInfo>(res);
-        return res;
+        return new PageInfo<FactoryInfo>(res);
     }
 
     public List<FactoryInfo> getFactoryInfoByExample(FactoryInfoExample example) {

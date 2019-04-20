@@ -10,14 +10,13 @@ package com.srct.service.tanya.common.config.filter;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.Filter;
 
 /**
  * @author Sharp
  */
-@Configuration
+//@Configuration
 public class FilterConfiguration {
 
     @Bean
@@ -28,10 +27,10 @@ public class FilterConfiguration {
         registration.addUrlPatterns("/*");
         // 拦截规则
         registration.addInitParameter("exclusions",
-                "/portal/admin/*," + "/login,/logout,/register,/test/*,/reset,/qrcode,"
+                "/portal/admin/*,/index*,/," + "/login,/register,/test/*,/reset,/qrcode,"
                         + "/swagger-ui.html,/swagger-resources,/swagger-resources/*,/v2/api-docs,"
                         + "/webjars/springfox-swagger-ui/*,/configuration/*,/public/*,/csrf,"
-                        + "/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
+                        + "/static/*,/css/*,/js/*,/img/*,/images/*,/druid/*,/Captcha.jpg");
         // 拦截规则
         registration.addInitParameter("roleRequired", "/role/*," + "/goods/*,/order/*,/discount/*,/campaign/*,/shop/*");
         // 过滤器名称

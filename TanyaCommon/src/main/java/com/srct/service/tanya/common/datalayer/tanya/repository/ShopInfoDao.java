@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: ShopInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaShopInfoDao")
 public class ShopInfoDao {
 
@@ -117,12 +112,13 @@ public class ShopInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return shopInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<ShopInfo> getAllShopInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<ShopInfo> getAllShopInfoList(Byte valid, PageInfo<?> pageInfo) {
         ShopInfoExample example = new ShopInfoExample();
         ShopInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class ShopInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<ShopInfo> res = shopInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<ShopInfo>(res);
-        return res;
+        return new PageInfo<ShopInfo>(res);
     }
 
     @Cacheable(value = "ShopInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class ShopInfoDao {
 
     @Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<ShopInfo> getShopInfoSelective(ShopInfo shopInfo, PageInfo<?> pageInfo) {
+    public PageInfo<ShopInfo> getShopInfoSelective(ShopInfo shopInfo, PageInfo<?> pageInfo) {
         ShopInfoExample example = getShopInfoExample(shopInfo);
         PageHelper.startPage(pageInfo);
         List<ShopInfo> res = shopInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<ShopInfo>(res);
-        return res;
+        return new PageInfo<ShopInfo>(res);
     }
 
     @Cacheable(value = "ShopInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class ShopInfoDao {
         return res;
     }
 
-    public List<ShopInfo> getShopInfoByExample(ShopInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<ShopInfo> getShopInfoByExample(ShopInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<ShopInfo> res = shopInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<ShopInfo>(res);
-        return res;
+        return new PageInfo<ShopInfo>(res);
     }
 
     public List<ShopInfo> getShopInfoByExample(ShopInfoExample example) {

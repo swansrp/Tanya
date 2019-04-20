@@ -1,6 +1,6 @@
 /**
  * Title: TanyaConfigureAdapter.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.config
  * @author sharuopeng
@@ -10,20 +10,17 @@ package com.srct.service.tanya.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * @author sharuopeng
- *
  */
 @Configuration
-public class TanyaConfigureAdapter extends WebMvcConfigurationSupport {
+public class TanyaConfigureAdapter implements WebMvcConfigurer {
 
     @Override
-    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // TODO Auto-generated method stub
-        registry.addResourceHandler("/tanya/**").addResourceLocations("tanya/");
-        super.addResourceHandlers(registry);
+        registry.addResourceHandler("/tanya/**").addResourceLocations("classpath:/tanya/");
     }
-
 }

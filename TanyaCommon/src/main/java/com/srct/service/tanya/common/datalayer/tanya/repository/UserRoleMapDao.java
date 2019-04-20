@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: UserRoleMapDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaUserRoleMapDao")
 public class UserRoleMapDao {
 
@@ -117,12 +112,13 @@ public class UserRoleMapDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return userRoleMapMapper.selectByExample(example);
     }
 
     @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<UserRoleMap> getAllUserRoleMapList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<UserRoleMap> getAllUserRoleMapList(Byte valid, PageInfo<?> pageInfo) {
         UserRoleMapExample example = new UserRoleMapExample();
         UserRoleMapExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class UserRoleMapDao {
         }
         PageHelper.startPage(pageInfo);
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<UserRoleMap>(res);
-        return res;
+        return new PageInfo<UserRoleMap>(res);
     }
 
     @Cacheable(value = "UserRoleMap", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class UserRoleMapDao {
 
     @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap, PageInfo<?> pageInfo) {
+    public PageInfo<UserRoleMap> getUserRoleMapSelective(UserRoleMap userRoleMap, PageInfo<?> pageInfo) {
         UserRoleMapExample example = getUserRoleMapExample(userRoleMap);
         PageHelper.startPage(pageInfo);
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<UserRoleMap>(res);
-        return res;
+        return new PageInfo<UserRoleMap>(res);
     }
 
     @Cacheable(value = "UserRoleMap", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class UserRoleMapDao {
         return res;
     }
 
-    public List<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example, PageInfo<?> pageInfo) {
+    public PageInfo<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<UserRoleMap> res = userRoleMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<UserRoleMap>(res);
-        return res;
+        return new PageInfo<UserRoleMap>(res);
     }
 
     public List<UserRoleMap> getUserRoleMapByExample(UserRoleMapExample example) {

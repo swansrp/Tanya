@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: ShopFactoryMerchantMapDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaShopFactoryMerchantMapDao")
 public class ShopFactoryMerchantMapDao {
 
@@ -119,12 +114,13 @@ public class ShopFactoryMerchantMapDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return shopFactoryMerchantMapMapper.selectByExample(example);
     }
 
     @Cacheable(value = "ShopFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<ShopFactoryMerchantMap> getAllShopFactoryMerchantMapList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<ShopFactoryMerchantMap> getAllShopFactoryMerchantMapList(Byte valid, PageInfo<?> pageInfo) {
         ShopFactoryMerchantMapExample example = new ShopFactoryMerchantMapExample();
         ShopFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -132,8 +128,7 @@ public class ShopFactoryMerchantMapDao {
         }
         PageHelper.startPage(pageInfo);
         List<ShopFactoryMerchantMap> res = shopFactoryMerchantMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<ShopFactoryMerchantMap>(res);
-        return res;
+        return new PageInfo<ShopFactoryMerchantMap>(res);
     }
 
     @Cacheable(value = "ShopFactoryMerchantMap", key = "'id_' + #id")
@@ -144,13 +139,12 @@ public class ShopFactoryMerchantMapDao {
 
     @Cacheable(value = "ShopFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<ShopFactoryMerchantMap> getShopFactoryMerchantMapSelective(
+    public PageInfo<ShopFactoryMerchantMap> getShopFactoryMerchantMapSelective(
             ShopFactoryMerchantMap shopFactoryMerchantMap, PageInfo<?> pageInfo) {
         ShopFactoryMerchantMapExample example = getShopFactoryMerchantMapExample(shopFactoryMerchantMap);
         PageHelper.startPage(pageInfo);
         List<ShopFactoryMerchantMap> res = shopFactoryMerchantMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<ShopFactoryMerchantMap>(res);
-        return res;
+        return new PageInfo<ShopFactoryMerchantMap>(res);
     }
 
     @Cacheable(value = "ShopFactoryMerchantMap", keyGenerator = "CacheKeyByParam")
@@ -162,12 +156,11 @@ public class ShopFactoryMerchantMapDao {
         return res;
     }
 
-    public List<ShopFactoryMerchantMap> getShopFactoryMerchantMapByExample(ShopFactoryMerchantMapExample example,
+    public PageInfo<ShopFactoryMerchantMap> getShopFactoryMerchantMapByExample(ShopFactoryMerchantMapExample example,
             PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<ShopFactoryMerchantMap> res = shopFactoryMerchantMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<ShopFactoryMerchantMap>(res);
-        return res;
+        return new PageInfo<ShopFactoryMerchantMap>(res);
     }
 
     public List<ShopFactoryMerchantMap> getShopFactoryMerchantMapByExample(ShopFactoryMerchantMapExample example) {

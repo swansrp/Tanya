@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: MerchantAdminMapDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaMerchantAdminMapDao")
 public class MerchantAdminMapDao {
 
@@ -118,12 +113,13 @@ public class MerchantAdminMapDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return merchantAdminMapMapper.selectByExample(example);
     }
 
     @Cacheable(value = "MerchantAdminMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<MerchantAdminMap> getAllMerchantAdminMapList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<MerchantAdminMap> getAllMerchantAdminMapList(Byte valid, PageInfo<?> pageInfo) {
         MerchantAdminMapExample example = new MerchantAdminMapExample();
         MerchantAdminMapExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -131,8 +127,7 @@ public class MerchantAdminMapDao {
         }
         PageHelper.startPage(pageInfo);
         List<MerchantAdminMap> res = merchantAdminMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<MerchantAdminMap>(res);
-        return res;
+        return new PageInfo<MerchantAdminMap>(res);
     }
 
     @Cacheable(value = "MerchantAdminMap", key = "'id_' + #id")
@@ -143,13 +138,12 @@ public class MerchantAdminMapDao {
 
     @Cacheable(value = "MerchantAdminMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<MerchantAdminMap> getMerchantAdminMapSelective(MerchantAdminMap merchantAdminMap,
+    public PageInfo<MerchantAdminMap> getMerchantAdminMapSelective(MerchantAdminMap merchantAdminMap,
             PageInfo<?> pageInfo) {
         MerchantAdminMapExample example = getMerchantAdminMapExample(merchantAdminMap);
         PageHelper.startPage(pageInfo);
         List<MerchantAdminMap> res = merchantAdminMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<MerchantAdminMap>(res);
-        return res;
+        return new PageInfo<MerchantAdminMap>(res);
     }
 
     @Cacheable(value = "MerchantAdminMap", keyGenerator = "CacheKeyByParam")
@@ -160,11 +154,11 @@ public class MerchantAdminMapDao {
         return res;
     }
 
-    public List<MerchantAdminMap> getMerchantAdminMapByExample(MerchantAdminMapExample example, PageInfo<?> pageInfo) {
+    public PageInfo<MerchantAdminMap> getMerchantAdminMapByExample(MerchantAdminMapExample example,
+            PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<MerchantAdminMap> res = merchantAdminMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<MerchantAdminMap>(res);
-        return res;
+        return new PageInfo<MerchantAdminMap>(res);
     }
 
     public List<MerchantAdminMap> getMerchantAdminMapByExample(MerchantAdminMapExample example) {

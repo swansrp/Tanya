@@ -7,9 +7,14 @@
  */
 package com.srct.service.tanya.common.config.filter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.service.SessionService;
+import com.srct.service.tanya.common.service.UserService;
+import com.srct.service.utils.log.Log;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -20,15 +25,9 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
-import com.srct.service.tanya.common.service.SessionService;
-import com.srct.service.tanya.common.service.UserService;
-import com.srct.service.utils.log.Log;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RoleFilter implements Filter {
 
@@ -71,11 +70,15 @@ public class RoleFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-        // TODO Auto-generated method stub
-        HttpServletRequest req = (HttpServletRequest)request;
-        HttpServletResponse resp = (HttpServletResponse)response;
+            throws IOException, ServletException {
 
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse resp = (HttpServletResponse) response;
+        if (req.getMethod().equals(RequestMethod.OPTIONS.toString())) {
+            Log.i(RequestMethod.OPTIONS.toString());
+            chain.doFilter(request, response);
+            return;
+        }
         String guid = null;
         String token = req.getHeader("x-access-token");
         if (token != null) {
@@ -97,14 +100,11 @@ public class RoleFilter implements Filter {
         // Log.i(req.getContentType());
         // Log.i(req.getMethod());
 
-        if (requestURI != null && requestURI.contains("elb.check")) {
-            return;
-        }
         String url = req.getRequestURI().substring(req.getContextPath().length());
 
-        boolean isIgonrePath = isInclude(url, patterns);
+        boolean isIgnorePath = isInclude(url, patterns);
         boolean isRoleRequiredPath = isInclude(url, rolePatterns);
-        if (isIgonrePath) {
+        if (isIgnorePath) {
             Log.i("Dont need check role {}", url);
             chain.doFilter(request, response);
             return;
@@ -138,7 +138,7 @@ public class RoleFilter implements Filter {
 
     /**
      * 是否需要过滤
-     * 
+     *
      * @param url
      * @return
      */

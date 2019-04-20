@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: DiscountInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaDiscountInfoDao")
 public class DiscountInfoDao {
 
@@ -117,12 +112,13 @@ public class DiscountInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return discountInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<DiscountInfo> getAllDiscountInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<DiscountInfo> getAllDiscountInfoList(Byte valid, PageInfo<?> pageInfo) {
         DiscountInfoExample example = new DiscountInfoExample();
         DiscountInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class DiscountInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<DiscountInfo>(res);
-        return res;
+        return new PageInfo<DiscountInfo>(res);
     }
 
     @Cacheable(value = "DiscountInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class DiscountInfoDao {
 
     @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo, PageInfo<?> pageInfo) {
+    public PageInfo<DiscountInfo> getDiscountInfoSelective(DiscountInfo discountInfo, PageInfo<?> pageInfo) {
         DiscountInfoExample example = getDiscountInfoExample(discountInfo);
         PageHelper.startPage(pageInfo);
         List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<DiscountInfo>(res);
-        return res;
+        return new PageInfo<DiscountInfo>(res);
     }
 
     @Cacheable(value = "DiscountInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class DiscountInfoDao {
         return res;
     }
 
-    public List<DiscountInfo> getDiscountInfoByExample(DiscountInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<DiscountInfo> getDiscountInfoByExample(DiscountInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<DiscountInfo> res = discountInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<DiscountInfo>(res);
-        return res;
+        return new PageInfo<DiscountInfo>(res);
     }
 
     public List<DiscountInfo> getDiscountInfoByExample(DiscountInfoExample example) {

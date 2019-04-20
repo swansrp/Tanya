@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: OrderInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaOrderInfoDao")
 public class OrderInfoDao {
 
@@ -117,12 +112,13 @@ public class OrderInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return orderInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<OrderInfo> getAllOrderInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<OrderInfo> getAllOrderInfoList(Byte valid, PageInfo<?> pageInfo) {
         OrderInfoExample example = new OrderInfoExample();
         OrderInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class OrderInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<OrderInfo>(res);
-        return res;
+        return new PageInfo<OrderInfo>(res);
     }
 
     @Cacheable(value = "OrderInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class OrderInfoDao {
 
     @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo, PageInfo<?> pageInfo) {
+    public PageInfo<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo, PageInfo<?> pageInfo) {
         OrderInfoExample example = getOrderInfoExample(orderInfo);
         PageHelper.startPage(pageInfo);
         List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<OrderInfo>(res);
-        return res;
+        return new PageInfo<OrderInfo>(res);
     }
 
     @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class OrderInfoDao {
         return res;
     }
 
-    public List<OrderInfo> getOrderInfoByExample(OrderInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<OrderInfo> getOrderInfoByExample(OrderInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<OrderInfo>(res);
-        return res;
+        return new PageInfo<OrderInfo>(res);
     }
 
     public List<OrderInfo> getOrderInfoByExample(OrderInfoExample example) {

@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: UserInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaUserInfoDao")
 public class UserInfoDao {
 
@@ -117,12 +112,13 @@ public class UserInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return userInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "UserInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<UserInfo> getAllUserInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<UserInfo> getAllUserInfoList(Byte valid, PageInfo<?> pageInfo) {
         UserInfoExample example = new UserInfoExample();
         UserInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class UserInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<UserInfo> res = userInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<UserInfo>(res);
-        return res;
+        return new PageInfo<UserInfo>(res);
     }
 
     @Cacheable(value = "UserInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class UserInfoDao {
 
     @Cacheable(value = "UserInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<UserInfo> getUserInfoSelective(UserInfo userInfo, PageInfo<?> pageInfo) {
+    public PageInfo<UserInfo> getUserInfoSelective(UserInfo userInfo, PageInfo<?> pageInfo) {
         UserInfoExample example = getUserInfoExample(userInfo);
         PageHelper.startPage(pageInfo);
         List<UserInfo> res = userInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<UserInfo>(res);
-        return res;
+        return new PageInfo<UserInfo>(res);
     }
 
     @Cacheable(value = "UserInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class UserInfoDao {
         return res;
     }
 
-    public List<UserInfo> getUserInfoByExample(UserInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<UserInfo> getUserInfoByExample(UserInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<UserInfo> res = userInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<UserInfo>(res);
-        return res;
+        return new PageInfo<UserInfo>(res);
     }
 
     public List<UserInfo> getUserInfoByExample(UserInfoExample example) {

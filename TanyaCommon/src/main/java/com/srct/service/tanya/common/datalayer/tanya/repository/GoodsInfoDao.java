@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: GoodsInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaGoodsInfoDao")
 public class GoodsInfoDao {
 
@@ -117,12 +112,13 @@ public class GoodsInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return goodsInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "GoodsInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<GoodsInfo> getAllGoodsInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<GoodsInfo> getAllGoodsInfoList(Byte valid, PageInfo<?> pageInfo) {
         GoodsInfoExample example = new GoodsInfoExample();
         GoodsInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class GoodsInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<GoodsInfo>(res);
-        return res;
+        return new PageInfo<GoodsInfo>(res);
     }
 
     @Cacheable(value = "GoodsInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class GoodsInfoDao {
 
     @Cacheable(value = "GoodsInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<GoodsInfo> getGoodsInfoSelective(GoodsInfo goodsInfo, PageInfo<?> pageInfo) {
+    public PageInfo<GoodsInfo> getGoodsInfoSelective(GoodsInfo goodsInfo, PageInfo<?> pageInfo) {
         GoodsInfoExample example = getGoodsInfoExample(goodsInfo);
         PageHelper.startPage(pageInfo);
         List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<GoodsInfo>(res);
-        return res;
+        return new PageInfo<GoodsInfo>(res);
     }
 
     @Cacheable(value = "GoodsInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class GoodsInfoDao {
         return res;
     }
 
-    public List<GoodsInfo> getGoodsInfoByExample(GoodsInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<GoodsInfo> getGoodsInfoByExample(GoodsInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<GoodsInfo> res = goodsInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<GoodsInfo>(res);
-        return res;
+        return new PageInfo<GoodsInfo>(res);
     }
 
     public List<GoodsInfo> getGoodsInfoByExample(GoodsInfoExample example) {

@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: CampaignInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaCampaignInfoDao")
 public class CampaignInfoDao {
 
@@ -117,12 +112,13 @@ public class CampaignInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return campaignInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "CampaignInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<CampaignInfo> getAllCampaignInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<CampaignInfo> getAllCampaignInfoList(Byte valid, PageInfo<?> pageInfo) {
         CampaignInfoExample example = new CampaignInfoExample();
         CampaignInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class CampaignInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<CampaignInfo>(res);
-        return res;
+        return new PageInfo<CampaignInfo>(res);
     }
 
     @Cacheable(value = "CampaignInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class CampaignInfoDao {
 
     @Cacheable(value = "CampaignInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<CampaignInfo> getCampaignInfoSelective(CampaignInfo campaignInfo, PageInfo<?> pageInfo) {
+    public PageInfo<CampaignInfo> getCampaignInfoSelective(CampaignInfo campaignInfo, PageInfo<?> pageInfo) {
         CampaignInfoExample example = getCampaignInfoExample(campaignInfo);
         PageHelper.startPage(pageInfo);
         List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<CampaignInfo>(res);
-        return res;
+        return new PageInfo<CampaignInfo>(res);
     }
 
     @Cacheable(value = "CampaignInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class CampaignInfoDao {
         return res;
     }
 
-    public List<CampaignInfo> getCampaignInfoByExample(CampaignInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<CampaignInfo> getCampaignInfoByExample(CampaignInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<CampaignInfo> res = campaignInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<CampaignInfo>(res);
-        return res;
+        return new PageInfo<CampaignInfo>(res);
     }
 
     public List<CampaignInfo> getCampaignInfoByExample(CampaignInfoExample example) {

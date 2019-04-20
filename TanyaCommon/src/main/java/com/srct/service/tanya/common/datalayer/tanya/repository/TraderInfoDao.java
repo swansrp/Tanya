@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: TraderInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaTraderInfoDao")
 public class TraderInfoDao {
 
@@ -117,12 +112,13 @@ public class TraderInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return traderInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "TraderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<TraderInfo> getAllTraderInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<TraderInfo> getAllTraderInfoList(Byte valid, PageInfo<?> pageInfo) {
         TraderInfoExample example = new TraderInfoExample();
         TraderInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class TraderInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<TraderInfo> res = traderInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<TraderInfo>(res);
-        return res;
+        return new PageInfo<TraderInfo>(res);
     }
 
     @Cacheable(value = "TraderInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class TraderInfoDao {
 
     @Cacheable(value = "TraderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<TraderInfo> getTraderInfoSelective(TraderInfo traderInfo, PageInfo<?> pageInfo) {
+    public PageInfo<TraderInfo> getTraderInfoSelective(TraderInfo traderInfo, PageInfo<?> pageInfo) {
         TraderInfoExample example = getTraderInfoExample(traderInfo);
         PageHelper.startPage(pageInfo);
         List<TraderInfo> res = traderInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<TraderInfo>(res);
-        return res;
+        return new PageInfo<TraderInfo>(res);
     }
 
     @Cacheable(value = "TraderInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class TraderInfoDao {
         return res;
     }
 
-    public List<TraderInfo> getTraderInfoByExample(TraderInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<TraderInfo> getTraderInfoByExample(TraderInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<TraderInfo> res = traderInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<TraderInfo>(res);
-        return res;
+        return new PageInfo<TraderInfo>(res);
     }
 
     public List<TraderInfo> getTraderInfoByExample(TraderInfoExample example) {

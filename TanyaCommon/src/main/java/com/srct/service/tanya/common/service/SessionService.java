@@ -1,6 +1,6 @@
 /**
  * @Title: TokenService.java
- *         Copyright (c) 2019 Sharp. All rights reserved.
+ * Copyright (c) 2019 Sharp. All rights reserved.
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.service
  * @author Sharp
@@ -10,7 +10,6 @@ package com.srct.service.tanya.common.service;
 
 /**
  * @author Sharp
- *
  */
 public interface SessionService {
     String genWechatToken(String guid);
@@ -23,5 +22,7 @@ public interface SessionService {
 
     String getResetPasswordToken(String guid);
 
-    String getGuidbyResetPasswordToken(String token);
+    String getGuidByResetPasswordToken(String token);
+
+    void logoffByGuid(String guid);
 }

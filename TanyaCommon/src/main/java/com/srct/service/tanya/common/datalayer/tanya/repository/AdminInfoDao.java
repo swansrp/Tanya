@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: AdminInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaAdminInfoDao")
 public class AdminInfoDao {
 
@@ -117,12 +112,13 @@ public class AdminInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return adminInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<AdminInfo> getAllAdminInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<AdminInfo> getAllAdminInfoList(Byte valid, PageInfo<?> pageInfo) {
         AdminInfoExample example = new AdminInfoExample();
         AdminInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class AdminInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<AdminInfo>(res);
-        return res;
+        return new PageInfo<AdminInfo>(res);
     }
 
     @Cacheable(value = "AdminInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class AdminInfoDao {
 
     @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo, PageInfo<?> pageInfo) {
+    public PageInfo<AdminInfo> getAdminInfoSelective(AdminInfo adminInfo, PageInfo<?> pageInfo) {
         AdminInfoExample example = getAdminInfoExample(adminInfo);
         PageHelper.startPage(pageInfo);
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<AdminInfo>(res);
-        return res;
+        return new PageInfo<AdminInfo>(res);
     }
 
     @Cacheable(value = "AdminInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class AdminInfoDao {
         return res;
     }
 
-    public List<AdminInfo> getAdminInfoByExample(AdminInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<AdminInfo> getAdminInfoByExample(AdminInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<AdminInfo> res = adminInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<AdminInfo>(res);
-        return res;
+        return new PageInfo<AdminInfo>(res);
     }
 
     public List<AdminInfo> getAdminInfoByExample(AdminInfoExample example) {

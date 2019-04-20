@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: MerchantInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaMerchantInfoDao")
 public class MerchantInfoDao {
 
@@ -117,12 +112,13 @@ public class MerchantInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return merchantInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<MerchantInfo> getAllMerchantInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<MerchantInfo> getAllMerchantInfoList(Byte valid, PageInfo<?> pageInfo) {
         MerchantInfoExample example = new MerchantInfoExample();
         MerchantInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class MerchantInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<MerchantInfo>(res);
-        return res;
+        return new PageInfo<MerchantInfo>(res);
     }
 
     @Cacheable(value = "MerchantInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class MerchantInfoDao {
 
     @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo, PageInfo<?> pageInfo) {
+    public PageInfo<MerchantInfo> getMerchantInfoSelective(MerchantInfo merchantInfo, PageInfo<?> pageInfo) {
         MerchantInfoExample example = getMerchantInfoExample(merchantInfo);
         PageHelper.startPage(pageInfo);
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<MerchantInfo>(res);
-        return res;
+        return new PageInfo<MerchantInfo>(res);
     }
 
     @Cacheable(value = "MerchantInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class MerchantInfoDao {
         return res;
     }
 
-    public List<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<MerchantInfo> res = merchantInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<MerchantInfo>(res);
-        return res;
+        return new PageInfo<MerchantInfo>(res);
     }
 
     public List<MerchantInfo> getMerchantInfoByExample(MerchantInfoExample example) {

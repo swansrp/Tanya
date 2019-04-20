@@ -14,6 +14,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
@@ -24,6 +25,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
+import com.srct.service.tanya.common.vo.TokenVO;
 import com.srct.service.tanya.common.vo.UserInfoVO;
 import com.srct.service.tanya.common.vo.UserRegReqVO;
 import com.srct.service.utils.BeanUtil;
@@ -49,6 +51,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.srct.service.config.annotation.Auth.AuthType.USER;
+
 /**
  * @author Sharp
  */
@@ -67,7 +71,7 @@ public class LoginController {
 
     @ApiOperation(value = "用户登入", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<String>.Resp> login(
+    public ResponseEntity<CommonResponse<TokenVO>.Resp> login(
             @RequestParam(value = "name", required = false) String username,
             @RequestParam(value = "pw", required = false) String password,
             @RequestParam(value = "wechatcode", required = false) String wechatAuthCode,
@@ -91,8 +95,9 @@ public class LoginController {
         } else {
             throw new ServiceException("登录信息不足");
         }
+        TokenVO res = TokenVO.builder().Token(token).userName(username).build();
 
-        return TanyaExceptionHandler.generateResponse(token);
+        return TanyaExceptionHandler.generateResponse(res);
     }
 
     private void userLoginRespBOValidate(UserLoginRespBO bo) {
@@ -101,9 +106,21 @@ public class LoginController {
         }
     }
 
+    @Auth
+    @ApiOperation(value = "用户登出", notes = "用户登出系统token将失效")
+    @RequestMapping(value = "/logoff", method = RequestMethod.GET)
+    public ResponseEntity<CommonResponse<TokenVO>.Resp> logout() {
+        Log.i("**********logout**********");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        TokenVO res = new TokenVO();
+        res.setUserName(info.getUsername());
+        sessionService.logoffByGuid(info.getGuid());
+        return TanyaExceptionHandler.generateResponse(res);
+    }
+
     @ApiOperation(value = "用户注册", notes = "用户注册入系统，获取session信息")
     @RequestMapping(value = "/register", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<String>.Resp> reg(
+    public ResponseEntity<CommonResponse<TokenVO>.Resp> reg(
             @RequestParam(value = "name", required = false) String username,
             @RequestParam(value = "pw", required = false) String password,
             @RequestParam(value = "wechatcode", required = false) String wechatAuthCode) {
@@ -125,9 +142,12 @@ public class LoginController {
         } else {
             throw new ServiceException("注册信息不足");
         }
-        return TanyaExceptionHandler.generateResponse(token);
+
+        TokenVO res = TokenVO.builder().Token(token).build();
+        return TanyaExceptionHandler.generateResponse(res);
     }
 
+    @Auth
     @ApiOperation(value = "更新用户信息", notes = "输入用户详细信息")
     @RequestMapping(value = "/info", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<String>.Resp> update(@RequestBody UserRegReqVO vo) {
@@ -146,6 +166,7 @@ public class LoginController {
         return TanyaExceptionHandler.generateResponse("");
     }
 
+    @Auth(role = USER)
     @ApiOperation(value = "获取用户信息", notes = "获取用户详细信息")
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<UserInfoVO>.Resp> info() {
@@ -169,6 +190,7 @@ public class LoginController {
         return TanyaExceptionHandler.generateResponse(vo);
     }
 
+    @Auth
     @ApiOperation(value = "重置密码", notes = "向用户邮箱发送重置密码链接")
     @RequestMapping(value = "/reset", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<String>.Resp> resetReq(@RequestBody String email) {
@@ -184,17 +206,19 @@ public class LoginController {
         return TanyaExceptionHandler.generateResponse("");
     }
 
+    @Auth
     @ApiOperation(value = "重置密码", notes = "向用户邮箱发送重置密码链接")
     @RequestMapping(value = "/reset", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<String>.Resp> reset(@RequestParam(value = "req") String token) {
         Log.i("**********reset**********");
         Log.i(token);
-        String guid = sessionService.getGuidbyResetPasswordToken(token);
+        String guid = sessionService.getGuidByResetPasswordToken(token);
         UserInfo info = userService.getUserbyGuid(guid);
         userService.cleanUserPassword(info);
         return TanyaExceptionHandler.generateResponse("");
     }
 
+    @Auth
     @ApiOperation(value = "获取用户GUID二维码", notes = "获取用户详细信息")
     @RequestMapping(value = "/qrcode", method = RequestMethod.GET)
     public void qrcode(@RequestParam(value = "token", required = false) String token, HttpServletResponse response)

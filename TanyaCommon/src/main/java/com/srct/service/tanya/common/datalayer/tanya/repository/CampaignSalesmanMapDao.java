@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: CampaignSalesmanMapDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaCampaignSalesmanMapDao")
 public class CampaignSalesmanMapDao {
 
@@ -119,12 +114,13 @@ public class CampaignSalesmanMapDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return campaignSalesmanMapMapper.selectByExample(example);
     }
 
     @Cacheable(value = "CampaignSalesmanMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<CampaignSalesmanMap> getAllCampaignSalesmanMapList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<CampaignSalesmanMap> getAllCampaignSalesmanMapList(Byte valid, PageInfo<?> pageInfo) {
         CampaignSalesmanMapExample example = new CampaignSalesmanMapExample();
         CampaignSalesmanMapExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -132,8 +128,7 @@ public class CampaignSalesmanMapDao {
         }
         PageHelper.startPage(pageInfo);
         List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<CampaignSalesmanMap>(res);
-        return res;
+        return new PageInfo<CampaignSalesmanMap>(res);
     }
 
     @Cacheable(value = "CampaignSalesmanMap", key = "'id_' + #id")
@@ -144,13 +139,12 @@ public class CampaignSalesmanMapDao {
 
     @Cacheable(value = "CampaignSalesmanMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<CampaignSalesmanMap> getCampaignSalesmanMapSelective(CampaignSalesmanMap campaignSalesmanMap,
+    public PageInfo<CampaignSalesmanMap> getCampaignSalesmanMapSelective(CampaignSalesmanMap campaignSalesmanMap,
             PageInfo<?> pageInfo) {
         CampaignSalesmanMapExample example = getCampaignSalesmanMapExample(campaignSalesmanMap);
         PageHelper.startPage(pageInfo);
         List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<CampaignSalesmanMap>(res);
-        return res;
+        return new PageInfo<CampaignSalesmanMap>(res);
     }
 
     @Cacheable(value = "CampaignSalesmanMap", keyGenerator = "CacheKeyByParam")
@@ -161,12 +155,11 @@ public class CampaignSalesmanMapDao {
         return res;
     }
 
-    public List<CampaignSalesmanMap> getCampaignSalesmanMapByExample(CampaignSalesmanMapExample example,
+    public PageInfo<CampaignSalesmanMap> getCampaignSalesmanMapByExample(CampaignSalesmanMapExample example,
             PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<CampaignSalesmanMap> res = campaignSalesmanMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<CampaignSalesmanMap>(res);
-        return res;
+        return new PageInfo<CampaignSalesmanMap>(res);
     }
 
     public List<CampaignSalesmanMap> getCampaignSalesmanMapByExample(CampaignSalesmanMapExample example) {

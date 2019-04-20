@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: PermissionInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaPermissionInfoDao")
 public class PermissionInfoDao {
 
@@ -117,12 +112,13 @@ public class PermissionInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return permissionInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "PermissionInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<PermissionInfo> getAllPermissionInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<PermissionInfo> getAllPermissionInfoList(Byte valid, PageInfo<?> pageInfo) {
         PermissionInfoExample example = new PermissionInfoExample();
         PermissionInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class PermissionInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<PermissionInfo> res = permissionInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<PermissionInfo>(res);
-        return res;
+        return new PageInfo<PermissionInfo>(res);
     }
 
     @Cacheable(value = "PermissionInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class PermissionInfoDao {
 
     @Cacheable(value = "PermissionInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<PermissionInfo> getPermissionInfoSelective(PermissionInfo permissionInfo, PageInfo<?> pageInfo) {
+    public PageInfo<PermissionInfo> getPermissionInfoSelective(PermissionInfo permissionInfo, PageInfo<?> pageInfo) {
         PermissionInfoExample example = getPermissionInfoExample(permissionInfo);
         PageHelper.startPage(pageInfo);
         List<PermissionInfo> res = permissionInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<PermissionInfo>(res);
-        return res;
+        return new PageInfo<PermissionInfo>(res);
     }
 
     @Cacheable(value = "PermissionInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class PermissionInfoDao {
         return res;
     }
 
-    public List<PermissionInfo> getPermissionInfoByExample(PermissionInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<PermissionInfo> getPermissionInfoByExample(PermissionInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<PermissionInfo> res = permissionInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<PermissionInfo>(res);
-        return res;
+        return new PageInfo<PermissionInfo>(res);
     }
 
     public List<PermissionInfo> getPermissionInfoByExample(PermissionInfoExample example) {

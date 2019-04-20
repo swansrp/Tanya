@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: RoleInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaRoleInfoDao")
 public class RoleInfoDao {
 
@@ -117,12 +112,13 @@ public class RoleInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return roleInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<RoleInfo> getAllRoleInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<RoleInfo> getAllRoleInfoList(Byte valid, PageInfo<?> pageInfo) {
         RoleInfoExample example = new RoleInfoExample();
         RoleInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -130,8 +126,7 @@ public class RoleInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<RoleInfo> res = roleInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<RoleInfo>(res);
-        return res;
+        return new PageInfo<RoleInfo>(res);
     }
 
     @Cacheable(value = "RoleInfo", key = "'id_' + #id")
@@ -142,12 +137,11 @@ public class RoleInfoDao {
 
     @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo, PageInfo<?> pageInfo) {
+    public PageInfo<RoleInfo> getRoleInfoSelective(RoleInfo roleInfo, PageInfo<?> pageInfo) {
         RoleInfoExample example = getRoleInfoExample(roleInfo);
         PageHelper.startPage(pageInfo);
         List<RoleInfo> res = roleInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<RoleInfo>(res);
-        return res;
+        return new PageInfo<RoleInfo>(res);
     }
 
     @Cacheable(value = "RoleInfo", keyGenerator = "CacheKeyByParam")
@@ -158,11 +152,10 @@ public class RoleInfoDao {
         return res;
     }
 
-    public List<RoleInfo> getRoleInfoByExample(RoleInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<RoleInfo> getRoleInfoByExample(RoleInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<RoleInfo> res = roleInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<RoleInfo>(res);
-        return res;
+        return new PageInfo<RoleInfo>(res);
     }
 
     public List<RoleInfo> getRoleInfoByExample(RoleInfoExample example) {

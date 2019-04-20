@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: NotificationInfoDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaNotificationInfoDao")
 public class NotificationInfoDao {
 
@@ -118,12 +113,13 @@ public class NotificationInfoDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return notificationInfoMapper.selectByExample(example);
     }
 
     @Cacheable(value = "NotificationInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<NotificationInfo> getAllNotificationInfoList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<NotificationInfo> getAllNotificationInfoList(Byte valid, PageInfo<?> pageInfo) {
         NotificationInfoExample example = new NotificationInfoExample();
         NotificationInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -131,8 +127,7 @@ public class NotificationInfoDao {
         }
         PageHelper.startPage(pageInfo);
         List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<NotificationInfo>(res);
-        return res;
+        return new PageInfo<NotificationInfo>(res);
     }
 
     @Cacheable(value = "NotificationInfo", key = "'id_' + #id")
@@ -143,13 +138,12 @@ public class NotificationInfoDao {
 
     @Cacheable(value = "NotificationInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<NotificationInfo> getNotificationInfoSelective(NotificationInfo notificationInfo,
+    public PageInfo<NotificationInfo> getNotificationInfoSelective(NotificationInfo notificationInfo,
             PageInfo<?> pageInfo) {
         NotificationInfoExample example = getNotificationInfoExample(notificationInfo);
         PageHelper.startPage(pageInfo);
         List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<NotificationInfo>(res);
-        return res;
+        return new PageInfo<NotificationInfo>(res);
     }
 
     @Cacheable(value = "NotificationInfo", keyGenerator = "CacheKeyByParam")
@@ -160,11 +154,11 @@ public class NotificationInfoDao {
         return res;
     }
 
-    public List<NotificationInfo> getNotificationInfoByExample(NotificationInfoExample example, PageInfo<?> pageInfo) {
+    public PageInfo<NotificationInfo> getNotificationInfoByExample(NotificationInfoExample example,
+            PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<NotificationInfo> res = notificationInfoMapper.selectByExample(example);
-        pageInfo = new PageInfo<NotificationInfo>(res);
-        return res;
+        return new PageInfo<NotificationInfo>(res);
     }
 
     public List<NotificationInfo> getNotificationInfoByExample(NotificationInfoExample example) {

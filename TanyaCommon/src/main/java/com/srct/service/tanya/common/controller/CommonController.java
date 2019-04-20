@@ -1,6 +1,6 @@
 /**
  * Title: CommonController.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.controller
  * @author Sharp
@@ -8,25 +8,22 @@
  */
 package com.srct.service.tanya.common.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.UserNotLoginException;
 import com.srct.service.tanya.common.exception.UserNotInRoleException;
 import com.srct.service.utils.log.Log;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * @author Sharp
  *
  */
 @Api(value = "系统自动重定向")
-@RestController("commonController")
+// @RestController("commonController")
 @RequestMapping(value = "")
 @CrossOrigin(origins = "*")
 public class CommonController {

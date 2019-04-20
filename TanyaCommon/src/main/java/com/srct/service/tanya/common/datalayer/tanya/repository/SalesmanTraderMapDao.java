@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: SalesmanTraderMapDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaSalesmanTraderMapDao")
 public class SalesmanTraderMapDao {
 
@@ -119,12 +114,13 @@ public class SalesmanTraderMapDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return salesmanTraderMapMapper.selectByExample(example);
     }
 
     @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<SalesmanTraderMap> getAllSalesmanTraderMapList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<SalesmanTraderMap> getAllSalesmanTraderMapList(Byte valid, PageInfo<?> pageInfo) {
         SalesmanTraderMapExample example = new SalesmanTraderMapExample();
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -132,8 +128,7 @@ public class SalesmanTraderMapDao {
         }
         PageHelper.startPage(pageInfo);
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<SalesmanTraderMap>(res);
-        return res;
+        return new PageInfo<SalesmanTraderMap>(res);
     }
 
     @Cacheable(value = "SalesmanTraderMap", key = "'id_' + #id")
@@ -144,13 +139,12 @@ public class SalesmanTraderMapDao {
 
     @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap,
+    public PageInfo<SalesmanTraderMap> getSalesmanTraderMapSelective(SalesmanTraderMap salesmanTraderMap,
             PageInfo<?> pageInfo) {
         SalesmanTraderMapExample example = getSalesmanTraderMapExample(salesmanTraderMap);
         PageHelper.startPage(pageInfo);
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<SalesmanTraderMap>(res);
-        return res;
+        return new PageInfo<SalesmanTraderMap>(res);
     }
 
     @Cacheable(value = "SalesmanTraderMap", keyGenerator = "CacheKeyByParam")
@@ -161,12 +155,11 @@ public class SalesmanTraderMapDao {
         return res;
     }
 
-    public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example,
+    public PageInfo<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example,
             PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<SalesmanTraderMap> res = salesmanTraderMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<SalesmanTraderMap>(res);
-        return res;
+        return new PageInfo<SalesmanTraderMap>(res);
     }
 
     public List<SalesmanTraderMap> getSalesmanTraderMapByExample(SalesmanTraderMapExample example) {

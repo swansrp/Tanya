@@ -4,7 +4,7 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/04
+ * @date: 2019/04/20
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
 
@@ -29,11 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
-/**
- * @ClassName: RolePermissionMapDao
- * @Description: Basic Repository 
- */
 @Repository("tanyaRolePermissionMapDao")
 public class RolePermissionMapDao {
 
@@ -119,12 +114,13 @@ public class RolePermissionMapDao {
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
+
         return rolePermissionMapMapper.selectByExample(example);
     }
 
     @Cacheable(value = "RolePermissionMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<RolePermissionMap> getAllRolePermissionMapList(Byte valid, PageInfo<?> pageInfo) {
+    public PageInfo<RolePermissionMap> getAllRolePermissionMapList(Byte valid, PageInfo<?> pageInfo) {
         RolePermissionMapExample example = new RolePermissionMapExample();
         RolePermissionMapExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
@@ -132,8 +128,7 @@ public class RolePermissionMapDao {
         }
         PageHelper.startPage(pageInfo);
         List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<RolePermissionMap>(res);
-        return res;
+        return new PageInfo<RolePermissionMap>(res);
     }
 
     @Cacheable(value = "RolePermissionMap", key = "'id_' + #id")
@@ -144,13 +139,12 @@ public class RolePermissionMapDao {
 
     @Cacheable(value = "RolePermissionMap", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
-    public List<RolePermissionMap> getRolePermissionMapSelective(RolePermissionMap rolePermissionMap,
+    public PageInfo<RolePermissionMap> getRolePermissionMapSelective(RolePermissionMap rolePermissionMap,
             PageInfo<?> pageInfo) {
         RolePermissionMapExample example = getRolePermissionMapExample(rolePermissionMap);
         PageHelper.startPage(pageInfo);
         List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<RolePermissionMap>(res);
-        return res;
+        return new PageInfo<RolePermissionMap>(res);
     }
 
     @Cacheable(value = "RolePermissionMap", keyGenerator = "CacheKeyByParam")
@@ -161,12 +155,11 @@ public class RolePermissionMapDao {
         return res;
     }
 
-    public List<RolePermissionMap> getRolePermissionMapByExample(RolePermissionMapExample example,
+    public PageInfo<RolePermissionMap> getRolePermissionMapByExample(RolePermissionMapExample example,
             PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
         List<RolePermissionMap> res = rolePermissionMapMapper.selectByExample(example);
-        pageInfo = new PageInfo<RolePermissionMap>(res);
-        return res;
+        return new PageInfo<RolePermissionMap>(res);
     }
 
     public List<RolePermissionMap> getRolePermissionMapByExample(RolePermissionMapExample example) {

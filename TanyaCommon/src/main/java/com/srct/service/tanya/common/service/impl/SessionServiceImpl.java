@@ -106,9 +106,6 @@ public class SessionServiceImpl implements SessionService {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see com.srct.service.tanya.common.service.SessionService#getResetPasswordToken(java.lang.String)
-     */
     @Override
     public String getResetPasswordToken(String guid) {
         String token = RandomUtil.getUUID();
@@ -118,10 +115,17 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public String getGuidbyResetPasswordToken(String token) {
+    public String getGuidByResetPasswordToken(String token) {
         String oriToken = EncryptUtil.decryptBase64(token, AES_KEY);
         String guid = redisService.get(RESET_PASSWORD_KEY + oriToken, String.class);
         redisService.delete(RESET_PASSWORD_KEY + oriToken);
         return guid;
+    }
+
+    @Override
+    public void logoffByGuid(String guid) {
+        String authToken = redisService.get(SESSION_KEY + guid, String.class);
+        redisService.delete(authToken);
+        redisService.delete(SESSION_KEY + guid);
     }
 }
