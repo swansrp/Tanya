@@ -349,9 +349,10 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
         //criteria.andEndAtGreaterThanOrEqualTo(now);
         //criteria.andStartAtLessThanOrEqualTo(now);
-        if (salesmanIdList.size() > 1) {
-            criteria.andSalesmanIdIn(salesmanIdList);
+        if (salesmanIdList.size() == 0) {
+            salesmanIdList.add(0);
         }
+        criteria.andSalesmanIdIn(salesmanIdList);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
             return salesmanTraderMapDao.getSalesmanTraderMapByExample(example);
