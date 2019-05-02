@@ -515,6 +515,126 @@ public class CampaignInfoExample {
             return (Criteria) this;
         }
 
+        public Criteria andUnitAmountIsNull() {
+            addCriterion("unit_amount is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountIsNotNull() {
+            addCriterion("unit_amount is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountEqualTo(Integer value) {
+            addCriterion("unit_amount =", value, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountNotEqualTo(Integer value) {
+            addCriterion("unit_amount <>", value, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountGreaterThan(Integer value) {
+            addCriterion("unit_amount >", value, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountGreaterThanOrEqualTo(Integer value) {
+            addCriterion("unit_amount >=", value, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountLessThan(Integer value) {
+            addCriterion("unit_amount <", value, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountLessThanOrEqualTo(Integer value) {
+            addCriterion("unit_amount <=", value, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountIn(List<Integer> values) {
+            addCriterion("unit_amount in", values, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountNotIn(List<Integer> values) {
+            addCriterion("unit_amount not in", values, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountBetween(Integer value1, Integer value2) {
+            addCriterion("unit_amount between", value1, value2, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitAmountNotBetween(Integer value1, Integer value2) {
+            addCriterion("unit_amount not between", value1, value2, "unitAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardIsNull() {
+            addCriterion("reward is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardIsNotNull() {
+            addCriterion("reward is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardEqualTo(Integer value) {
+            addCriterion("reward =", value, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardNotEqualTo(Integer value) {
+            addCriterion("reward <>", value, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardGreaterThan(Integer value) {
+            addCriterion("reward >", value, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardGreaterThanOrEqualTo(Integer value) {
+            addCriterion("reward >=", value, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardLessThan(Integer value) {
+            addCriterion("reward <", value, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardLessThanOrEqualTo(Integer value) {
+            addCriterion("reward <=", value, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardIn(List<Integer> values) {
+            addCriterion("reward in", values, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardNotIn(List<Integer> values) {
+            addCriterion("reward not in", values, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardBetween(Integer value1, Integer value2) {
+            addCriterion("reward between", value1, value2, "reward");
+            return (Criteria) this;
+        }
+
+        public Criteria andRewardNotBetween(Integer value1, Integer value2) {
+            addCriterion("reward not between", value1, value2, "reward");
+            return (Criteria) this;
+        }
+
         public Criteria andStartAtIsNull() {
             addCriterion("start_at is null");
             return (Criteria) this;

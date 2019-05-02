@@ -38,6 +38,9 @@ public class GoodsInfo {
     @ApiModelProperty(value = "规格")
     private String spec;
 
+    @ApiModelProperty(value = "单位")
+    private String unit;
+
     @ApiModelProperty(value = "价格")
     private Double amount;
 

@@ -17,6 +17,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.ServiceException;
+import com.srct.service.service.CaptchaService;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
@@ -25,7 +26,6 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
-import com.srct.service.tanya.common.vo.TokenVO;
 import com.srct.service.tanya.common.vo.UserInfoVO;
 import com.srct.service.tanya.common.vo.UserRegReqVO;
 import com.srct.service.utils.BeanUtil;
@@ -33,6 +33,7 @@ import com.srct.service.utils.email.EmailRepository;
 import com.srct.service.utils.email.EmailUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.utils.security.MD5Util;
+import com.srct.service.vo.TokenVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.srct.service.config.annotation.Auth.AuthType.USER;
+import static com.srct.service.config.annotation.Auth.AuthType.GUEST;
 
 /**
  * @author Sharp
@@ -68,17 +69,20 @@ public class LoginController {
     UserService userService;
     @Autowired
     private HttpServletRequest request;
+    @Autowired
+    private CaptchaService captchaService;
 
     @ApiOperation(value = "用户登入", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<TokenVO>.Resp> login(
-            @RequestParam(value = "name", required = false) String username,
-            @RequestParam(value = "pw", required = false) String password,
-            @RequestParam(value = "wechatcode", required = false) String wechatAuthCode,
-            @RequestParam(value = "rememberme", required = false) boolean rememberMe) {
+            @RequestParam(value = "operator", required = false) String username,
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "graphCode", required = false) String code,
+            @RequestParam(value = "token", required = false) String token,
+            @RequestParam(value = "wechatcode", required = false) String wechatAuthCode) {
 
         Log.i("**********login**********");
-        String token;
+        String authToken;
         UserLoginRespBO bo;
         if (wechatAuthCode != null) {
             try {
@@ -87,15 +91,16 @@ public class LoginController {
                 bo = userService.regbyOpenId(e.getMessage());
             }
             userLoginRespBOValidate(bo);
-            token = sessionService.genWechatToken(bo.getGuid());
-        } else if (username != null && password != null) {
+            authToken = sessionService.genWechatToken(bo.getGuid());
+        } else if (username != null && password != null && code != null && token != null) {
+            captchaService.validateCaptcha(token, code);
             bo = userService.login(username, password);
             userLoginRespBOValidate(bo);
-            token = sessionService.genToken(bo.getGuid());
+            authToken = sessionService.genToken(bo.getGuid());
         } else {
             throw new ServiceException("登录信息不足");
         }
-        TokenVO res = TokenVO.builder().Token(token).userName(username).build();
+        TokenVO res = TokenVO.builder().Token(authToken).userName(username).build();
 
         return TanyaExceptionHandler.generateResponse(res);
     }
@@ -166,7 +171,7 @@ public class LoginController {
         return TanyaExceptionHandler.generateResponse("");
     }
 
-    @Auth(role = USER)
+    @Auth(role = GUEST)
     @ApiOperation(value = "获取用户信息", notes = "获取用户详细信息")
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<UserInfoVO>.Resp> info() {

@@ -121,11 +121,13 @@ public class RoleController {
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "currentPage", value = "当前页"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "pageSize", value = "每页条目数量"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roleType", value = "角色类型 {admin, merchant, factory, trader, salesman}")})
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roleType", value = "角色类型 {admin, merchant, factory, trader, salesman}"),
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "target", value = "是否已经添加人员")})
     public ResponseEntity<CommonResponse<QueryRespVO<RoleInfoVO>>.Resp> getSubordinate(
             @RequestParam(value = "currentPage", required = false) Integer currentPage,
             @RequestParam(value = "pageSize", required = false) Integer pageSize,
-            @RequestParam(value = "roleType", required = false) String targetRoleType) {
+            @RequestParam(value = "roleType", required = false) String targetRoleType,
+            @RequestParam(value = "target", required = false) Boolean targetIsExisted) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
 
@@ -139,6 +141,7 @@ public class RoleController {
         req.setPageSize(pageSize);
         if (!role.getRole().equals("superAdmin"))
             req.setUserInfo(info);
+        req.setTargetIsExisted(targetIsExisted);
         QueryRespVO<RoleInfoBO> resBO = roleService.getSubordinate(req);
         QueryRespVO<RoleInfoVO> resVO = new QueryRespVO<>();
         resVO.setTotalPages(resBO.getTotalPages());

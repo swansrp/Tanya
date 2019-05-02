@@ -8,7 +8,6 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
@@ -26,6 +25,7 @@ import com.srct.service.tanya.product.vo.DiscountInfoRespVO;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.DateUtils;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;

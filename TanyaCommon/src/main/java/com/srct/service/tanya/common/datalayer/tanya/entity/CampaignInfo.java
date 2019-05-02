@@ -35,6 +35,12 @@ public class CampaignInfo {
     @ApiModelProperty(value = "促销商品id")
     private Integer goodsId;
 
+    @ApiModelProperty(value = "促销单位")
+    private Integer unitAmount;
+
+    @ApiModelProperty(value = "促销积分")
+    private Integer reward;
+
     @ApiModelProperty(value = "有效期起始")
     private Date startAt;
 

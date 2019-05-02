@@ -35,4 +35,9 @@ public class CampaignHistoryRespVO {
 
     @ApiModelProperty(value = "确认者")
     private RoleInfoVO confirmRoleInfoVO;
+
+    @ApiModelProperty(value = "发起者")
+    private RoleInfoVO setupRoleInfoVO;
+
+
 }

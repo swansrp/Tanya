@@ -7,7 +7,6 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
@@ -28,6 +27,7 @@ import com.srct.service.tanya.product.vo.CampaignInfoRespVO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.DateUtils;
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.vo.QueryReqVO;
@@ -100,12 +100,12 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
 
         QueryRespVO<CampaignInfoRespVO> res = new QueryRespVO<>();
         super.buildRespByReq(res, campaign);
-        res.setPageSize(campaignInfoList.getPages());
+        res.setTotalPages(campaignInfoList.getPages());
         res.setTotalSize(campaignInfoList.getTotal());
 
         campaignInfoList.getList().forEach(campaignInfo -> {
             CampaignInfoRespVO campaignInfoRespVO = buildCampaignInfoRespVO(campaignInfo);
-            if (campaign.getCreatorRole().getRole() != "salesman") {
+            if (!campaign.getCreatorRole().getRole().equals("salesman")) {
                 buildBindInfo(campaignInfoRespVO, campaignInfo);
             }
             res.getInfo().add(campaignInfoRespVO);

@@ -33,10 +33,10 @@ public class CampaignInfoVO {
     private String goodsId;
 
     @ApiModelProperty(value = "数量")
-    private String unitAmount;
+    private Integer unitAmount;
 
     @ApiModelProperty(value = "积分")
-    private String reward;
+    private Integer reward;
 
     @ApiModelProperty(value = "有效期起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd")

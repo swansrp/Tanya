@@ -7,12 +7,12 @@
  */
 package com.srct.service.tanya.product.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistory;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignHistoryExample;
+import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.CampaignSalesmanMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
@@ -24,6 +24,7 @@ import com.srct.service.tanya.product.vo.CampaignHistoryRespVO;
 import com.srct.service.tanya.product.vo.CampaignHistoryVO;
 import com.srct.service.tanya.product.vo.CampaignInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.utils.BeanUtil;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.stereotype.Service;
@@ -215,11 +216,14 @@ public class CampaignHistoryServiceImpl extends ProductServiceBaseImpl implement
 
         RoleInfoVO salesmanInfoVO = super.getRoleInfoVO(campaignHistory.getSalesmanId(), "salesman");
         CampaignInfoVO campaignInfoVO = super.getCampaignInfoVOById(campaignHistory.getCampaignId());
+        CampaignInfo campaignInfo = super.campaignInfoDao.getCampaignInfoById(campaignHistory.getCampaignId());
         RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(campaignHistory.getConfirmBy(), "trader");
+        RoleInfoVO setupRoleInfoVO = super.getRoleInfoVO(campaignInfo.getTraderId(), "trader");
         res.setCampaignInfoVO(campaignInfoVO);
         res.setCampaignHistoryVO(campaignHistoryVO);
         res.setSalesmanInfoVO(salesmanInfoVO);
         res.setConfirmRoleInfoVO(confirmRoleInfoVO);
+        res.setSetupRoleInfoVO(setupRoleInfoVO);
         return res;
     }
 

@@ -84,7 +84,7 @@ public class TanyaExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = UserNotInRoleException.class)
     public ResponseEntity<CommonResponse<String>.Resp> errorHandler(UserNotInRoleException ex) {
-        mLogger.info("UserAccountLocked {}", ex.getMessage());
+        mLogger.info("UserNotInRoleException {}", ex.getMessage());
         CommonResponse<String> res = new CommonResponse<>(TanyaResponseConstant.USER_NOT_IN_ROLE, ex.getMessage());
         return res.getEntity();
     }

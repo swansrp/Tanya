@@ -98,7 +98,6 @@ public class PicController {
             Log.e(e);
             throw new ServiceException("upload failed " + e.getMessage());
         }
-
     }
 
     // 使用流将图片输出
