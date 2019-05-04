@@ -18,6 +18,7 @@ import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.service.CaptchaService;
+import com.srct.service.service.RedisTokenOperateService;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
@@ -36,6 +37,7 @@ import com.srct.service.utils.security.MD5Util;
 import com.srct.service.vo.TokenVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import net.bytebuddy.implementation.auxiliary.AuxiliaryType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -64,13 +66,40 @@ import static com.srct.service.config.annotation.Auth.AuthType.GUEST;
 public class LoginController {
 
     @Autowired
-    SessionService sessionService;
+    private SessionService sessionService;
     @Autowired
-    UserService userService;
+    private UserService userService;
     @Autowired
     private HttpServletRequest request;
     @Autowired
     private CaptchaService captchaService;
+    @Autowired
+    private RedisTokenOperateService tokenService;
+
+    final static private String tokenItem = "AUTH_TOKEN";
+
+    @Auth
+    @ApiOperation(value = "用户单点登录", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
+    @RequestMapping(value = "/sso", method = RequestMethod.POST)
+    public void sso(
+            @RequestParam(value = "token") String token) {
+        Log.i("**********sso**********");
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        String authToken = sessionService.genToken(info.getGuid());
+        userService.ssoLogin(token, authToken);
+    }
+
+    @ApiOperation(value = "用户单点登录", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
+    @RequestMapping(value = "/sso", method = RequestMethod.GET)
+    public ResponseEntity<CommonResponse<TokenVO>.Resp> ssoLogin(
+            @RequestParam(value = "token") String token) {
+        Log.i("**********sso-login**********");
+        String authToken = (String) tokenService.getToken(token, tokenItem);
+        String guid = sessionService.getGuidByToken(authToken);
+        String userName = userService.getUserbyGuid(guid).getUsername();
+        TokenVO res = TokenVO.builder().Token(authToken).userName(userName).build();
+        return TanyaExceptionHandler.generateResponse(res);
+    }
 
     @ApiOperation(value = "用户登入", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/login", method = RequestMethod.GET)

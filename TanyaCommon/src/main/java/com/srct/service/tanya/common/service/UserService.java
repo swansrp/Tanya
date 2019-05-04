@@ -23,30 +23,32 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 @Validated
 public interface UserService {
 
-    public UserInfo updateUser(UserRegReqBO vo);
+    UserInfo updateUser(UserRegReqBO vo);
 
-    public UserLoginRespBO reg(String wechatCode);
+    UserLoginRespBO reg(String wechatCode);
 
-    public UserLoginRespBO regbyOpenId(String openId);
+    UserLoginRespBO regbyOpenId(String openId);
 
-    public UserLoginRespBO reg(String name, String password);
+    UserLoginRespBO reg(String name, String password);
 
-    public UserLoginRespBO login(String wecharCode);
+    UserLoginRespBO login(String wecharCode);
 
-    public UserLoginRespBO login(String name, String password);
+    UserLoginRespBO login(String name, String password);
 
-    public List<RoleInfo> getRole(UserInfo userInfo);
+    List<RoleInfo> getRole(UserInfo userInfo);
 
-    public UserInfo getUserbyGuid(String guid);
+    UserInfo getUserbyGuid(String guid);
 
-    public UserInfo getUserbyEmail(String email);
+    UserInfo getUserbyEmail(String email);
 
-    public UserInfo getUserbyUserId(Integer userId);
+    UserInfo getUserbyUserId(Integer userId);
 
-    public UserInfo cleanUserPassword(UserInfo userInfo);
+    UserInfo cleanUserPassword(UserInfo userInfo);
 
-    public List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo);
+    List<RoleInfo> addRole(UserInfo userInfo, RoleInfo roleInfo);
 
-    public List<RoleInfo> removeRole(UserInfo userInfo, RoleInfo roleInfo);
+    List<RoleInfo> removeRole(UserInfo userInfo, RoleInfo roleInfo);
+
+    void ssoLogin(String token, String guid);
 
 }

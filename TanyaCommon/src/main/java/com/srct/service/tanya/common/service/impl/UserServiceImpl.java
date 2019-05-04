@@ -11,6 +11,7 @@ import com.srct.service.bo.wechat.OpenIdBO;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.AccountOrPasswordIncorrectException;
 import com.srct.service.exception.ServiceException;
+import com.srct.service.service.RedisTokenOperateService;
 import com.srct.service.service.WechatService;
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
@@ -45,19 +46,24 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    UserInfoDao userInfoDao;
+    private UserInfoDao userInfoDao;
 
     @Autowired
-    UserRoleMapDao userRoleMapDao;
+    private UserRoleMapDao userRoleMapDao;
 
     @Autowired
-    RoleInfoDao roleInfoDao;
+    private RoleInfoDao roleInfoDao;
 
     @Autowired
-    SessionService sessionService;
+    private SessionService sessionService;
 
     @Autowired
-    WechatService wechatService;
+    private WechatService wechatService;
+
+    @Autowired
+    private RedisTokenOperateService tokenService;
+
+    final static private String tokenItem = "AUTH_TOKEN";
 
     @Override
     public UserInfo updateUser(UserRegReqBO bo) {
@@ -92,25 +98,9 @@ public class UserServiceImpl implements UserService {
 
         OpenIdBO openIdBO = wechatService.getOpenId(wechatCode);
         String wechatId = openIdBO.getOpenId();
-
-        UserInfo userInfo;
-        try {
-            UserRegReqBO bo = new UserRegReqBO();
-            bo.setWechatId(wechatId);
-            bo.setGuid(RandomUtil.getUUID());
-            userInfo = createUser(bo);
-        } catch (Exception e) {
-            throw new ServiceException("register wechatid " + wechatId + " failed\n" + e.getMessage());
-        }
-
-        return getRoleInfo(userInfo);
+        return regbyOpenId(wechatId);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.srct.service.tanya.common.service.UserService#regbyOpenId(java.lang.String)
-     */
     @Override
     public UserLoginRespBO regbyOpenId(String openId) {
         UserInfo userInfo;
@@ -127,11 +117,6 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.srct.service.tanya.common.service.UserService#reg(java.lang.String, java.lang.String)
-     */
     @Override
     public UserLoginRespBO reg(String name, String password) {
 
@@ -186,13 +171,13 @@ public class UserServiceImpl implements UserService {
         List<UserInfo> userInfoList = userInfoDao.getUserInfoSelective(userInfoEx);
 
         if (userInfoList == null || userInfoList.size() != 1) {
-            throw new NoSuchUserException("No such user with name " + name);
+            throw new ServiceException("找不到用户" + name);
         }
         UserInfo userInfo = userInfoList.get(0);
         String guid = userInfo.getGuid();
 
         if (!userInfo.getState().equals("0")) {
-            throw new UserAccountLockedException(guid);
+            throw new ServiceException("用户状态已锁定,请联系管理员");
         }
 
         if (MD5Util.verify(password, userInfo.getPassword())) {
@@ -203,7 +188,7 @@ public class UserServiceImpl implements UserService {
                 userInfo.setState("1");
                 userInfoDao.updateUserInfo(userInfo);
             }
-            throw new AccountOrPasswordIncorrectException();
+            throw new ServiceException("密码错误");
         }
 
         return getRoleInfo(userInfo);
@@ -383,6 +368,15 @@ public class UserServiceImpl implements UserService {
         });
 
         return res;
+    }
+
+    @Override
+    public void ssoLogin(String token, String authToken) {
+        if(token.equals(tokenService.getToken(token, "token"))) {
+            tokenService.updateToken(token, "AUTH_TOKEN", authToken);
+        } else {
+            throw new ServiceException("非法登录二维码,请刷新后重新扫码登录");
+        }
     }
 
 }

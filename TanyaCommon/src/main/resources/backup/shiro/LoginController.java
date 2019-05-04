@@ -58,10 +58,10 @@ import io.swagger.annotations.ApiOperation;
  *
  */
 @Api(value = "LoginController")
-@RestController("LoginController")
+@RestController("ShiroLoginController")
 @RequestMapping(value = "")
 @CrossOrigin(origins = "*")
-public class LoginController {
+public class ShiroLoginController {
 
     @Autowired
     private ResourceUrlProvider resourceUrlProvider;
