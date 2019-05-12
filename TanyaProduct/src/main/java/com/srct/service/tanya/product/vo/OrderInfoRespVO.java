@@ -38,6 +38,9 @@ public class OrderInfoRespVO {
     @ApiModelProperty(value = "渠道确认时间")
     private Date merchantConfirmAt;
 
+    @ApiModelProperty(value = "渠道确认时间")
+    private Date merchantConfirmNumber;
+
     @ApiModelProperty(value = "渠道确认者")
     private RoleInfoVO merchantConfirmRoleInfoVO;
 
