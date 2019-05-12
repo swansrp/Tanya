@@ -81,6 +81,7 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
             campaignIdList.add(0);
         }
         CampaignInfoExample campaignInfoExample = super.makeQueryExample(campaign, CampaignInfoExample.class);
+        campaignInfoExample.getOredCriteria().get(0).andStartAtGreaterThanOrEqualTo(new Date());
         campaignInfoExample.getOredCriteria().get(0).andIdIn(campaignIdList);
         PageInfo<?> pageInfo = super.buildPage(campaign);
         List<CampaignInfo> campaignInfoList = campaignInfoDao.getCampaignInfoByExample(campaignInfoExample);
