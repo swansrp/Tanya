@@ -182,7 +182,7 @@ public class GoodsTraderFactoryMerchantMapDao {
         GoodsTraderFactoryMerchantMapExample example = new GoodsTraderFactoryMerchantMapExample();
         GoodsTraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(goodsTraderFactoryMerchantMap);
-        ReflectionUtil.getFieldList(goodsTraderFactoryMerchantMap).forEach((field) -> {
+        ReflectionUtil.getFields(goodsTraderFactoryMerchantMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

@@ -167,7 +167,7 @@ public class FeatureDao {
         FeatureExample example = new FeatureExample();
         FeatureExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(feature);
-        ReflectionUtil.getFieldList(feature).forEach((field) -> {
+        ReflectionUtil.getFields(feature).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

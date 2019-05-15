@@ -167,7 +167,7 @@ public class RoleInfoDao {
         RoleInfoExample example = new RoleInfoExample();
         RoleInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(roleInfo);
-        ReflectionUtil.getFieldList(roleInfo).forEach((field) -> {
+        ReflectionUtil.getFields(roleInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

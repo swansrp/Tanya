@@ -167,7 +167,7 @@ public class UserRoleMapDao {
         UserRoleMapExample example = new UserRoleMapExample();
         UserRoleMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(userRoleMap);
-        ReflectionUtil.getFieldList(userRoleMap).forEach((field) -> {
+        ReflectionUtil.getFields(userRoleMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

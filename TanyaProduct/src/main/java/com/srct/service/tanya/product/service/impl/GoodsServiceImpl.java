@@ -74,6 +74,8 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
                 res.getInfo().add(goodsInfoRespVO);
                 break;
             }
+            default:
+                break;
         }
         return res;
     }
@@ -166,7 +168,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
                 super.factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList =
                 getGoodsFactoryMerchantMapList(factoryMerchantMap, req.getProductId());
-        List<Integer> goodsIdList = (List<Integer>) ReflectionUtil.getFiledList(goodsFactoryMerchantMapList, "goodsId");
+        List<Integer> goodsIdList = (List<Integer>) ReflectionUtil.getFieldList(goodsFactoryMerchantMapList, "goodsId");
         if (goodsIdList == null || goodsIdList.size() == 0) {
             return res;
         } else {
@@ -203,7 +205,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         List<GoodsTraderFactoryMerchantMap> goodsTraderFactoryMerchantMapList =
                 getGoodsTraderFactoryMerchantMap(traderInfo, traderFactoryMerchantMap, req.getProductId());
         List<Integer> goodsIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(goodsTraderFactoryMerchantMapList, "goodsId");
+                (List<Integer>) ReflectionUtil.getFieldList(goodsTraderFactoryMerchantMapList, "goodsId");
         if (goodsIdList == null || goodsIdList.size() == 0) {
             return res;
         } else {
@@ -237,7 +239,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
                 super.factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
         List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList =
                 getGoodsFactoryMerchantMapList(factoryMerchantMap, req.getProductId());
-        List<Integer> goodsIdList = (List<Integer>) ReflectionUtil.getFiledList(goodsFactoryMerchantMapList, "goodsId");
+        List<Integer> goodsIdList = (List<Integer>) ReflectionUtil.getFieldList(goodsFactoryMerchantMapList, "goodsId");
         if (goodsIdList == null || goodsIdList.size() == 0) {
             return res;
         } else {
@@ -518,7 +520,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
                 super.traderFactoryMerchantMapDao.getTraderFactoryMerchantMapSelective(TraderFactoryMerchantMapEx);
         List<Integer> traderFactoryMerchantMapIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(traderFactoryMerchantMapList, "id");
+                (List<Integer>) ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "id");
         if (traderFactoryMerchantMapIdList == null || traderFactoryMerchantMapIdList.size() == 0) {
             return res;
         }
@@ -550,7 +552,7 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         List<FactoryMerchantMap> factoryMerchantMapList =
                 factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
         List<Integer> factoryMerchantMapIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(factoryMerchantMapList, "id");
+                (List<Integer>) ReflectionUtil.getFieldList(factoryMerchantMapList, "id");
         if (factoryMerchantMapIdList == null || 0 == factoryMerchantMapIdList.size()) {
             return res;
         }

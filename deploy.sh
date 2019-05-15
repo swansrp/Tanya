@@ -59,6 +59,9 @@ allstatus() {
 	done
 	return 0
 }
+log() {
+	scp ${ServerSSH[$1]}:~/log/sys.log $basepath/log
+}
 
 deployAll() {
 	for((i=1;i<$ServerNum;i++));
@@ -100,6 +103,7 @@ echo "|----2. Trace log-------|"
 echo "|----3. API log---------|"
 echo "|----4. Restart---------|"
 echo "|----5. Enter-----------|"
+echo "|----6. Get Log---------|"
 echo "└-----------------------┘"
 echo ""
 echo "input your operation"
@@ -123,6 +127,9 @@ case $option in
 5)
 	enter $serverName
     ;;
+6)
+	log $serverName
+	;;
 esac
 
 fi

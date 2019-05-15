@@ -169,7 +169,7 @@ public class CampaignHistoryDao {
         CampaignHistoryExample example = new CampaignHistoryExample();
         CampaignHistoryExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(campaignHistory);
-        ReflectionUtil.getFieldList(campaignHistory).forEach((field) -> {
+        ReflectionUtil.getFields(campaignHistory).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

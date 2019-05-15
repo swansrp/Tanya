@@ -167,7 +167,7 @@ public class CampaignInfoDao {
         CampaignInfoExample example = new CampaignInfoExample();
         CampaignInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(campaignInfo);
-        ReflectionUtil.getFieldList(campaignInfo).forEach((field) -> {
+        ReflectionUtil.getFields(campaignInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

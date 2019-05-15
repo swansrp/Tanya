@@ -170,7 +170,7 @@ public class NotificationInfoDao {
         NotificationInfoExample example = new NotificationInfoExample();
         NotificationInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(notificationInfo);
-        ReflectionUtil.getFieldList(notificationInfo).forEach((field) -> {
+        ReflectionUtil.getFields(notificationInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

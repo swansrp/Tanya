@@ -73,6 +73,8 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
                 res.getInfo().add(shopInfoRespVO);
                 break;
             }
+            default:
+                break;
         }
         return res;
     }
@@ -161,12 +163,12 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         if (featureService.getFeatureExpected(FeatureConstant.SHOP_BIND_FACTORY_MERCHANT_FEATURE, "1")) {
             List<ShopFactoryMerchantMap> shopFactoryMerchantMapList =
                     getShopFactoryMerchantMapList(factoryMerchantMap, req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFiledList(shopFactoryMerchantMapList, "shopId");
+            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopFactoryMerchantMapList, "shopId");
         } else {
             List<ShopInfo> shopInfoList =
                     getShopInfoListByMerchant(merchantInfoDao.getMerchantInfoById(factoryMerchantMap.getMerchantId()),
                             req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFiledList(shopInfoList, "id");
+            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopInfoList, "id");
         }
         if (shopIdList == null || shopIdList.size() == 0) {
             return res;
@@ -191,7 +193,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         List<ShopTraderFactoryMerchantMap> shopTraderFactoryMerchantMapList =
                 getShopTraderFactoryMerchantMap(traderInfo, traderFactoryMerchantMap, req.getProductId());
         List<Integer> shopIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(shopTraderFactoryMerchantMapList, "shopId");
+                (List<Integer>) ReflectionUtil.getFieldList(shopTraderFactoryMerchantMapList, "shopId");
         if (shopIdList == null || shopIdList.size() == 0) {
             return res;
         } else {
@@ -228,12 +230,12 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         if (featureService.getFeatureExpected(FeatureConstant.SHOP_BIND_FACTORY_MERCHANT_FEATURE, "1")) {
             List<ShopFactoryMerchantMap> shopFactoryMerchantMapList =
                     getShopFactoryMerchantMapList(factoryMerchantMap, req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFiledList(shopFactoryMerchantMapList, "shopId");
+            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopFactoryMerchantMapList, "shopId");
         } else {
             List<ShopInfo> shopInfoList =
                     getShopInfoListByMerchant(merchantInfoDao.getMerchantInfoById(factoryMerchantMap.getMerchantId()),
                             req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFiledList(shopInfoList, "id");
+            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopInfoList, "id");
         }
         if (shopIdList == null || shopIdList.size() == 0) {
             return res;
@@ -509,7 +511,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
                 super.traderFactoryMerchantMapDao.getTraderFactoryMerchantMapSelective(TraderFactoryMerchantMapEx);
         List<Integer> traderFactoryMerchantMapIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(traderFactoryMerchantMapList, "id");
+                (List<Integer>) ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "id");
         if (traderFactoryMerchantMapIdList == null || traderFactoryMerchantMapIdList.size() == 0) {
             return res;
         }
@@ -541,7 +543,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         List<FactoryMerchantMap> factoryMerchantMapList =
                 factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
         List<Integer> factoryMerchantMapIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(factoryMerchantMapList, "id");
+                (List<Integer>) ReflectionUtil.getFieldList(factoryMerchantMapList, "id");
         if (factoryMerchantMapIdList == null || 0 == factoryMerchantMapIdList.size()) {
             return res;
         }

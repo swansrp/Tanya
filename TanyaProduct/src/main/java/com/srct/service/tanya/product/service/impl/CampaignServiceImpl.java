@@ -123,7 +123,7 @@ public class CampaignServiceImpl extends ProductServiceBaseImpl implements Campa
         CampaignInfoExample campaignInfoExample = super.makeQueryExample(campaign, CampaignInfoExample.class);
         CampaignInfoExample.Criteria campaignCriteria = campaignInfoExample.getOredCriteria().get(0);
 
-        List<Integer> traderIdList = (List<Integer>) ReflectionUtil.getFiledList(traderInfoList, "id");
+        List<Integer> traderIdList = (List<Integer>) ReflectionUtil.getFieldList(traderInfoList, "id");
 
         if (traderIdList.size() == 0) {
             traderIdList.add(0);

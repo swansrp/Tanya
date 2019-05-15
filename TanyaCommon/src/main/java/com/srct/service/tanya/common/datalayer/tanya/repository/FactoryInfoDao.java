@@ -167,7 +167,7 @@ public class FactoryInfoDao {
         FactoryInfoExample example = new FactoryInfoExample();
         FactoryInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(factoryInfo);
-        ReflectionUtil.getFieldList(factoryInfo).forEach((field) -> {
+        ReflectionUtil.getFields(factoryInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

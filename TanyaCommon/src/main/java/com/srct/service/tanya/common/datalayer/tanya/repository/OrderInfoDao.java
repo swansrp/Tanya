@@ -167,7 +167,7 @@ public class OrderInfoDao {
         OrderInfoExample example = new OrderInfoExample();
         OrderInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(orderInfo);
-        ReflectionUtil.getFieldList(orderInfo).forEach((field) -> {
+        ReflectionUtil.getFields(orderInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

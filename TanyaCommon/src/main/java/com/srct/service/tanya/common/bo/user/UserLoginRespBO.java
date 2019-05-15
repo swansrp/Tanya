@@ -7,24 +7,24 @@
  */
 package com.srct.service.tanya.common.bo.user;
 
-import java.util.List;
-
-import javax.validation.constraints.NotBlank;
-
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import java.util.List;
+
 /**
  * @author Sharp
- *
  */
 @Data
 public class UserLoginRespBO {
 
     @ApiModelProperty("用户guid")
     private String guid;
+
+    @ApiModelProperty("用户姓名")
+    private String name;
 
     @NotBlank(message = "wechatOpenId cant be null")
     @ApiModelProperty("用户微信openId")

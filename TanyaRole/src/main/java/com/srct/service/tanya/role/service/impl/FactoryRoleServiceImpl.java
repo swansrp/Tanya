@@ -34,6 +34,7 @@ import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.FactoryRoleService;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,26 +162,64 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
             throw new ServiceException("dont find the user id " + userInfo.getId() + " for merchant");
         }
         PageInfo pageInfo = buildPageInfo(req);
-        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
-        factoryMerchantMapEx.setMerchantId(merchantInfo.getId());
-        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        PageInfo<FactoryMerchantMap> factoryMerchantMapList =
-                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx, pageInfo);
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMapListByMerchantId(merchantInfo.getId());
+
+        List<Integer> factoryIdList = (List<Integer>) ReflectionUtil.getFieldList(factoryMerchantMapList, "factoryId");
+        if (factoryIdList.size() == 0) {
+            factoryIdList.add(0);
+        }
+
+        FactoryInfoExample example = new FactoryInfoExample();
+        FactoryInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdIn(factoryIdList);
+        if (req.getTargetIsExisted() != null) {
+            if (req.getTargetIsExisted()) {
+                criteria.andUserIdIsNotNull();
+            } else {
+                criteria.andUserIdIsNull();
+            }
+        }
+        if (req.getTitle() != null) {
+            criteria.andTitleLike("%" + req.getTitle() + "%");
+        }
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        PageInfo<FactoryInfo> factoryInfoList = factoryInfoDao.getFactoryInfoByExample(example, pageInfo);
 
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(factoryMerchantMapList);
+        res.buildPageInfo(factoryInfoList);
 
-        for (FactoryMerchantMap factoryMerchantMap : factoryMerchantMapList.getList()) {
-            FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfoById(factoryMerchantMap.getFactoryId());
-            RoleInfoBO bo = new RoleInfoBO();
-            BeanUtil.copyProperties(factoryInfo, bo);
-            bo.setRoleType(getRoleType());
-            PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
-            BeanUtil.copyProperties(factoryMerchantMap, permissionDetailsBO);
-            bo.setPermissionDetails(permissionDetailsBO);
+        for (FactoryInfo factoryInfo : factoryInfoList.getList()) {
+            RoleInfoBO bo = buildRoleInfoBO(merchantInfo, factoryInfo);
             res.getInfo().add(bo);
         }
         return res;
+    }
+
+    private RoleInfoBO buildRoleInfoBO(MerchantInfo merchantInfo, FactoryInfo factoryInfo) {
+        RoleInfoBO bo = new RoleInfoBO();
+        BeanUtil.copyProperties(factoryInfo, bo);
+        bo.setRoleType(getRoleType());
+        List<FactoryMerchantMap> factoryMerchantMaps =
+                getFactoryMerchantMapListByMerchantIdAndFactoryId(merchantInfo.getId(), factoryInfo.getId());
+        PermissionDetailsBO permissionDetailsBO = buildPermissionDetailsBO(factoryMerchantMaps.get(0));
+        bo.setPermissionDetails(permissionDetailsBO);
+        return bo;
+    }
+
+    private PermissionDetailsBO buildPermissionDetailsBO(FactoryMerchantMap factoryMerchantMap) {
+        PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+        if (factoryMerchantMap != null) {
+            BeanUtil.copyProperties(factoryMerchantMap, permissionDetailsBO);
+        }
+        return permissionDetailsBO;
+    }
+
+    private List<FactoryMerchantMap> getFactoryMerchantMapListByMerchantId(Integer merchantId) {
+        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
+        factoryMerchantMapEx.setMerchantId(merchantId);
+        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
     }
 
     @Override
@@ -333,6 +372,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
         }
 
         List<FactoryInfo> factoryInfoList = new ArrayList<>();
+        RoleInfoBO resBO;
         if (bo.getTargetId() != null) {
             FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfoById(bo.getTargetId());
             BeanUtil.copyProperties(bo, factoryInfo);
@@ -367,12 +407,9 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
             if (bo.getStartAt() != null || bo.getEndAt() != null || bo.getPermissionDetails() != null) {
                 FactoryMerchantMap factoryMerchantMap;
                 try {
-                    FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
-                    factoryMerchantMapEx.setMerchantId(merchantInfo.getId());
-                    factoryMerchantMapEx.setFactoryId(factoryInfo.getId());
-                    factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
                     factoryMerchantMap =
-                            factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx).get(0);
+                            getFactoryMerchantMapListByMerchantIdAndFactoryId(merchantInfo.getId(), factoryInfo.getId())
+                                    .get(0);
                 } catch (Exception e) {
                     throw new ServiceException("get the relationship failed");
                 }
@@ -388,6 +425,8 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
                     if (bo.getPermissionDetails() != null) {
                         BeanUtil.copyProperties(bo.getPermissionDetails(), factoryMerchantMap);
                     }
+                    factoryMerchantMap.setStartAt(bo.getStartAt());
+                    factoryMerchantMap.setEndAt(bo.getEndAt());
                 }
 
                 factoryMerchantMapDao.updateFactoryMerchantMap(factoryMerchantMap);
@@ -403,22 +442,24 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
                 subordinateService.update(updateSubRoleBO);
             }
         }
-
-        RoleInfoBO resBO = new RoleInfoBO();
-        resBO.setRoleType(getRoleType());
-        BeanUtil.copyProperties(factoryInfoList.get(0), resBO);
-
+        resBO = buildRoleInfoBO(merchantInfo, factoryInfoList.get(0));
         return resBO;
+    }
+
+    private List<FactoryMerchantMap> getFactoryMerchantMapListByMerchantIdAndFactoryId(Integer merchantInfoId,
+            Integer factoryInfoId) {
+        List<FactoryMerchantMap> factoryMerchantMapList;
+        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
+        factoryMerchantMapEx.setMerchantId(merchantInfoId);
+        factoryMerchantMapEx.setFactoryId(factoryInfoId);
+        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        factoryMerchantMapList = factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+        return factoryMerchantMapList;
     }
 
     private List<FactoryInfo> getFactoryListByMerchantId(Integer id) {
 
-        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
-        factoryMerchantMapEx.setMerchantId(id);
-        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
-        List<FactoryMerchantMap> factoryMerchantMapList =
-                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMapListByMerchantId(id);
 
         if (factoryMerchantMapList == null || factoryMerchantMapList.size() == 0) {
             throw new ServiceException("There is no Factory for merchant id " + id);
@@ -497,11 +538,7 @@ public class FactoryRoleServiceImpl implements RoleService, FactoryRoleService {
 
     @Override
     public List<FactoryInfo> getFactoryInfoListByMerchantInfo(MerchantInfo merchantInfo) {
-        FactoryMerchantMap factoryMerchantMapEx = new FactoryMerchantMap();
-        factoryMerchantMapEx.setMerchantId(merchantInfo.getId());
-        factoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<FactoryMerchantMap> factoryMerchantMapList =
-                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMapListByMerchantId(merchantInfo.getId());
         List<FactoryInfo> factoryInfoList = new ArrayList<>();
         for (FactoryMerchantMap map : factoryMerchantMapList) {
             factoryInfoList.add(factoryInfoDao.getFactoryInfoById(map.getFactoryId()));

@@ -171,7 +171,7 @@ public class FactoryMerchantMapDao {
         FactoryMerchantMapExample example = new FactoryMerchantMapExample();
         FactoryMerchantMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(factoryMerchantMap);
-        ReflectionUtil.getFieldList(factoryMerchantMap).forEach((field) -> {
+        ReflectionUtil.getFields(factoryMerchantMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

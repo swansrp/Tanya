@@ -36,6 +36,7 @@ import com.srct.service.tanya.role.service.MerchantRoleService;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.DateUtils;
+import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,23 +162,57 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
         PageInfo pageInfo = buildPageInfo(req);
-        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
-        merchantAdminMapEx.setAdminId(adminInfo.getId());
-        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        PageInfo<MerchantAdminMap> merchantAdminMapList =
-                merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx, pageInfo);
-        res.buildPageInfo(merchantAdminMapList);
-        for (MerchantAdminMap merchantAdminMap : merchantAdminMapList.getList()) {
-            MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(merchantAdminMap.getMerchantId());
-            RoleInfoBO bo = new RoleInfoBO();
-            BeanUtil.copyProperties(merchantInfo, bo);
-            bo.setRoleType(getRoleType());
-            PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
-            BeanUtil.copyProperties(merchantAdminMap, permissionDetailsBO);
-            bo.setPermissionDetails(permissionDetailsBO);
+        List<MerchantAdminMap> merchantAdminMapList = getMerchantAdminMapsListByAdminInfo(adminInfo);
+        List<Integer> merchantIdList = (List<Integer>) ReflectionUtil.getFieldList(merchantAdminMapList, "merchantId");
+        if (merchantIdList.size() == 0) {
+            merchantIdList.add(0);
+        }
+        MerchantInfoExample example = new MerchantInfoExample();
+        MerchantInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdIn(merchantIdList);
+        if (req.getTargetIsExisted() != null) {
+            if (req.getTargetIsExisted()) {
+                criteria.andUserIdIsNotNull();
+            } else {
+                criteria.andUserIdIsNull();
+            }
+        }
+        if (req.getTitle() != null) {
+            criteria.andTitleLike("%" + req.getTitle() + "%");
+        }
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        PageInfo<MerchantInfo> merchantInfoList = merchantInfoDao.getMerchantInfoByExample(example, pageInfo);
+        res.buildPageInfo(merchantInfoList);
+        for (MerchantInfo merchantInfo : merchantInfoList.getList()) {
+            RoleInfoBO bo = buildRoleInfoBO(adminInfo, merchantInfo);
             res.getInfo().add(bo);
         }
         return res;
+    }
+
+    private List<MerchantAdminMap> getMerchantAdminMapsListByAdminInfo(AdminInfo adminInfo) {
+        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
+        merchantAdminMapEx.setAdminId(adminInfo.getId());
+        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx);
+    }
+
+    private List<MerchantAdminMap> getMerchantAdminMapsListByAdminInfoAndMerchantInfo(AdminInfo adminInfo,
+            MerchantInfo merchantInfo) {
+        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
+        merchantAdminMapEx.setAdminId(adminInfo.getId());
+        merchantAdminMapEx.setMerchantId(merchantInfo.getId());
+        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx);
+    }
+
+    private PermissionDetailsBO buildPermissionDetailsBO(MerchantAdminMap merchantAdminMap) {
+        PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+        if (merchantAdminMap != null) {
+            BeanUtil.copyProperties(merchantAdminMap, permissionDetailsBO);
+        }
+        return permissionDetailsBO;
     }
 
     @Override
@@ -258,11 +293,12 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
 
     @Override
     public RoleInfoBO update(UpdateRoleInfoBO bo) {
+        AdminInfo adminInfo;
         if (bo.getSuperiorId() != null) {
-            adminInfoDao.getAdminInfoById(bo.getSuperiorId());
+            adminInfo = adminInfoDao.getAdminInfoById(bo.getSuperiorId());
         } else if (bo.getCreaterInfo() != null) {
             try {
-                getAdminInfoByCreator(bo.getCreaterInfo());
+                adminInfo = getAdminInfoByCreator(bo.getCreaterInfo());
             } catch (Exception e) {
                 throw new ServiceException("更新者不是[" + bo.getCreaterRole().getRole() + "]角色");
             }
@@ -284,9 +320,17 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
                     (RoleService) BeanUtil.getBean(getSubordinateRoleType() + "RoleServiceImpl");
             subordinateService.update(updateSubRoleBO);
         }
+        return buildRoleInfoBO(adminInfo, merchantInfo);
+    }
+
+    private RoleInfoBO buildRoleInfoBO(AdminInfo adminInfo, MerchantInfo merchantInfo) {
         RoleInfoBO resBO = new RoleInfoBO();
-        resBO.setRoleType(getRoleType());
         BeanUtil.copyProperties(merchantInfo, resBO);
+        resBO.setRoleType(getRoleType());
+        List<MerchantAdminMap> merchantAdminMaps =
+                getMerchantAdminMapsListByAdminInfoAndMerchantInfo(adminInfo, merchantInfo);
+        PermissionDetailsBO permissionDetailsBO = buildPermissionDetailsBO(merchantAdminMaps.get(0));
+        resBO.setPermissionDetails(permissionDetailsBO);
         return resBO;
     }
 

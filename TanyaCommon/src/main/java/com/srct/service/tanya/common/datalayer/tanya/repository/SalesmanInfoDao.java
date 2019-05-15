@@ -167,7 +167,7 @@ public class SalesmanInfoDao {
         SalesmanInfoExample example = new SalesmanInfoExample();
         SalesmanInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(salesmanInfo);
-        ReflectionUtil.getFieldList(salesmanInfo).forEach((field) -> {
+        ReflectionUtil.getFields(salesmanInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

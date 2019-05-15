@@ -167,7 +167,7 @@ public class DiscountInfoDao {
         DiscountInfoExample example = new DiscountInfoExample();
         DiscountInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(discountInfo);
-        ReflectionUtil.getFieldList(discountInfo).forEach((field) -> {
+        ReflectionUtil.getFields(discountInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

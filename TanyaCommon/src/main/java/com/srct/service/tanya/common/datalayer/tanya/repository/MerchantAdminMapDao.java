@@ -170,7 +170,7 @@ public class MerchantAdminMapDao {
         MerchantAdminMapExample example = new MerchantAdminMapExample();
         MerchantAdminMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(merchantAdminMap);
-        ReflectionUtil.getFieldList(merchantAdminMap).forEach((field) -> {
+        ReflectionUtil.getFields(merchantAdminMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

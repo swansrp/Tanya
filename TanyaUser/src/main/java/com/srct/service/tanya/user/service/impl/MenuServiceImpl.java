@@ -55,20 +55,18 @@ public class MenuServiceImpl implements MenuService {
         BeanUtil.copyProperties(parentMenu, menuVO);
         QueryMenuVO.setMenu(menuVO);
         List<PermissionInfo> menuList =
-                permissionInfoList.stream().filter(info -> info.getParentId() == parentMenu.getId())
+                permissionInfoList.stream().filter(info -> info.getParentId().equals(parentMenu.getId()))
                         .collect(Collectors.toList());
-        menuList.forEach(subMenu -> {
-            QueryMenuVO.getSubMenu().add(buildMenuVO(subMenu, permissionInfoList));
-        });
+        menuList.forEach(subMenu -> QueryMenuVO.getSubMenu().add(buildMenuVO(subMenu, permissionInfoList)));
         return QueryMenuVO;
     }
 
     private List<PermissionInfo> getPermissionList(RoleInfo role) {
         RolePermissionMap rolePermissionMapEx = RolePermissionMap.builder().roleId(role.getId()).build();
-        List<RolePermissionMap> RolePermissionMapList =
+        List<RolePermissionMap> rolePermissionMapList =
                 rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMapEx);
         List<Integer> permissionInfoIdList =
-                (List<Integer>) ReflectionUtil.getFiledList(RolePermissionMapList, "perimissionId");
+                (List<Integer>) ReflectionUtil.getFieldList(rolePermissionMapList, "perimissionId");
         List<PermissionInfo> permissionInfoList = new ArrayList<>();
         permissionInfoIdList.forEach(id -> permissionInfoList.add(permissionInfoDao.getPermissionInfoById(id)));
         return permissionInfoList;

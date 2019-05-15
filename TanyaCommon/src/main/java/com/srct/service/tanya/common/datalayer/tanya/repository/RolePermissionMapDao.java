@@ -171,7 +171,7 @@ public class RolePermissionMapDao {
         RolePermissionMapExample example = new RolePermissionMapExample();
         RolePermissionMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(rolePermissionMap);
-        ReflectionUtil.getFieldList(rolePermissionMap).forEach((field) -> {
+        ReflectionUtil.getFields(rolePermissionMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

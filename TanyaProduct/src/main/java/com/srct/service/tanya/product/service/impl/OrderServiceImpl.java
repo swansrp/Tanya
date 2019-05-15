@@ -88,6 +88,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                     orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
                 }
                 break;
+            default:
+                break;
+
         }
 
         return orderExample;

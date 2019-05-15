@@ -167,7 +167,7 @@ public class PermissionInfoDao {
         PermissionInfoExample example = new PermissionInfoExample();
         PermissionInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(permissionInfo);
-        ReflectionUtil.getFieldList(permissionInfo).forEach((field) -> {
+        ReflectionUtil.getFields(permissionInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

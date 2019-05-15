@@ -167,7 +167,7 @@ public class AdminInfoDao {
         AdminInfoExample example = new AdminInfoExample();
         AdminInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(adminInfo);
-        ReflectionUtil.getFieldList(adminInfo).forEach((field) -> {
+        ReflectionUtil.getFields(adminInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

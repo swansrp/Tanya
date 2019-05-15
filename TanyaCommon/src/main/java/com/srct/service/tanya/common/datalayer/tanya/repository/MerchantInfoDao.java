@@ -167,7 +167,7 @@ public class MerchantInfoDao {
         MerchantInfoExample example = new MerchantInfoExample();
         MerchantInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(merchantInfo);
-        ReflectionUtil.getFieldList(merchantInfo).forEach((field) -> {
+        ReflectionUtil.getFields(merchantInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

@@ -18,6 +18,9 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class UserRegReqVO {
 
+    @ApiModelProperty(name = "登录名", notes = "Sharp")
+    private String username;
+
     @ApiModelProperty(name = "名字", notes = "Sharp", required = true)
     private String name;
 
@@ -27,7 +30,7 @@ public class UserRegReqVO {
     @ApiModelProperty(name = "电话", notes = "13912345678")
     private String phone;
 
-    @NotBlank(message = "email cant be null")
+    @NotBlank(message = "邮箱不能为空")
     @ApiModelProperty(name = "邮箱", notes = "1@qq.com", required = true)
     private String email;
 

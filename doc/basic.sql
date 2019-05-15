@@ -594,3 +594,6 @@ ALTER TABLE `goods_info`
 ALTER TABLE `campaign_info`
 	ADD COLUMN `unit_amount` INT(10) UNSIGNED NOT NULL COMMENT '促销单位' AFTER `goods_id`,
 	ADD COLUMN `reward` INT(10) UNSIGNED NOT NULL COMMENT '促销积分' AFTER `unit_amount`;
+-- 2019-5-12 删除用户信息email唯一值校验
+ALTER TABLE `user_info`
+	DROP INDEX `email`;

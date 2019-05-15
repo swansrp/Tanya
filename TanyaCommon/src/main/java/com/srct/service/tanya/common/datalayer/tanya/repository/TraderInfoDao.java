@@ -167,7 +167,7 @@ public class TraderInfoDao {
         TraderInfoExample example = new TraderInfoExample();
         TraderInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(traderInfo);
-        ReflectionUtil.getFieldList(traderInfo).forEach((field) -> {
+        ReflectionUtil.getFields(traderInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

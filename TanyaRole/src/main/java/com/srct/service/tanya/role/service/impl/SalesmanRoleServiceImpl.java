@@ -12,6 +12,7 @@ import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.SalesmanTraderMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
@@ -32,6 +33,7 @@ import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.SalesmanRoleService;
 import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,13 +158,33 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         SalesmanTraderMap salesmanTraderMapEx = new SalesmanTraderMap();
         salesmanTraderMapEx.setTraderId(traderInfo.getId());
         salesmanTraderMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        PageInfo<SalesmanTraderMap> salesmanTraderMapList =
-                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMapEx, pageInfo);
+        List<SalesmanTraderMap> salesmanTraderMapList =
+                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMapEx);
+        List<Integer> salesmanIdList = (List<Integer>) ReflectionUtil.getFieldList(salesmanTraderMapList, "salesmanId");
+        if (salesmanIdList.size() == 0) {
+            salesmanIdList.add(0);
+        }
+        SalesmanInfoExample example = new SalesmanInfoExample();
+        SalesmanInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdIn(salesmanIdList);
+        if (req.getTargetIsExisted() != null) {
+            if (req.getTargetIsExisted()) {
+                criteria.andUserIdIsNotNull();
+            } else {
+                criteria.andUserIdIsNull();
+            }
+        }
+        if (req.getTitle() != null) {
+            criteria.andTitleLike("%" + req.getTitle() + "%");
+        }
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        PageInfo<SalesmanInfo> salesmanInfoList = salesmanInfoDao.getSalesmanInfoByExample(example, pageInfo);
 
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(salesmanTraderMapList);
-        for (SalesmanTraderMap salesmanTraderMap : salesmanTraderMapList.getList()) {
-            SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(salesmanTraderMap.getSalesmanId());
+        res.buildPageInfo(salesmanInfoList);
+
+        for (SalesmanInfo salesmanInfo : salesmanInfoList.getList()) {
             RoleInfoBO bo = new RoleInfoBO();
             BeanUtil.copyProperties(salesmanInfo, bo);
             bo.setRoleType(getRoleType());

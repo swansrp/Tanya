@@ -30,16 +30,17 @@ import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.tanya.common.vo.UserInfoVO;
 import com.srct.service.tanya.common.vo.UserRegReqVO;
 import com.srct.service.utils.BeanUtil;
-import com.srct.service.utils.email.EmailRepository;
-import com.srct.service.utils.email.EmailUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.utils.security.MD5Util;
 import com.srct.service.vo.TokenVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import net.bytebuddy.implementation.auxiliary.AuxiliaryType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,6 +66,7 @@ import static com.srct.service.config.annotation.Auth.AuthType.GUEST;
 @CrossOrigin(origins = "*")
 public class LoginController {
 
+    final static private String tokenItem = "AUTH_TOKEN";
     @Autowired
     private SessionService sessionService;
     @Autowired
@@ -75,14 +77,15 @@ public class LoginController {
     private CaptchaService captchaService;
     @Autowired
     private RedisTokenOperateService tokenService;
-
-    final static private String tokenItem = "AUTH_TOKEN";
+    @Autowired
+    private JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    private String sender;
 
     @Auth
     @ApiOperation(value = "用户单点登录", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/sso", method = RequestMethod.POST)
-    public void sso(
-            @RequestParam(value = "token") String token) {
+    public void sso(@RequestParam(value = "token") String token) {
         Log.i("**********sso**********");
         UserInfo info = (UserInfo) request.getAttribute("user");
         String authToken = sessionService.genToken(info.getGuid());
@@ -91,13 +94,19 @@ public class LoginController {
 
     @ApiOperation(value = "用户单点登录", notes = "用户登入系统，获取session信息, wechatCode 登录时若尚未注册则自动注册")
     @RequestMapping(value = "/sso", method = RequestMethod.GET)
-    public ResponseEntity<CommonResponse<TokenVO>.Resp> ssoLogin(
-            @RequestParam(value = "token") String token) {
+    public ResponseEntity<CommonResponse<TokenVO>.Resp> ssoLogin(@RequestParam(value = "token") String token) {
         Log.i("**********sso-login**********");
         String authToken = (String) tokenService.getToken(token, tokenItem);
-        String guid = sessionService.getGuidByToken(authToken);
-        String userName = userService.getUserbyGuid(guid).getUsername();
-        TokenVO res = TokenVO.builder().Token(authToken).userName(userName).build();
+        String userName = "";
+        String name = "";
+        Log.i("authToken: {}", authToken);
+        if (StringUtils.hasText(authToken)) {
+            String guid = sessionService.getGuidByToken(authToken);
+            UserInfo userInfo = userService.getUserbyGuid(guid);
+            userName = userInfo.getUsername();
+            name = userInfo.getName();
+        }
+        TokenVO res = TokenVO.builder().Token(authToken).userName(userName).name(name).build();
         return TanyaExceptionHandler.generateResponse(res);
     }
 
@@ -129,7 +138,7 @@ public class LoginController {
         } else {
             throw new ServiceException("登录信息不足");
         }
-        TokenVO res = TokenVO.builder().Token(authToken).userName(username).build();
+        TokenVO res = TokenVO.builder().Token(authToken).userName(username).name(bo.getName()).build();
 
         return TanyaExceptionHandler.generateResponse(res);
     }
@@ -191,11 +200,9 @@ public class LoginController {
         UserRegReqBO bo = new UserRegReqBO();
         bo.setGuid(guid);
         BeanUtil.copyProperties(vo, bo);
-
-        // TODO 前端不传入userName
-        // if (bo.getUsername() == null) {
-        // bo.setUsername(bo.getEmail());
-        // }
+        if (bo.getPassword() != null) {
+            bo.setPassword(MD5Util.generate(bo.getPassword()));
+        }
         userService.updateUser(bo);
         return TanyaExceptionHandler.generateResponse("");
     }
@@ -227,16 +234,20 @@ public class LoginController {
     @Auth
     @ApiOperation(value = "重置密码", notes = "向用户邮箱发送重置密码链接")
     @RequestMapping(value = "/reset", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<String>.Resp> resetReq(@RequestBody String email) {
+    public ResponseEntity<CommonResponse<String>.Resp> resetReq() {
         Log.i("**********reset**********");
-        Log.i(email);
-        UserInfo info = userService.getUserbyEmail(email);
-        EmailRepository repo = new EmailRepository();
-        repo.setTopic("谭雅系统重置密码");
-        repo.setRecipients(email);
+        String guid = (String) request.getAttribute("guid");
+        UserInfo info = userService.getUserbyGuid(guid);
+        if (info.getEmail() != null) {
+            throw new ServiceException("没有注册邮箱");
+        }
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(sender);
+        message.setTo(info.getEmail());
+        message.setSubject("谭雅系统重置登录密码");
         String token = sessionService.getResetPasswordToken(info.getGuid());
-        repo.setBody("点击此连接 重设密码\n http://47.104.89.137:8080/reset?req=" + token);
-        EmailUtil.sendEmail(repo);
+        message.setText("点击此连接 重设密码\n https://api.tanyakeji.com/reset?req=" + token);
+        mailSender.send(message);
         return TanyaExceptionHandler.generateResponse("");
     }
 

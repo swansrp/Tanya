@@ -171,7 +171,7 @@ public class SalesmanTraderMapDao {
         SalesmanTraderMapExample example = new SalesmanTraderMapExample();
         SalesmanTraderMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(salesmanTraderMap);
-        ReflectionUtil.getFieldList(salesmanTraderMap).forEach((field) -> {
+        ReflectionUtil.getFields(salesmanTraderMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

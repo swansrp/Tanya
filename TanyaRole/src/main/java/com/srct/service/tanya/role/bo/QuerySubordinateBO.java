@@ -19,4 +19,5 @@ import lombok.EqualsAndHashCode;
 public class QuerySubordinateBO extends QueryReqVO {
     private UserInfo userInfo;
     private Boolean targetIsExisted;
+    private String title;
 }

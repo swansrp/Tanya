@@ -9,7 +9,6 @@ package com.srct.service.tanya.common.service.impl;
 
 import com.srct.service.bo.wechat.OpenIdBO;
 import com.srct.service.config.db.DataSourceCommonConstant;
-import com.srct.service.exception.AccountOrPasswordIncorrectException;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.service.RedisTokenOperateService;
 import com.srct.service.service.WechatService;
@@ -24,7 +23,6 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.RoleInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserInfoDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.UserRoleMapDao;
 import com.srct.service.tanya.common.exception.NoSuchUserException;
-import com.srct.service.tanya.common.exception.UserAccountLockedException;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.BeanUtil;
@@ -45,31 +43,24 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
+    final static private String tokenItem = "AUTH_TOKEN";
     @Autowired
     private UserInfoDao userInfoDao;
-
     @Autowired
     private UserRoleMapDao userRoleMapDao;
-
     @Autowired
     private RoleInfoDao roleInfoDao;
-
     @Autowired
     private SessionService sessionService;
-
     @Autowired
     private WechatService wechatService;
-
     @Autowired
     private RedisTokenOperateService tokenService;
-
-    final static private String tokenItem = "AUTH_TOKEN";
 
     @Override
     public UserInfo updateUser(UserRegReqBO bo) {
         UserInfo userInfo = new UserInfo();
         BeanUtil.copyProperties(bo, userInfo);
-
         UserInfoExample example = new UserInfoExample();
         UserInfoExample.Criteria criteria = example.createCriteria();
         criteria.andGuidEqualTo(bo.getGuid());
@@ -176,7 +167,7 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo = userInfoList.get(0);
         String guid = userInfo.getGuid();
 
-        if (!userInfo.getState().equals("0")) {
+        if (!("0").equals(userInfo.getState())) {
             throw new ServiceException("用户状态已锁定,请联系管理员");
         }
 
@@ -200,7 +191,7 @@ public class UserServiceImpl implements UserService {
         // res.setSn(String.format("%08d", userInfo.getId()));
         res.setWechatOpenId(userInfo.getWechatId());
         res.setRole(new ArrayList<>());
-
+        res.setName(userInfo.getName());
         Integer userId = userInfo.getId();
         if (userId == null) {
             try {
@@ -221,8 +212,9 @@ public class UserServiceImpl implements UserService {
             userRoleList.forEach(userRole -> {
                 if (userRole.getRoleId() != null) {
                     RoleInfo roleInfo = roleInfoDao.getRoleInfoById(userRole.getRoleId());
-                    if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
+                    if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
                         res.getRole().add(roleInfo);
+                    }
                 }
             });
         }
@@ -280,8 +272,9 @@ public class UserServiceImpl implements UserService {
 
         UserInfo userInfo = userInfoDao.getUserInfoById(userId);
 
-        if (userInfo == null)
+        if (userInfo == null) {
             throw new NoSuchUserException("No such user with id " + userId);
+        }
 
         return userInfo;
     }
@@ -323,8 +316,9 @@ public class UserServiceImpl implements UserService {
         userRoleList.forEach(userRole -> {
             if (userRole.getRoleId() != null) {
                 RoleInfo role = roleInfoDao.getRoleInfoById(userRole.getRoleId());
-                if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
+                if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
                     res.add(roleInfo);
+                }
             }
         });
 
@@ -362,8 +356,9 @@ public class UserServiceImpl implements UserService {
         userRoleList.forEach(userRole -> {
             if (userRole.getRoleId() != null) {
                 RoleInfo role = roleInfoDao.getRoleInfoById(userRole.getRoleId());
-                if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID))
+                if (role.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
                     res.add(roleInfo);
+                }
             }
         });
 
@@ -372,7 +367,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void ssoLogin(String token, String authToken) {
-        if(token.equals(tokenService.getToken(token, "token"))) {
+        if (token.equals(tokenService.getToken(token, "token"))) {
             tokenService.updateToken(token, "AUTH_TOKEN", authToken);
         } else {
             throw new ServiceException("非法登录二维码,请刷新后重新扫码登录");

@@ -35,7 +35,7 @@ public class AuthTokenServiceImpl implements AuthTokenService {
 
     @Override
     public void validate(HttpServletRequest request, HttpServletResponse response, Auth.AuthType authType) {
-
+        response.setHeader("Access-Control-Allow-Origin", "*");
         String requestURI = request.getRequestURI();
         String queryString = request.getQueryString();
         String method = request.getMethod();

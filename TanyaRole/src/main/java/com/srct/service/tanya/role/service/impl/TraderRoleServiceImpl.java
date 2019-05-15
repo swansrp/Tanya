@@ -41,6 +41,7 @@ import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
 import com.srct.service.tanya.role.service.RoleService;
 import com.srct.service.tanya.role.service.TraderRoleService;
 import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,13 +203,34 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
 
         FactoryMerchantMap factoryMerchantMap = getFactoryMerchantMapByFactoryInfo(factoryInfo);
         PageInfo pageInfo = buildPageInfo(req);
-        PageInfo<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
-                getTraderFactoryMerchantMapByFactoryMerchantMap(factoryMerchantMap, pageInfo);
+        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
+                getTraderFactoryMerchantMapByFactoryMerchantMap(factoryMerchantMap);
+        List<Integer> traderIdList =
+                (List<Integer>) ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "traderId");
+        if (traderIdList.size() == 0) {
+            traderIdList.add(0);
+        }
+        TraderInfoExample example = new TraderInfoExample();
+        TraderInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdIn(traderIdList);
+        if (req.getTargetIsExisted() != null) {
+            if (req.getTargetIsExisted()) {
+                criteria.andUserIdIsNotNull();
+            } else {
+                criteria.andUserIdIsNull();
+            }
+        }
+        if (req.getTitle() != null) {
+            criteria.andTitleLike("%" + req.getTitle() + "%");
+        }
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        PageInfo<TraderInfo> traderInfoList = traderInfoDao.getTraderInfoByExample(example, pageInfo);
+
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(traderFactoryMerchantMapList);
-        if (traderFactoryMerchantMapList != null && traderFactoryMerchantMapList.getList().size() > 0) {
-            for (TraderFactoryMerchantMap traderFactoryMerchantMap : traderFactoryMerchantMapList.getList()) {
-                TraderInfo traderInfo = traderInfoDao.getTraderInfoById(traderFactoryMerchantMap.getTraderId());
+        res.buildPageInfo(traderInfoList);
+        if (traderInfoList != null && traderInfoList.getList().size() > 0) {
+            for (TraderInfo traderInfo : traderInfoList.getList()) {
                 RoleInfoBO bo = new RoleInfoBO();
                 BeanUtil.copyProperties(traderInfo, bo);
                 bo.setRoleType(getRoleType());
@@ -439,7 +461,11 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
                         traderFactoryMerchantMap.setEndAt(bo.getEndAt());
                     }
                 } else {
-                    BeanUtil.copyProperties(bo, traderFactoryMerchantMap);
+                    if (bo.getPermissionDetails() != null) {
+                        BeanUtil.copyProperties(bo, traderFactoryMerchantMap);
+                    }
+                    traderFactoryMerchantMap.setStartAt(bo.getStartAt());
+                    traderFactoryMerchantMap.setEndAt(bo.getEndAt());
                 }
                 traderFactoryMerchantMapDao.updateTraderFactoryMerchantMap(traderFactoryMerchantMap);
 

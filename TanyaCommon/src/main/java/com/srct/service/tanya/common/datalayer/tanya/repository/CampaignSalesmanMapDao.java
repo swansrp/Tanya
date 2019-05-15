@@ -171,7 +171,7 @@ public class CampaignSalesmanMapDao {
         CampaignSalesmanMapExample example = new CampaignSalesmanMapExample();
         CampaignSalesmanMapExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(campaignSalesmanMap);
-        ReflectionUtil.getFieldList(campaignSalesmanMap).forEach((field) -> {
+        ReflectionUtil.getFields(campaignSalesmanMap).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
                 Method criteriaMethod = null;
                 try {

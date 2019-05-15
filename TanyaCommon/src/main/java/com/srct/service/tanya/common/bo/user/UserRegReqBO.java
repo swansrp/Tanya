@@ -7,14 +7,13 @@
  */
 package com.srct.service.tanya.common.bo.user;
 
-import javax.validation.constraints.NotBlank;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @author Sharp
- *
  */
 @Data
 public class UserRegReqBO {

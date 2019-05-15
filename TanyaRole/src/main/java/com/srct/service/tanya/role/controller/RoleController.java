@@ -36,6 +36,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -122,12 +123,14 @@ public class RoleController {
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "currentPage", value = "当前页"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "pageSize", value = "每页条目数量"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "roleType", value = "角色类型 {admin, merchant, factory, trader, salesman}"),
-            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "target", value = "是否已经添加人员")})
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "target", value = "是否已经添加人员"),
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "title", value = "角色名称")})
     public ResponseEntity<CommonResponse<QueryRespVO<RoleInfoVO>>.Resp> getSubordinate(
             @RequestParam(value = "currentPage", required = false) Integer currentPage,
             @RequestParam(value = "pageSize", required = false) Integer pageSize,
             @RequestParam(value = "roleType", required = false) String targetRoleType,
-            @RequestParam(value = "target", required = false) Boolean targetIsExisted) {
+            @RequestParam(value = "target", required = false) Boolean targetIsExisted,
+            @RequestParam(value = "title", required = false) String title) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
 
@@ -139,9 +142,13 @@ public class RoleController {
         QuerySubordinateBO req = new QuerySubordinateBO();
         req.setCurrentPage(currentPage);
         req.setPageSize(pageSize);
-        if (!role.getRole().equals("superAdmin"))
+        if (!role.getRole().equals("superAdmin")) {
             req.setUserInfo(info);
+        }
         req.setTargetIsExisted(targetIsExisted);
+        if (StringUtils.hasText(title)) {
+            req.setTitle(title);
+        }
         QueryRespVO<RoleInfoBO> resBO = roleService.getSubordinate(req);
         QueryRespVO<RoleInfoVO> resVO = new QueryRespVO<>();
         resVO.setTotalPages(resBO.getTotalPages());
@@ -244,8 +251,9 @@ public class RoleController {
         RoleService roleService = (RoleService) BeanUtil.getBean(roleType + "RoleServiceImpl");
 
         GetRoleDetailsBO bo = new GetRoleDetailsBO();
-        if (role.getRole().equals("superAdmin"))
+        if (role.getRole().equals("superAdmin")) {
             info = null;
+        }
         bo.setCreaterInfo(info);
         bo.setCreaterRole(role);
         bo.setId(id);

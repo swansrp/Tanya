@@ -31,7 +31,7 @@ public class FeatureServiceImpl implements FeatureService {
     @Override
     public List<String> getFeatureList() {
         List<Feature> featureList = featureDao.getAllFeatureList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        return (List<String>) ReflectionUtil.getFiledList(featureList, "key");
+        return (List<String>) ReflectionUtil.getFieldList(featureList, "key");
     }
 
     @Override
@@ -66,8 +66,8 @@ public class FeatureServiceImpl implements FeatureService {
             Log.i("新建feature {}", key);
         } finally {
             featureEx.setValue(value);
-            return featureDao.updateFeatureStrict(featureEx).getValue();
         }
+        return featureDao.updateFeatureStrict(featureEx).getValue();
     }
 
     @Override
