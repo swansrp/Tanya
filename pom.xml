@@ -47,5 +47,6 @@
         <module>TanyaUser</module>
         <module>TanyaRole</module>
         <module>TanyaProduct</module>
+        <module>TanyaCron</module>
     </modules>
 </project>
