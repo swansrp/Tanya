@@ -27,17 +27,22 @@ import com.srct.service.tanya.common.datalayer.tanya.repository.ShopFactoryMerch
 import com.srct.service.tanya.common.datalayer.tanya.repository.ShopTraderFactoryMerchantMapDao;
 import com.srct.service.tanya.common.service.FeatureService;
 import com.srct.service.tanya.product.bo.ProductBO;
+import com.srct.service.tanya.product.bo.UploadProductBO;
 import com.srct.service.tanya.product.service.ShopService;
 import com.srct.service.tanya.product.vo.ShopInfoReqVO;
 import com.srct.service.tanya.product.vo.ShopInfoRespVO;
 import com.srct.service.tanya.product.vo.ShopInfoVO;
+import com.srct.service.tanya.product.vo.upload.UploadShopInfoVO;
 import com.srct.service.tanya.role.service.FactoryRoleService;
 import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.ExcelUtils;
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -77,6 +82,140 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
                 break;
         }
         return res;
+    }
+
+    @Override
+    public QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> req) {
+        validateQuery(req);
+        String roleType = req.getCreatorRole().getRole();
+        switch (roleType) {
+            case "merchant":
+                return getShopInfoByMerchant(req);
+            case "factory":
+                return getShopInfoByFactory(req);
+            case "trader":
+                return getShopInfoByTrader(req);
+            default:
+                throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色查询药店");
+        }
+    }
+
+    @Override
+    public QueryRespVO<ShopInfoRespVO> bindShopInfo(ProductBO<ShopInfoReqVO> req) {
+        validateBind(req);
+        String roleType = req.getCreatorRole().getRole();
+        ShopInfoReqVO shopInfoReqVO = req.getReq();
+        ShopInfoVO shopInfoVO = shopInfoReqVO.getShop();
+        switch (roleType) {
+            case "merchant":
+                bindShopFactoryRelationship(req, shopInfoReqVO.getBindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                bindShopFactoryRelationship(req, shopInfoReqVO.getUnbindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                break;
+            case "factory":
+                bindShopTraderRelationship(req, shopInfoReqVO.getBindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                bindShopTraderRelationship(req, shopInfoReqVO.getUnbindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                break;
+            default:
+                throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色绑定药店");
+        }
+
+        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
+        ShopInfo shopInfo = shopInfoDao.getShopInfoById(shopInfoVO.getId());
+        ShopInfoRespVO shopInfoRespVO = buildShopInfoRespVO(shopInfo);
+        res.getInfo().add(shopInfoRespVO);
+        return res;
+    }
+
+    @Override
+    public QueryRespVO<ShopInfoRespVO> delShopInfo(ProductBO<ShopInfoReqVO> req) {
+        validateDelete(req);
+        ShopInfo shopInfo = shopInfoDao.getShopInfoById(req.getProductId());
+        shopInfoDao.delShopInfo(shopInfo);
+
+        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
+        res.getInfo().add(buildShopInfoRespVO(shopInfo));
+        return res;
+    }
+
+    @Override
+    public QueryRespVO<ShopInfoRespVO> getShopBindInfo(ProductBO<QueryReqVO> req) {
+        validateQuery(req);
+        String roleType = req.getCreatorRole().getRole();
+        switch (roleType) {
+            case "merchant":
+                if (featureService.getFeatureExpected(FeatureConstant.SHOP_BIND_FACTORY_MERCHANT_FEATURE, "1")) {
+                    return getShopBindInfoByMerchant(req);
+                } else {
+                    return getShopInfoByMerchant(req);
+                }
+            case "factory":
+                return getShopBindInfoByFactory(req);
+            default:
+                throw new ServiceException("不允许[" + roleType + "]角色查看药店绑定信息");
+
+        }
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void uploadShopInfoVO(UploadProductBO req) {
+        List<UploadShopInfoVO> uploadShopList = ExcelUtils.readFromExcel(req.getFile(), UploadShopInfoVO.class);
+        MerchantInfo merchantInfo = super.merchantInfoDao.getMerchantInfoById(req.getMerchantId());
+        if (req.getOverride()) {
+            delShopInfoByMerchant(merchantInfo);
+        }
+        uploadShopList.forEach(uploadShop -> {
+            ShopInfo shopInfo = new ShopInfo();
+            BeanUtil.copyProperties(uploadShop, shopInfo);
+            shopInfo.setMerchantId(merchantInfo.getId());
+            shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+            shopInfoDao.updateShopInfo(shopInfo);
+        });
+    }
+
+    @Override
+    protected void validateUpdate(ProductBO<?> req) {
+        String roleType = req.getCreatorRole().getRole();
+        if (!roleType.equals("factory") && !roleType.equals("merchant")) {
+            throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色创建/更新药店");
+        }
+    }
+
+    @Override
+    protected void validateConfirm(ProductBO<?> req) {
+        throw new ServiceException("不支持确认药店");
+    }
+
+    @Override
+    protected void validateDelete(ProductBO<?> req) {
+        String roleType = req.getCreatorRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色删除药店");
+        }
+    }
+
+    @Override
+    protected void validateQuery(ProductBO<?> req) {
+        String roleType = req.getCreatorRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色查询药店");
+        }
+    }
+
+    private void delShopInfoByMerchant(MerchantInfo merchantInfo) {
+        List<ShopInfo> shopInfoList = getShopInfoListByMerchant(merchantInfo);
+        if (!CollectionUtils.isEmpty(shopInfoList)) {
+            shopInfoList.forEach(shopInfo -> shopInfoDao.delShopInfo(shopInfo));
+        }
+    }
+
+    private List<ShopInfo> getShopInfoListByMerchant(MerchantInfo merchantInfo) {
+        return getShopInfoListByMerchant(merchantInfo, null);
     }
 
     private ShopInfo updateShopInfoByMerchant(ProductBO<ShopInfoReqVO> req) {
@@ -127,22 +266,6 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         shopFactoryMerchantMap.setShopId(shopInfo.getId());
         shopFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         return shopFactoryMerchantMapDao.getShopFactoryMerchantMapSelective(shopFactoryMerchantMap).get(0);
-    }
-
-    @Override
-    public QueryRespVO<ShopInfoRespVO> getShopInfo(ProductBO<QueryReqVO> req) {
-        validateQuery(req);
-        String roleType = req.getCreatorRole().getRole();
-        switch (roleType) {
-            case "merchant":
-                return getShopInfoByMerchant(req);
-            case "factory":
-                return getShopInfoByFactory(req);
-            case "trader":
-                return getShopInfoByTrader(req);
-            default:
-                throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色查询药店");
-        }
     }
 
     private QueryRespVO<ShopInfoRespVO> getShopInfoByTrader(ProductBO<QueryReqVO> req) {
@@ -306,36 +429,6 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         return res;
     }
 
-    @Override
-    public QueryRespVO<ShopInfoRespVO> bindShopInfo(ProductBO<ShopInfoReqVO> req) {
-        validateBind(req);
-        String roleType = req.getCreatorRole().getRole();
-        ShopInfoReqVO shopInfoReqVO = req.getReq();
-        ShopInfoVO shopInfoVO = shopInfoReqVO.getShop();
-        switch (roleType) {
-            case "merchant":
-                bindShopFactoryRelationship(req, shopInfoReqVO.getBindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
-                bindShopFactoryRelationship(req, shopInfoReqVO.getUnbindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-                break;
-            case "factory":
-                bindShopTraderRelationship(req, shopInfoReqVO.getBindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
-                bindShopTraderRelationship(req, shopInfoReqVO.getUnbindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-                break;
-            default:
-                throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色绑定药店");
-        }
-
-        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
-        ShopInfo shopInfo = shopInfoDao.getShopInfoById(shopInfoVO.getId());
-        ShopInfoRespVO shopInfoRespVO = buildShopInfoRespVO(shopInfo);
-        res.getInfo().add(shopInfoRespVO);
-        return res;
-    }
-
     private void bindShopTraderRelationship(ProductBO<ShopInfoReqVO> req, List<Integer> traderIdList, Byte valid) {
         ShopInfoReqVO shopInfoReqVO = req.getReq();
         ShopInfoVO shopInfoVO = shopInfoReqVO.getShop();
@@ -404,46 +497,6 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         return shopInfoRespVO;
     }
 
-    @Override
-    protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreatorRole().getRole();
-        if (!roleType.equals("factory") && !roleType.equals("merchant")) {
-            throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色创建/更新药店");
-        }
-    }
-
-    @Override
-    protected void validateConfirm(ProductBO<?> req) {
-        throw new ServiceException("不支持确认药店");
-    }
-
-    @Override
-    public QueryRespVO<ShopInfoRespVO> delShopInfo(ProductBO<ShopInfoReqVO> req) {
-        validateDelete(req);
-        ShopInfo shopInfo = shopInfoDao.getShopInfoById(req.getProductId());
-        shopInfoDao.delShopInfo(shopInfo);
-
-        QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
-        res.getInfo().add(buildShopInfoRespVO(shopInfo));
-        return res;
-    }
-
-    @Override
-    protected void validateDelete(ProductBO<?> req) {
-        String roleType = req.getCreatorRole().getRole();
-        if (roleType.equals("salesman")) {
-            throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色删除药店");
-        }
-    }
-
-    @Override
-    protected void validateQuery(ProductBO<?> req) {
-        String roleType = req.getCreatorRole().getRole();
-        if (roleType.equals("salesman")) {
-            throw new ServiceException("不允许[" + req.getCreatorRole().getComment() + "]角色查询药店");
-        }
-    }
-
     private void validateBind(ProductBO<?> req) {
         String roleType = req.getCreatorRole().getRole();
         ProductBO<ShopInfoReqVO> shop = (ProductBO<ShopInfoReqVO>) req;
@@ -471,27 +524,6 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
                 throw new ServiceException(
                         "不允许[" + req.getCreatorRole().getComment() + "]角色绑定药店: " + shopInfoVO.getId());
         }
-    }
-
-
-    @Override
-    public QueryRespVO<ShopInfoRespVO> getShopBindInfo(ProductBO<QueryReqVO> req) {
-        validateQuery(req);
-        String roleType = req.getCreatorRole().getRole();
-        switch (roleType) {
-            case "merchant":
-                if (featureService.getFeatureExpected(FeatureConstant.SHOP_BIND_FACTORY_MERCHANT_FEATURE, "1")) {
-                    return getShopBindInfoByMerchant(req);
-                } else {
-                    return getShopInfoByMerchant(req);
-                }
-            case "factory":
-                return getShopBindInfoByFactory(req);
-            default:
-                throw new ServiceException("不允许[" + roleType + "]角色查看药店绑定信息");
-
-        }
-
     }
 
     private QueryRespVO<ShopInfoRespVO> getShopBindInfoByFactory(ProductBO<QueryReqVO> req) {

@@ -55,7 +55,7 @@ public class MenuServiceImpl implements MenuService {
         BeanUtil.copyProperties(parentMenu, menuVO);
         QueryMenuVO.setMenu(menuVO);
         List<PermissionInfo> menuList =
-                permissionInfoList.stream().filter(info -> info.getParentId().equals(parentMenu.getId()))
+                permissionInfoList.stream().filter(info -> parentMenu.getId().equals(info.getParentId()))
                         .collect(Collectors.toList());
         menuList.forEach(subMenu -> QueryMenuVO.getSubMenu().add(buildMenuVO(subMenu, permissionInfoList)));
         return QueryMenuVO;

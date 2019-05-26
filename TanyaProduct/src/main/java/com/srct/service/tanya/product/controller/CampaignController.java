@@ -96,7 +96,7 @@ public class CampaignController {
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "campaignid", value = "促销活动id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝, 1同意, -1未操作, null全部")})
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 null全部 -1未操作")})
     public ResponseEntity<CommonResponse<QueryRespVO<CampaignInfoRespVO>>.Resp> getCampaign(@RequestBody QueryReqVO req,
             @RequestParam(value = "campaignid", required = false) Integer campaignId,
             @RequestParam(value = "confirmed", required = false) Byte confirmed) {

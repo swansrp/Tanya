@@ -12,8 +12,10 @@ import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.config.FeatureConstant;
+import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfoExample;
@@ -30,6 +32,7 @@ import com.srct.service.tanya.product.vo.ShopInfoVO;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.DateUtils;
+import com.srct.service.utils.MathUtil;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.stereotype.Service;
@@ -57,56 +60,6 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         return buildResByExample(order, orderExample);
     }
 
-    private OrderInfoExample buildOrderInfoExample(ProductBO<?> order, List<Integer> traderFactoryMerchantMapIdList) {
-        String role = order.getCreatorRole().getRole();
-        OrderInfoExample orderExample = super.makeQueryExample(order, OrderInfoExample.class);
-        OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
-
-        if (traderFactoryMerchantMapIdList.size() == 0) {
-            traderFactoryMerchantMapIdList.add(0);
-        }
-
-        orderCriteria.andTraderFactoryMerchantIdIn(traderFactoryMerchantMapIdList);
-        if (order.getProductId() != null) {
-            orderCriteria.andIdEqualTo(order.getProductId());
-        }
-
-        switch (role) {
-            case "merchant":
-                orderCriteria.andFactoryConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-                if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
-                    orderCriteria.andMerchantConfirmAtIsNull();
-                } else if (order.getApproved() != null) {
-                    orderCriteria.andMerchantConfirmStatusEqualTo(order.getApproved());
-                }
-                break;
-            case "factory":
-            case "trader":
-                if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
-                    orderCriteria.andFactoryConfirmAtIsNull();
-                } else if (order.getApproved() != null) {
-                    orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
-                }
-                break;
-            default:
-                break;
-
-        }
-
-        return orderExample;
-    }
-
-    private QueryRespVO<OrderInfoRespVO> buildResByExample(ProductBO<QueryReqVO> order, OrderInfoExample orderExample) {
-        PageInfo<OrderInfo> pageInfo = super.buildPage(order);
-        pageInfo = orderInfoDao.getOrderInfoByExample(orderExample, pageInfo);
-        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
-        super.buildRespByReq(res, order);
-        res.setTotalPages(pageInfo.getPages());
-        res.setTotalSize(pageInfo.getTotal());
-        pageInfo.getList().forEach(orderInfo -> res.getInfo().add(buildOrderInfoRespVO(orderInfo)));
-        return res;
-    }
-
     @Override
     public QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order) {
         validateUpdate(order);
@@ -117,7 +70,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         if (orderInfo.getStartAt() == null && orderInfo.getEndAt() == null) {
             super.makeDefaultPeriod(orderInfo, FeatureConstant.ORDER_DEFAULT_PERIOD, "365");
         }
-        orderInfo.setEndAt(DateUtils.addSeconds(DateUtils.addDate(orderInfo.getEndAt(), 1), -1));
+        if (orderInfo.getEndAt() != null) {
+            orderInfo.setEndAt(DateUtils.endTime(orderInfo.getEndAt()));
+        }
 
         TraderFactoryMerchantMap map = super.getTraderFactoryMerchantMap(order);
         orderInfo.setTraderFactoryMerchantId(map.getId());
@@ -125,44 +80,21 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         if (order.getReq().getGoodsId() != null) {
             orderInfo.setGoodsId(order.getReq().getGoodsId());
         }
-        orderInfo.setDiscountId(order.getReq().getDiscountId());
+        if (order.getReq().getDiscountId() != null) {
+            orderInfo.setDiscountId(order.getReq().getDiscountId());
+            DiscountInfo discountInfo = super.discountInfoDao.getDiscountInfoById(order.getReq().getDiscountId());
+            orderInfo.setAmount(
+                    MathUtil.mul(discountInfo.getAmount(), order.getReq().getOrder().getGoodsNumber().doubleValue()));
+        } else {
+            GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(order.getReq().getGoodsId());
+            orderInfo.setAmount(MathUtil.mul(goodsInfo.getAmount(), orderInfo.getGoodsNumber().doubleValue()));
+        }
         orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         orderInfoDao.updateOrderInfo(orderInfo);
 
         QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
         res.getInfo().add(buildOrderInfoRespVO(orderInfo));
 
-        return res;
-    }
-
-    private OrderInfoRespVO buildOrderInfoRespVO(OrderInfo orderInfo) {
-        OrderInfoVO orderInfoVO = new OrderInfoVO();
-        BeanUtil.copyProperties(orderInfo, orderInfoVO);
-
-        OrderInfoRespVO res = new OrderInfoRespVO();
-        BeanUtil.copyProperties(orderInfo, res);
-
-        DiscountInfoVO discountInfoVO = super.getDiscountInfoVOById(orderInfo.getDiscountId());
-        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVOById(orderInfo.getGoodsId());
-        ShopInfoVO shopInfoVO = super.getShopInfoVOById(orderInfo.getShopId());
-        TraderFactoryMerchantMap map =
-                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapById(orderInfo.getTraderFactoryMerchantId());
-        FactoryMerchantMap factoryMerchantMap =
-                factoryMerchantMapDao.getFactoryMerchantMapById(map.getFactoryMerchantMapId());
-        RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
-        RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
-        RoleInfoVO traderInfoVO = super.getRoleInfoVO(map.getTraderId(), "trader");
-        RoleInfoVO merchantConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getMerchantConfirmBy(), "merchant");
-        RoleInfoVO factoryConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getFactoryConfirmBy(), "factory");
-        res.setDiscountInfoVO(discountInfoVO);
-        res.setFactoryInfoVO(factoryInfoVO);
-        res.setGoodsInfoVO(goodsInfoVO);
-        res.setMerchantInfoVO(merchantInfoVO);
-        res.setOrderInfoVO(orderInfoVO);
-        res.setShopInfoVO(shopInfoVO);
-        res.setTraderInfoVO(traderInfoVO);
-        res.setMerchantConfirmRoleInfoVO(merchantConfirmRoleInfoVO);
-        res.setFactoryConfirmRoleInfoVO(factoryConfirmRoleInfoVO);
         return res;
     }
 
@@ -245,18 +177,16 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 super.buildTraderFactoryMerchantMapIdList(order, factoryInfoList);
         OrderInfoExample orderExample = buildOrderInfoExample(order, traderFactoryMerchantMapIdList);
         orderExample.getOredCriteria().get(0).andIdEqualTo(order.getProductId());
-        OrderInfo orderExsited;
+        OrderInfo orderExisted;
         try {
-            orderExsited = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
+            orderExisted = orderInfoDao.getOrderInfoByExample(orderExample).get(0);
         } catch (Exception e) {
             throw new ServiceException("不能删除" + order.getProductType() + order.getReq().getOrder().getId());
         }
-        if (orderExsited.getFactoryConfirmAt() != null) {
-            throw new ServiceException("dont allow to delete already confirmed order by factory " + DF
-                    .format(orderExsited.getFactoryConfirmAt()));
-        } else if (orderExsited.getMerchantConfirmAt() != null) {
-            throw new ServiceException("dont allow to delete already confirmed order by merchant " + DF
-                    .format(orderExsited.getMerchantConfirmAt()));
+        if (orderExisted.getFactoryConfirmAt() != null) {
+            throw new ServiceException("不允许删除已经被厂商确认的订单,确认时间:" + DF.format(orderExisted.getFactoryConfirmAt()));
+        } else if (orderExisted.getMerchantConfirmAt() != null) {
+            throw new ServiceException("不允许删除已经被商业渠道确认的订单,确认时间:" + DF.format(orderExisted.getMerchantConfirmAt()));
         }
 
     }
@@ -306,6 +236,89 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         if (req.getApproved() == null) {
             throw new ServiceException("approve status is null ");
         }
+    }
+
+    private OrderInfoExample buildOrderInfoExample(ProductBO<?> order, List<Integer> traderFactoryMerchantMapIdList) {
+        String role = order.getCreatorRole().getRole();
+        OrderInfoExample orderExample = super.makeQueryExample(order, OrderInfoExample.class);
+        OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
+
+        if (traderFactoryMerchantMapIdList.size() == 0) {
+            traderFactoryMerchantMapIdList.add(0);
+        }
+
+        orderCriteria.andTraderFactoryMerchantIdIn(traderFactoryMerchantMapIdList);
+        if (order.getProductId() != null) {
+            orderCriteria.andIdEqualTo(order.getProductId());
+        }
+
+        orderExample.setOrderByClause("update_at DESC");
+
+        switch (role) {
+            case "merchant":
+                orderCriteria.andFactoryConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
+                    orderCriteria.andMerchantConfirmAtIsNull();
+                } else if (order.getApproved() != null) {
+                    orderCriteria.andMerchantConfirmStatusEqualTo(order.getApproved());
+                }
+                break;
+            case "factory":
+            case "trader":
+                if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
+                    orderCriteria.andFactoryConfirmAtIsNull();
+                } else if (order.getApproved() != null) {
+                    orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
+                }
+                break;
+            default:
+                break;
+
+        }
+
+        return orderExample;
+    }
+
+    private QueryRespVO<OrderInfoRespVO> buildResByExample(ProductBO<QueryReqVO> order, OrderInfoExample orderExample) {
+        PageInfo<OrderInfo> pageInfo = super.buildPage(order);
+        pageInfo = orderInfoDao.getOrderInfoByExample(orderExample, pageInfo);
+        QueryRespVO<OrderInfoRespVO> res = new QueryRespVO<>();
+        super.buildRespByReq(res, order);
+        res.setTotalPages(pageInfo.getPages());
+        res.setTotalSize(pageInfo.getTotal());
+        pageInfo.getList().forEach(orderInfo -> res.getInfo().add(buildOrderInfoRespVO(orderInfo)));
+        return res;
+    }
+
+    private OrderInfoRespVO buildOrderInfoRespVO(OrderInfo orderInfo) {
+        OrderInfoVO orderInfoVO = new OrderInfoVO();
+        BeanUtil.copyProperties(orderInfo, orderInfoVO);
+
+        OrderInfoRespVO res = new OrderInfoRespVO();
+        BeanUtil.copyProperties(orderInfo, res);
+
+        DiscountInfoVO discountInfoVO = super.getDiscountInfoVOById(orderInfo.getDiscountId());
+        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVOById(orderInfo.getGoodsId());
+        ShopInfoVO shopInfoVO = super.getShopInfoVOById(orderInfo.getShopId());
+        TraderFactoryMerchantMap map =
+                traderFactoryMerchantMapDao.getTraderFactoryMerchantMapById(orderInfo.getTraderFactoryMerchantId());
+        FactoryMerchantMap factoryMerchantMap =
+                factoryMerchantMapDao.getFactoryMerchantMapById(map.getFactoryMerchantMapId());
+        RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
+        RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
+        RoleInfoVO traderInfoVO = super.getRoleInfoVO(map.getTraderId(), "trader");
+        RoleInfoVO merchantConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getMerchantConfirmBy(), "merchant");
+        RoleInfoVO factoryConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getFactoryConfirmBy(), "factory");
+        res.setDiscountInfoVO(discountInfoVO);
+        res.setFactoryInfoVO(factoryInfoVO);
+        res.setGoodsInfoVO(goodsInfoVO);
+        res.setMerchantInfoVO(merchantInfoVO);
+        res.setOrderInfoVO(orderInfoVO);
+        res.setShopInfoVO(shopInfoVO);
+        res.setTraderInfoVO(traderInfoVO);
+        res.setMerchantConfirmRoleInfoVO(merchantConfirmRoleInfoVO);
+        res.setFactoryConfirmRoleInfoVO(factoryConfirmRoleInfoVO);
+        return res;
     }
 
 }

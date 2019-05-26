@@ -14,9 +14,13 @@ import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.product.bo.ProductBO;
+import com.srct.service.tanya.product.bo.UploadProductBO;
 import com.srct.service.tanya.product.service.ShopService;
 import com.srct.service.tanya.product.vo.ShopInfoReqVO;
 import com.srct.service.tanya.product.vo.ShopInfoRespVO;
+import com.srct.service.tanya.product.vo.upload.UploadShopInfoVO;
+import com.srct.service.utils.ExcelUtils;
+import com.srct.service.utils.HttpUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
@@ -32,8 +36,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import static com.srct.service.config.annotation.Auth.AuthType.USER;
 
@@ -48,6 +56,8 @@ import static com.srct.service.config.annotation.Auth.AuthType.USER;
 public class ShopController {
 
     private final static String productType = "药店";
+
+    private final static String TEMPLATE_FILE_NAME = "shop_template.xls";
 
     @Autowired
     private HttpServletRequest request;
@@ -171,5 +181,47 @@ public class ShopController {
         QueryRespVO<ShopInfoRespVO> shopInfoVOList = shopService.delShopInfo(shop);
 
         return TanyaExceptionHandler.generateResponse(shopInfoVOList);
+    }
+
+
+    @ApiOperation(value = "上传药店", notes = "只有merchant可以上传药店信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "override", value = "是否覆盖", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "merchantid", value = "绑定商业渠道id", required = true)})
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public void upload(MultipartFile file, @RequestParam(value = "override") Boolean override,
+            @RequestParam(value = "merchantid") Integer merchantId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***uploadShop***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        UploadProductBO bo = new UploadProductBO();
+        bo.setMerchantId(merchantId);
+        bo.setFile(file);
+        bo.setOverride(override);
+        shopService.uploadShopInfoVO(bo);
+    }
+
+    @ApiOperation(value = "获取药店上传模板", notes = "")
+    @RequestMapping(value = "/template", method = RequestMethod.GET)
+    public void template(HttpServletResponse response) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***templateShop***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        try {
+            response.setContentType("application/octet-stream;charset=utf-8");
+            // 设置文件名在不同主流浏览器上的编码
+            HttpUtil.contentDisposition(TEMPLATE_FILE_NAME, request, response);
+            ServletOutputStream stream = response.getOutputStream();
+            ExcelUtils.generateExcel(UploadShopInfoVO.builder().build(), stream);
+            stream.flush();
+            stream.close();
+            response.flushBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -77,7 +77,7 @@ public class OrderController {
     @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "orderid", value = "订单id"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "factoryid", value = "药厂id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 -1全部 null未操作")})
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 null全部 -1未操作")})
     public ResponseEntity<CommonResponse<QueryRespVO<OrderInfoRespVO>>.Resp> getOrder(@RequestBody QueryReqVO req,
             @RequestParam(value = "orderid", required = false) Integer orderId,
             @RequestParam(value = "factoryid", required = false) Integer factoryId,
