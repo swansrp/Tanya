@@ -9,6 +9,7 @@
  */
 package com.srct.service.tanya.user.service.impl;
 
+import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.tanya.common.datalayer.tanya.entity.PermissionInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RolePermissionMap;
@@ -62,7 +63,9 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private List<PermissionInfo> getPermissionList(RoleInfo role) {
-        RolePermissionMap rolePermissionMapEx = RolePermissionMap.builder().roleId(role.getId()).build();
+        RolePermissionMap rolePermissionMapEx =
+                RolePermissionMap.builder().roleId(role.getId()).valid(DataSourceCommonConstant.DATABASE_COMMON_VALID)
+                        .build();
         List<RolePermissionMap> rolePermissionMapList =
                 rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMapEx);
         List<Integer> permissionInfoIdList =
