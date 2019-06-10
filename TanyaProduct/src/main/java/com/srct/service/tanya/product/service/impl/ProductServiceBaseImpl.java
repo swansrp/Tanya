@@ -60,6 +60,7 @@ import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -229,45 +230,13 @@ public abstract class ProductServiceBaseImpl {
         return factoryRoleService.getFactoryMerchantMapByFactoryInfo(factoryInfo);
     }
 
-    protected List<FactoryMerchantMap> getFactoryMerchantMapByMerchantId(Integer merchantId) {
-        return getFactoryMerchantMap(merchantId, null);
-    }
-
-    protected List<FactoryMerchantMap> getFactoryMerchantMapByFactoryId(Integer factoryId) {
-        return getFactoryMerchantMap(null, factoryId);
-    }
-
-    protected FactoryMerchantMap getFactoryMerchantMapByMerchantIdAndFactoryId(Integer merchantId, Integer factoryId) {
-        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMap(merchantId, factoryId);
-        if (factoryMerchantMapList == null || factoryMerchantMapList.size() != 1) {
-            throw new ServiceException("没有有效的渠道[" + merchantId + "]药厂[" + factoryId + "]关系");
-        }
-        return factoryMerchantMapList.get(0);
-    }
-
-    private List<FactoryMerchantMap> getFactoryMerchantMap(Integer merchantId, Integer factoryId) {
-        FactoryMerchantMapExample factoryMerchantMapExample = new FactoryMerchantMapExample();
-        FactoryMerchantMapExample.Criteria criteria = factoryMerchantMapExample.createCriteria();
-        if (factoryId != null) {
-            criteria.andFactoryIdEqualTo(factoryId);
-        }
-        if (merchantId != null) {
-            criteria.andMerchantIdEqualTo(merchantId);
-        }
-        criteria.andEndAtGreaterThan(new Date());
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        return factoryMerchantMapDao.getFactoryMerchantMapByExample(factoryMerchantMapExample);
-    }
-
     public List<Integer> buildTraderFactoryMerchantMapIdList(ProductBO<?> req, List<FactoryInfo> factoryInfoList) {
         TraderFactoryMerchantMapExample mapExample = makeQueryExample(req, TraderFactoryMerchantMapExample.class);
         TraderFactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
 
         List<Integer> factoryIdList = new ArrayList<>();
-        factoryInfoList.forEach(factoryInfo -> {
-            factoryIdList.add(factoryInfo.getId());
-        });
-        if (0 == factoryIdList.size()) {
+        factoryInfoList.forEach(factoryInfo -> factoryIdList.add(factoryInfo.getId()));
+        if (CollectionUtils.isEmpty(factoryIdList)) {
             factoryIdList.add(0);
         }
         mapCriteria.andFactoryIdIn(factoryIdList);
@@ -290,12 +259,8 @@ public abstract class ProductServiceBaseImpl {
         FactoryMerchantMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
 
         List<Integer> factoryInfoIdList = new ArrayList<>();
-
-        factoryInfoList.forEach(factoryInfo -> {
-            factoryInfoIdList.add(factoryInfo.getId());
-        });
-
-        if (0 == factoryInfoIdList.size()) {
+        factoryInfoList.forEach(factoryInfo -> factoryInfoIdList.add(factoryInfo.getId()));
+        if (CollectionUtils.isEmpty(factoryInfoIdList)) {
             factoryInfoIdList.add(0);
         }
 
@@ -311,18 +276,14 @@ public abstract class ProductServiceBaseImpl {
     public List<Integer> buildSalesmanTraderMapTraderIdList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
         List<SalesmanTraderMap> maps = buildSalesmanTraderMapList(req, traderInfoList);
         List<Integer> salesTraderMapIdList = new ArrayList<>();
-        maps.forEach(map -> {
-            salesTraderMapIdList.add(map.getTraderId());
-        });
+        maps.forEach(map -> salesTraderMapIdList.add(map.getTraderId()));
         return salesTraderMapIdList;
     }
 
     public List<Integer> buildSalesmanTraderMapSalesmanIdList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
         List<SalesmanTraderMap> maps = buildSalesmanTraderMapList(req, traderInfoList);
         List<Integer> salesTraderMapIdList = new ArrayList<>();
-        maps.forEach(map -> {
-            salesTraderMapIdList.add(map.getSalesmanId());
-        });
+        maps.forEach(map -> salesTraderMapIdList.add(map.getSalesmanId()));
         return salesTraderMapIdList;
     }
 
@@ -341,18 +302,6 @@ public abstract class ProductServiceBaseImpl {
         List<Integer> res = new ArrayList<>();
         campaignInfoList.forEach(campaignInfo -> res.add(campaignInfo.getId()));
         return res;
-    }
-
-    private List<SalesmanTraderMap> buildSalesmanTraderMapList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
-        SalesmanTraderMapExample mapExample = makeQueryExample(req, SalesmanTraderMapExample.class);
-        SalesmanTraderMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
-        List<Integer> traderInfoIdList = new ArrayList<>();
-        traderInfoList.forEach(traderInfo -> traderInfoIdList.add(traderInfo.getId()));
-        if (0 == traderInfoIdList.size()) {
-            traderInfoIdList.add(0);
-        }
-        mapCriteria.andTraderIdIn(traderInfoIdList);
-        return salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
     }
 
     public void makeDefaultPeriod(Object obj, String periodFeature, String defaultValue) {
@@ -492,6 +441,31 @@ public abstract class ProductServiceBaseImpl {
         return pageInfo;
     }
 
+    protected List<FactoryMerchantMap> getFactoryMerchantMapByMerchantId(Integer merchantId) {
+        return getFactoryMerchantMap(merchantId, null);
+    }
+
+    protected List<FactoryMerchantMap> getFactoryMerchantMapByFactoryId(Integer factoryId) {
+        return getFactoryMerchantMap(null, factoryId);
+    }
+
+    protected FactoryMerchantMap getFactoryMerchantMapByMerchantIdAndFactoryId(Integer merchantId, Integer factoryId) {
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMap(merchantId, factoryId);
+        if (factoryMerchantMapList == null || factoryMerchantMapList.size() != 1) {
+            throw new ServiceException("没有有效的渠道[" + merchantId + "]药厂[" + factoryId + "]关系");
+        }
+        return factoryMerchantMapList.get(0);
+    }
+
+    protected List<FactoryMerchantMap> getFactoryMerchantMapListByMerchantIdAndFactoryId(Integer merchantId,
+            Integer factoryId) {
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantMap(merchantId, factoryId);
+        if (factoryMerchantMapList == null || factoryMerchantMapList.size() == 0) {
+            throw new ServiceException("没有有效的渠道[" + merchantId + "]药厂[" + factoryId + "]关系");
+        }
+        return factoryMerchantMapList;
+    }
+
     protected abstract void validateUpdate(ProductBO<?> req);
 
     protected abstract void validateConfirm(ProductBO<?> req);
@@ -499,5 +473,31 @@ public abstract class ProductServiceBaseImpl {
     protected abstract void validateDelete(ProductBO<?> req);
 
     protected abstract void validateQuery(ProductBO<?> req);
+
+    private List<FactoryMerchantMap> getFactoryMerchantMap(Integer merchantId, Integer factoryId) {
+        FactoryMerchantMapExample factoryMerchantMapExample = new FactoryMerchantMapExample();
+        FactoryMerchantMapExample.Criteria criteria = factoryMerchantMapExample.createCriteria();
+        if (factoryId != null) {
+            criteria.andFactoryIdEqualTo(factoryId);
+        }
+        if (merchantId != null) {
+            criteria.andMerchantIdEqualTo(merchantId);
+        }
+        criteria.andEndAtGreaterThan(new Date());
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return factoryMerchantMapDao.getFactoryMerchantMapByExample(factoryMerchantMapExample);
+    }
+
+    private List<SalesmanTraderMap> buildSalesmanTraderMapList(ProductBO<?> req, List<TraderInfo> traderInfoList) {
+        SalesmanTraderMapExample mapExample = makeQueryExample(req, SalesmanTraderMapExample.class);
+        SalesmanTraderMapExample.Criteria mapCriteria = mapExample.getOredCriteria().get(0);
+        List<Integer> traderInfoIdList = new ArrayList<>();
+        traderInfoList.forEach(traderInfo -> traderInfoIdList.add(traderInfo.getId()));
+        if (0 == traderInfoIdList.size()) {
+            traderInfoIdList.add(0);
+        }
+        mapCriteria.andTraderIdIn(traderInfoIdList);
+        return salesmanTraderMapDao.getSalesmanTraderMapByExample(mapExample);
+    }
 
 }

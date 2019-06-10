@@ -20,6 +20,9 @@ public class ShopInfoVO {
     @ApiModelProperty(value = "")
     private Integer id;
 
+    @ApiModelProperty(value = "药店偏码")
+    private String code;
+
     @ApiModelProperty(value = "药店名称")
     private String title;
 

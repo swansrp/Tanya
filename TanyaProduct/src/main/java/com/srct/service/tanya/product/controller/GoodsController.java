@@ -13,9 +13,13 @@ import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.product.bo.ProductBO;
+import com.srct.service.tanya.product.bo.UploadProductBO;
 import com.srct.service.tanya.product.service.GoodsService;
 import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
 import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
+import com.srct.service.tanya.product.vo.upload.UploadGoodsInfoVO;
+import com.srct.service.utils.ExcelUtils;
+import com.srct.service.utils.HttpUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
@@ -31,8 +35,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.srct.service.config.annotation.Auth.AuthType.USER;
 
@@ -47,6 +56,8 @@ import static com.srct.service.config.annotation.Auth.AuthType.USER;
 public class GoodsController {
 
     private final static String productType = "商品";
+
+    private static final String TEMPLATE_FILE_NAME = "shop_template.xls";
 
     @Autowired
     private HttpServletRequest request;
@@ -76,13 +87,15 @@ public class GoodsController {
     @ApiOperation(value = "获取药品", notes = "获取药品详情,无id则返回渠道药品列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "id", value = "商品id"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "id", value = "商品id"),
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "title", value = "药店名"),
-            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "withdiscount", value = "是否需要活动信息")})
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "withdiscount", value = "是否需要活动信息"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "targetId", value = "下属id")})
     public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> getGoods(@RequestBody QueryReqVO req,
             @RequestParam(value = "id", required = false) Integer goodsId,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "withdiscount", required = false) Boolean withDiscount) {
+            @RequestParam(value = "withdiscount", required = false) Boolean withDiscount,
+            @RequestParam(value = "targetId", required = false) Integer factoryId) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***getGoods***");
@@ -95,6 +108,7 @@ public class GoodsController {
         goods.setProductId(goodsId);
         goods.setReq(req);
         goods.setTitle(title);
+        goods.setFactoryId(factoryId);
         QueryRespVO<GoodsInfoRespVO> goodsInfoVOList;
         if (withDiscount != null && withDiscount) {
             goodsInfoVOList = goodsService.getGoodsInfoWithDiscount(goods);
@@ -127,15 +141,14 @@ public class GoodsController {
     }
 
     @ApiOperation(value = "获取绑定药品信息", notes = "只有merchant/factory等级可以获取绑定药品信息")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "factoryid", value = "查询药厂Id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "traderid", value = "查询销售员Id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "currentPage", value = "当前页"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "pageSize", value = "每页条目数量")})
+    @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "int", name = "factoryId", value = "查询药厂Id"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "traderId", value = "查询销售员Id"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "currentPage", value = "当前页"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "pageSize", value = "每页条目数量")})
     @RequestMapping(value = "/bind", method = RequestMethod.GET)
     public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> getGoodsBindInfo(
-            @RequestParam(value = "factoryid", required = false) Integer factoryId,
-            @RequestParam(value = "traderid", required = false) Integer traderId,
+            @RequestParam(value = "factoryId", required = false) Integer factoryId,
+            @RequestParam(value = "traderId", required = false) Integer traderId,
             @RequestParam(value = "currentPage", required = false) Integer currentPage,
             @RequestParam(value = "pageSize", required = false) Integer pageSize) {
         UserInfo info = (UserInfo) request.getAttribute("user");
@@ -154,7 +167,6 @@ public class GoodsController {
         goods.setCreatorRole(role);
         goods.setTraderId(traderId);
         goods.setFactoryId(factoryId);
-
         QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.getGoodsBindInfo(goods);
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
@@ -178,5 +190,50 @@ public class GoodsController {
         QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.delGoodsInfo(goods);
 
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
+    }
+
+    @ApiOperation(value = "上传药品", notes = "只有merchant可以上传药品信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "override", value = "是否覆盖", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "merchantid", value = "绑定商业渠道id", required = true)})
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<String>.Resp> upload(MultipartFile file,
+            @RequestParam(value = "override") Boolean override,
+            @RequestParam(value = "merchantid") Integer merchantId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***uploadGoods***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        UploadProductBO bo = new UploadProductBO();
+        bo.setMerchantId(merchantId);
+        bo.setFile(file);
+        bo.setOverride(override);
+        goodsService.uploadGoodsInfoVO(bo);
+        return TanyaExceptionHandler.generateResponse("success");
+    }
+
+    @ApiOperation(value = "获取药品上传模板", notes = "")
+    @RequestMapping(value = "/template", method = RequestMethod.GET)
+    public void template(HttpServletResponse response) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***templateGoods***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        try {
+            // response.reset();
+            response.setContentType("application/ms-excel");
+            response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+            // 设置文件名在不同主流浏览器上的编码
+            HttpUtil.contentDisposition(TEMPLATE_FILE_NAME, request, response);
+            ServletOutputStream stream = response.getOutputStream();
+            ExcelUtils.generateExcel(UploadGoodsInfoVO.builder().build(), stream);
+            stream.flush();
+            stream.close();
+            response.flushBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

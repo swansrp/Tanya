@@ -26,19 +26,25 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.GoodsTraderFactoryMerchantMapDao;
 import com.srct.service.tanya.product.bo.ProductBO;
+import com.srct.service.tanya.product.bo.UploadProductBO;
 import com.srct.service.tanya.product.service.DiscountService;
 import com.srct.service.tanya.product.service.GoodsService;
 import com.srct.service.tanya.product.vo.DiscountInfoVO;
 import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
 import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
 import com.srct.service.tanya.product.vo.GoodsInfoVO;
+import com.srct.service.tanya.product.vo.upload.UploadGoodsInfoVO;
 import com.srct.service.tanya.role.service.FactoryRoleService;
 import com.srct.service.utils.BeanUtil;
+import com.srct.service.utils.ExcelUtils;
 import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +84,149 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
                 break;
         }
         return res;
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> req) {
+        validateQuery(req);
+        String roleType = req.getCreatorRole().getRole();
+        switch (roleType) {
+            case "merchant":
+                return getGoodsInfoByMerchant(req);
+            case "factory":
+                return getGoodsInfoByFactory(req);
+            case "trader":
+                return getGoodsInfoByTrader(req);
+            default:
+                throw new ServiceException("不允许[" + roleType + "]角色查询商品");
+        }
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> getGoodsInfoWithDiscount(ProductBO<QueryReqVO> req) {
+        QueryRespVO<GoodsInfoRespVO> res = getGoodsInfo(req);
+        List<GoodsInfoRespVO> infoList = new ArrayList<>();
+        res.getInfo().forEach(info -> {
+            infoList.add(info);
+            List<DiscountInfo> discountList =
+                    discountService.getDiscountInfoListByGoodsId(info.getGoodsInfoVO().getId());
+            discountList.forEach(discountInfo -> infoList.add(buildGoodInfoRespVO(discountInfo)));
+        });
+        res.setInfo(infoList);
+        return res;
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> bindGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
+        validateBind(req);
+        String roleType = req.getCreatorRole().getRole();
+        GoodsInfoReqVO goodsInfoReqVO = req.getReq();
+        switch (roleType) {
+            case "merchant":
+                bindGoodsFactoryRelationship(req, goodsInfoReqVO.getBindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                bindGoodsFactoryRelationship(req, goodsInfoReqVO.getUnbindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                break;
+            case "factory":
+                bindGoodsTraderRelationship(req, goodsInfoReqVO.getBindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
+                bindGoodsTraderRelationship(req, goodsInfoReqVO.getUnbindIdList(),
+                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+                break;
+            default:
+                throw new ServiceException("不允许[" + roleType + "]角色绑定商品");
+        }
+
+        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<>();
+        /*
+        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfoById(goodsInfoId);
+        GoodsInfoRespVO goodsInfoRespVO = buildGoodInfoRespVO(goodsInfo);
+        res.getInfo().add(goodsInfoRespVO);
+        */
+        return res;
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> delGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
+        validateDelete(req);
+        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfoById(req.getProductId());
+        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
+        FactoryInfo factoryInfo = factoryInfoList.get(0);
+        GoodsFactoryMerchantMap goodsFactoryMerchantMap = getGoodsFactoryMerchantMapList(factoryInfo, goodsInfo);
+        FactoryMerchantMap factoryMerchantMap =
+                factoryMerchantMapDao.getFactoryMerchantMapById(goodsFactoryMerchantMap.getFactoryMerchantMapId());
+        factoryMerchantMap.setGoodsNumber(factoryMerchantMap.getGoodsNumber() - 1);
+        goodsInfoDao.delGoodsInfo(goodsInfo);
+
+        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<>();
+        res.getInfo().add(buildGoodInfoRespVO(goodsInfo));
+        return res;
+    }
+
+    @Override
+    public QueryRespVO<GoodsInfoRespVO> getGoodsBindInfo(ProductBO<QueryReqVO> req) {
+        validateQuery(req);
+        String roleType = req.getCreatorRole().getRole();
+        switch (roleType) {
+            case "merchant":
+                return getGoodsBindInfoByMerchant(req);
+            case "factory":
+                return getGoodsBindInfoByFactory(req);
+            default:
+                throw new ServiceException("不允许[" + roleType + "]角色查看商品绑定信息");
+
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void uploadGoodsInfoVO(UploadProductBO req) {
+        List<UploadGoodsInfoVO> uploadGoodsList = ExcelUtils.readFromExcel(req.getFile(), UploadGoodsInfoVO.class);
+        MerchantInfo merchantInfo = super.merchantInfoDao.getMerchantInfoById(req.getMerchantId());
+        if (req.getOverride() != null && req.getOverride()) {
+            delGoodsInfoByMerchant(merchantInfo);
+        }
+        uploadGoodsList.forEach(uploadGoods -> {
+            GoodsInfo goodsInfo = new GoodsInfo();
+            BeanUtil.copyProperties(uploadGoods, goodsInfo);
+            goodsInfo.setMerchantId(merchantInfo.getId());
+            goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+            try {
+                goodsInfoDao.updateGoodsInfo(goodsInfo);
+            } catch (DuplicateKeyException e) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void validateUpdate(ProductBO<?> req) {
+        String roleType = req.getCreatorRole().getRole();
+        if (!roleType.equals("factory") && !roleType.equals("merchant")) {
+            throw new ServiceException("不允许[" + roleType + "]角色创建/更新商品");
+        }
+    }
+
+    @Override
+    protected void validateConfirm(ProductBO<?> req) {
+        throw new ServiceException("不支持确认商品");
+    }
+
+    @Override
+    protected void validateDelete(ProductBO<?> req) {
+        String roleType = req.getCreatorRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("不允许[" + roleType + "]角色删除商品");
+        }
+    }
+
+    @Override
+    protected void validateQuery(ProductBO<?> req) {
+        String roleType = req.getCreatorRole().getRole();
+        if (roleType.equals("salesman")) {
+            throw new ServiceException("不允许[" + roleType + "]角色查询商品");
+        }
     }
 
     private GoodsInfo updateGoodsInfoByMerchant(ProductBO<GoodsInfoReqVO> req) {
@@ -134,22 +283,6 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         goodsFactoryMerchantMap.setGoodsId(goodsInfo.getId());
         goodsFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         return goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap).get(0);
-    }
-
-    @Override
-    public QueryRespVO<GoodsInfoRespVO> getGoodsInfo(ProductBO<QueryReqVO> req) {
-        validateQuery(req);
-        String roleType = req.getCreatorRole().getRole();
-        switch (roleType) {
-            case "merchant":
-                return getGoodsInfoByMerchant(req);
-            case "factory":
-                return getGoodsInfoByFactory(req);
-            case "trader":
-                return getGoodsInfoByTrader(req);
-            default:
-                throw new ServiceException("不允许[" + roleType + "]角色查询商品");
-        }
     }
 
     private QueryRespVO<GoodsInfoRespVO> getGoodsInfoByTrader(ProductBO<QueryReqVO> req) {
@@ -270,8 +403,20 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         GoodsInfoExample goodsInfoEx = new GoodsInfoExample();
         GoodsInfoExample.Criteria criteria = goodsInfoEx.createCriteria();
         criteria.andMerchantIdEqualTo(merchantInfo.getId());
+        List<Integer> idList = new ArrayList<>();
+        if (req.getFactoryId() != null) {
+            List<Integer> goodsIdList =
+                    getGoodsIdListByMerchantIdAndFactoryId(merchantInfo.getId(), req.getFactoryId());
+            if (!CollectionUtils.isEmpty(goodsIdList)) {
+                idList.addAll(goodsIdList);
+            }
+        }
         if (req.getProductId() != null) {
-            criteria.andIdEqualTo(req.getProductId());
+            idList.clear();
+            idList.add(req.getProductId());
+        }
+        if (idList.size() > 0) {
+            criteria.andIdIn(idList);
         }
         if (req.getTitle() != null) {
             criteria.andTitleLike("%" + req.getTitle() + "%");
@@ -286,62 +431,26 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         return res;
     }
 
-    @Override
-    public QueryRespVO<GoodsInfoRespVO> getGoodsInfoWithDiscount(ProductBO<QueryReqVO> req) {
-        QueryRespVO<GoodsInfoRespVO> res = getGoodsInfo(req);
-        List<GoodsInfoRespVO> infoList = new ArrayList<>();
-        res.getInfo().forEach(info -> {
-            infoList.add(info);
-            List<DiscountInfo> discountList =
-                    discountService.getDiscountInfoListByGoodsId(info.getGoodsInfoVO().getId());
-            discountList.forEach(discountInfo -> infoList.add(buildGoodInfoRespVO(discountInfo)));
-        });
-        res.setInfo(infoList);
-        return res;
+    private List<Integer> getGoodsIdListByMerchantIdAndFactoryId(Integer merchantId, Integer factoryId) {
+        FactoryMerchantMap factoryMerchantMap =
+                super.getFactoryMerchantMapByMerchantIdAndFactoryId(merchantId, factoryId);
+        List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList =
+                getGoodsFactoryMerchantMapList(factoryMerchantMap, null);
+        return (List<Integer>) ReflectionUtil.getFieldList(goodsFactoryMerchantMapList, "goodsId");
     }
 
-    @Override
-    public QueryRespVO<GoodsInfoRespVO> bindGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
-        validateBind(req);
-        String roleType = req.getCreatorRole().getRole();
+    private void bindGoodsTraderRelationship(ProductBO<GoodsInfoReqVO> req, List<Integer> goodsIdList, Byte valid) {
         GoodsInfoReqVO goodsInfoReqVO = req.getReq();
-        GoodsInfoVO goodsInfoVO = goodsInfoReqVO.getGoods();
-        switch (roleType) {
-            case "merchant":
-                bindGoodsFactoryRelationship(req, goodsInfoReqVO.getBindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
-                bindGoodsFactoryRelationship(req, goodsInfoReqVO.getUnbindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-                break;
-            case "factory":
-                bindGoodsTraderRelationship(req, goodsInfoReqVO.getBindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_VALID);
-                bindGoodsTraderRelationship(req, goodsInfoReqVO.getUnbindIdList(),
-                        DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-                break;
-            default:
-                throw new ServiceException("不允许[" + roleType + "]角色绑定商品");
-        }
-
-        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<>();
-        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfoById(goodsInfoVO.getId());
-        GoodsInfoRespVO goodsInfoRespVO = buildGoodInfoRespVO(goodsInfo);
-        res.getInfo().add(goodsInfoRespVO);
-        return res;
-    }
-
-    private void bindGoodsTraderRelationship(ProductBO<GoodsInfoReqVO> req, List<Integer> traderIdList, Byte valid) {
-        GoodsInfoReqVO goodsInfoReqVO = req.getReq();
-        GoodsInfoVO goodsInfoVO = goodsInfoReqVO.getGoods();
-        if (traderIdList != null && traderIdList.size() > 0) {
-            traderIdList.forEach(traderId -> {
-                TraderInfo traderInfo = super.traderInfoDao.getTraderInfoById(traderId);
+        TraderInfo traderInfo = super.traderInfoDao.getTraderInfoById(goodsInfoReqVO.getTargetId());
+        if (!CollectionUtils.isEmpty(goodsIdList)) {
+            goodsIdList.forEach(goodsInfoId -> {
+                GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(goodsInfoId);
                 TraderFactoryMerchantMap traderFactoryMerchantMap = super.getTraderFactoryMerchantMap(req);
                 List<GoodsTraderFactoryMerchantMap> goodsFactoryMerchantMapList =
-                        getGoodsTraderFactoryMerchantMap(traderInfo, traderFactoryMerchantMap, goodsInfoVO.getId());
+                        getGoodsTraderFactoryMerchantMap(traderInfo, traderFactoryMerchantMap, goodsInfo.getId());
                 boolean notFound = true;
                 for (GoodsTraderFactoryMerchantMap goodsTraderFactoryMerchantMap : goodsFactoryMerchantMapList) {
-                    if (goodsTraderFactoryMerchantMap.getTraderId().equals(traderId)) {
+                    if (goodsTraderFactoryMerchantMap.getTraderId().equals(traderInfo.getId())) {
                         notFound = false;
                         if (!goodsTraderFactoryMerchantMap.getValid().equals(valid)) {
                             goodsTraderFactoryMerchantMap.setValid(valid);
@@ -352,29 +461,31 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
                 }
                 if (notFound) {
                     GoodsTraderFactoryMerchantMap goodsTraderFactoryMerchantMap = new GoodsTraderFactoryMerchantMap();
-                    goodsTraderFactoryMerchantMap.setGoodsId(goodsInfoVO.getId());
+                    goodsTraderFactoryMerchantMap.setGoodsId(goodsInfo.getId());
                     goodsTraderFactoryMerchantMap.setValid(valid);
                     goodsTraderFactoryMerchantMap.setTraderFactoryMerchantMapId(traderFactoryMerchantMap.getId());
-                    goodsTraderFactoryMerchantMap.setTraderId(traderId);
+                    goodsTraderFactoryMerchantMap.setTraderId(traderInfo.getId());
                     goodsTraderFactoryMerchantMapDao.updateGoodsTraderFactoryMerchantMap(goodsTraderFactoryMerchantMap);
                 }
             });
         }
     }
 
-    private void bindGoodsFactoryRelationship(ProductBO<GoodsInfoReqVO> req, List<Integer> factoryIdList, Byte valid) {
+    private void bindGoodsFactoryRelationship(ProductBO<GoodsInfoReqVO> req, List<Integer> goodsIdList, Byte valid) {
         GoodsInfoReqVO goodsInfoReqVO = req.getReq();
-        GoodsInfoVO goodsInfoVO = goodsInfoReqVO.getGoods();
-        if (factoryIdList != null && factoryIdList.size() > 0) {
-            factoryIdList.forEach(factoryId -> {
+        FactoryInfo factoryInfo = super.factoryInfoDao.getFactoryInfoById(goodsInfoReqVO.getTargetId());
+        if (!CollectionUtils.isEmpty(goodsIdList)) {
+            goodsIdList.forEach(goodsId -> {
+                GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(goodsId);
                 FactoryMerchantMap factoryMerchantMap =
-                        super.getFactoryMerchantMapByMerchantIdAndFactoryId(goodsInfoVO.getMerchantId(), factoryId);
+                        super.getFactoryMerchantMapByMerchantIdAndFactoryId(goodsInfo.getMerchantId(),
+                                factoryInfo.getId());
                 GoodsFactoryMerchantMap goodsFactoryMerchantMap = new GoodsFactoryMerchantMap();
-                goodsFactoryMerchantMap.setGoodsId(goodsInfoVO.getId());
+                goodsFactoryMerchantMap.setGoodsId(goodsInfo.getId());
                 goodsFactoryMerchantMap.setFactoryMerchantMapId(factoryMerchantMap.getId());
                 List<GoodsFactoryMerchantMap> goodsFactoryMerchantMapList =
                         goodsFactoryMerchantMapDao.getGoodsFactoryMerchantMapSelective(goodsFactoryMerchantMap);
-                if (goodsFactoryMerchantMapList != null && goodsFactoryMerchantMapList.size() > 0) {
+                if (!CollectionUtils.isEmpty(goodsFactoryMerchantMapList)) {
                     goodsFactoryMerchantMap = goodsFactoryMerchantMapList.get(0);
                     if (!goodsFactoryMerchantMap.getValid().equals(valid)) {
                         goodsFactoryMerchantMap.setValid(valid);
@@ -414,93 +525,68 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
         return goodsInfoRespVO;
     }
 
-    @Override
-    protected void validateUpdate(ProductBO<?> req) {
-        String roleType = req.getCreatorRole().getRole();
-        if (!roleType.equals("factory") && !roleType.equals("merchant")) {
-            throw new ServiceException("不允许[" + roleType + "]角色创建/更新商品");
-        }
-    }
-
-    @Override
-    protected void validateConfirm(ProductBO<?> req) {
-        throw new ServiceException("不支持确认商品");
-    }
-
-    @Override
-    public QueryRespVO<GoodsInfoRespVO> delGoodsInfo(ProductBO<GoodsInfoReqVO> req) {
-        validateDelete(req);
-        GoodsInfo goodsInfo = goodsInfoDao.getGoodsInfoById(req.getProductId());
-        List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(req);
-        FactoryInfo factoryInfo = factoryInfoList.get(0);
-        GoodsFactoryMerchantMap goodsFactoryMerchantMap = getGoodsFactoryMerchantMapList(factoryInfo, goodsInfo);
-        FactoryMerchantMap factoryMerchantMap =
-                factoryMerchantMapDao.getFactoryMerchantMapById(goodsFactoryMerchantMap.getFactoryMerchantMapId());
-        factoryMerchantMap.setGoodsNumber(factoryMerchantMap.getGoodsNumber() - 1);
-        goodsInfoDao.delGoodsInfo(goodsInfo);
-
-        QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<>();
-        res.getInfo().add(buildGoodInfoRespVO(goodsInfo));
-        return res;
-    }
-
-    @Override
-    protected void validateDelete(ProductBO<?> req) {
-        String roleType = req.getCreatorRole().getRole();
-        if (roleType.equals("salesman")) {
-            throw new ServiceException("不允许[" + roleType + "]角色删除商品");
-        }
-    }
-
-    @Override
-    protected void validateQuery(ProductBO<?> req) {
-        String roleType = req.getCreatorRole().getRole();
-        if (roleType.equals("salesman")) {
-            throw new ServiceException("不允许[" + roleType + "]角色查询商品");
-        }
-    }
-
     private void validateBind(ProductBO<?> req) {
         String roleType = req.getCreatorRole().getRole();
         ProductBO<GoodsInfoReqVO> goods = (ProductBO<GoodsInfoReqVO>) req;
         GoodsInfoReqVO goodsInfoReqVO = goods.getReq();
-        GoodsInfoVO goodsInfoVO = goodsInfoReqVO.getGoods();
         switch (roleType) {
             case "merchant":
                 MerchantInfo merchantInfo = super.merchantRoleService.getMerchantInfoByUser(req.getCreatorInfo());
-                if (!merchantInfo.getId().equals(goodsInfoVO.getMerchantId())) {
-                    throw new ServiceException("不允许[" + roleType + "]角色绑定商品: " + goodsInfoVO.getId());
-                }
+                goodsInfoReqVO.getBindIdList().forEach(id -> {
+                    GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(id);
+                    if (!merchantInfo.getId().equals(goodsInfo.getMerchantId())) {
+                        throw new ServiceException("不允许[" + roleType + "]角色绑定商品: " + goodsInfo.getId());
+                    }
+                });
+                goodsInfoReqVO.getUnbindIdList().forEach(id -> {
+                    GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(id);
+                    if (!merchantInfo.getId().equals(goodsInfo.getMerchantId())) {
+                        throw new ServiceException("不允许[" + roleType + "]角色解除绑定商品: " + goodsInfo.getId());
+                    }
+                });
+
                 break;
             case "factory":
                 FactoryMerchantMap factoryMerchantMap = super.getFactoryMerchantMap(req);
-                if (!factoryMerchantMap.getMerchantId().equals(goodsInfoVO.getMerchantId())) {
-                    throw new ServiceException("不允许[" + roleType + "]角色绑定商品: " + goodsInfoVO.getId());
-                }
+                goodsInfoReqVO.getBindIdList().forEach(id -> {
+                    GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(id);
+                    if (!factoryMerchantMap.getMerchantId().equals(goodsInfo.getMerchantId())) {
+                        throw new ServiceException("不允许[" + roleType + "]角色绑定商品: " + goodsInfo.getId());
+                    }
+                });
+                goodsInfoReqVO.getUnbindIdList().forEach(id -> {
+                    GoodsInfo goodsInfo = super.goodsInfoDao.getGoodsInfoById(id);
+                    if (!factoryMerchantMap.getMerchantId().equals(goodsInfo.getMerchantId())) {
+                        throw new ServiceException("不允许[" + roleType + "]角色解除绑定商品: " + goodsInfo.getId());
+                    }
+                });
                 if (!DataSourceCommonConstant.DATABASE_COMMON_VALID.equals(factoryMerchantMap.getGoodsTraderBind())) {
                     throw new ServiceException("没有开通factory[" + factoryMerchantMap.getFactoryId() + "]角色绑定商品权限");
                 }
                 break;
             default:
-                throw new ServiceException("不允许[" + roleType + "]角色绑定商品: " + goodsInfoVO.getId());
+                throw new ServiceException("不允许[" + roleType + "]角色绑定商品");
         }
     }
 
-
-    @Override
-    public QueryRespVO<GoodsInfoRespVO> getGoodsBindInfo(ProductBO<QueryReqVO> req) {
-        validateQuery(req);
-        String roleType = req.getCreatorRole().getRole();
-        switch (roleType) {
-            case "merchant":
-                return getGoodsBindInfoByMerchant(req);
-            case "factory":
-                return getGoodsBindInfoByFactory(req);
-            default:
-                throw new ServiceException("不允许[" + roleType + "]角色查看商品绑定信息");
-
+    private void delGoodsInfoByMerchant(MerchantInfo merchantInfo) {
+        List<GoodsInfo> goodsInfoList = getGoodsInfoListByMerchant(merchantInfo);
+        if (!CollectionUtils.isEmpty(goodsInfoList)) {
+            goodsInfoList.forEach(goodsInfo -> goodsInfoDao.delGoodsInfo(goodsInfo));
         }
+    }
 
+    private List<GoodsInfo> getGoodsInfoListByMerchant(MerchantInfo merchantInfo) {
+        return getGoodsInfoListByMerchant(merchantInfo, null);
+    }
+
+    private List<GoodsInfo> getGoodsInfoListByMerchant(MerchantInfo merchantInfo, Integer goodsId) {
+        GoodsInfo goodsInfo = GoodsInfo.builder().merchantId(merchantInfo.getId())
+                .valid(DataSourceCommonConstant.DATABASE_COMMON_VALID).build();
+        if (goodsId != null) {
+            goodsInfo.setId(goodsId);
+        }
+        return super.goodsInfoDao.getGoodsInfoSelective(goodsInfo);
     }
 
     private QueryRespVO<GoodsInfoRespVO> getGoodsBindInfoByFactory(ProductBO<QueryReqVO> req) {
@@ -544,13 +630,8 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
     private QueryRespVO<GoodsInfoRespVO> getGoodsBindInfoByMerchant(ProductBO<QueryReqVO> req) {
         QueryRespVO<GoodsInfoRespVO> res = new QueryRespVO<>();
         MerchantInfo merchantInfo = super.merchantRoleService.getMerchantInfoByUser(req.getCreatorInfo());
-        FactoryMerchantMap factoryMerchantMapEx = FactoryMerchantMap.builder().merchantId(merchantInfo.getId())
-                .valid(DataSourceCommonConstant.DATABASE_COMMON_VALID).build();
-        if (req.getFactoryId() != null) {
-            factoryMerchantMapEx = factoryMerchantMapEx.toBuilder().factoryId(req.getFactoryId()).build();
-        }
         List<FactoryMerchantMap> factoryMerchantMapList =
-                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+                super.getFactoryMerchantMapListByMerchantIdAndFactoryId(merchantInfo.getId(), req.getFactoryId());
         List<Integer> factoryMerchantMapIdList =
                 (List<Integer>) ReflectionUtil.getFieldList(factoryMerchantMapList, "id");
         if (factoryMerchantMapIdList == null || 0 == factoryMerchantMapIdList.size()) {

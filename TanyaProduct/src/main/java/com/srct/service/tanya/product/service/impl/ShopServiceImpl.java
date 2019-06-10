@@ -40,6 +40,7 @@ import com.srct.service.utils.ReflectionUtil;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -166,7 +167,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     public void uploadShopInfoVO(UploadProductBO req) {
         List<UploadShopInfoVO> uploadShopList = ExcelUtils.readFromExcel(req.getFile(), UploadShopInfoVO.class);
         MerchantInfo merchantInfo = super.merchantInfoDao.getMerchantInfoById(req.getMerchantId());
-        if (req.getOverride()) {
+        if (req.getOverride() != null && req.getOverride()) {
             delShopInfoByMerchant(merchantInfo);
         }
         uploadShopList.forEach(uploadShop -> {
@@ -174,7 +175,11 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
             BeanUtil.copyProperties(uploadShop, shopInfo);
             shopInfo.setMerchantId(merchantInfo.getId());
             shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            shopInfoDao.updateShopInfo(shopInfo);
+            try {
+                shopInfoDao.updateShopInfo(shopInfo);
+            } catch (DuplicateKeyException e) {
+
+            }
         });
     }
 
@@ -432,7 +437,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     private void bindShopTraderRelationship(ProductBO<ShopInfoReqVO> req, List<Integer> traderIdList, Byte valid) {
         ShopInfoReqVO shopInfoReqVO = req.getReq();
         ShopInfoVO shopInfoVO = shopInfoReqVO.getShop();
-        if (traderIdList != null && traderIdList.size() > 0) {
+        if (!CollectionUtils.isEmpty(traderIdList)) {
             traderIdList.forEach(traderId -> {
                 TraderInfo traderInfo = super.traderInfoDao.getTraderInfoById(traderId);
                 TraderFactoryMerchantMap traderFactoryMerchantMap = super.getTraderFactoryMerchantMap(req);
@@ -464,7 +469,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     private void bindShopFactoryRelationship(ProductBO<ShopInfoReqVO> req, List<Integer> factoryIdList, Byte valid) {
         ShopInfoReqVO shopInfoReqVO = req.getReq();
         ShopInfoVO shopInfoVO = shopInfoReqVO.getShop();
-        if (factoryIdList != null && factoryIdList.size() > 0) {
+        if (!CollectionUtils.isEmpty(factoryIdList)) {
             factoryIdList.forEach(factoryId -> {
                 FactoryMerchantMap factoryMerchantMap =
                         super.getFactoryMerchantMapByMerchantIdAndFactoryId(shopInfoVO.getMerchantId(), factoryId);
@@ -473,7 +478,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
                 shopFactoryMerchantMap.setFactoryMerchantMapId(factoryMerchantMap.getId());
                 List<ShopFactoryMerchantMap> shopFactoryMerchantMapList =
                         shopFactoryMerchantMapDao.getShopFactoryMerchantMapSelective(shopFactoryMerchantMap);
-                if (shopFactoryMerchantMapList != null && shopFactoryMerchantMapList.size() > 0) {
+                if (!CollectionUtils.isEmpty(shopFactoryMerchantMapList)) {
                     shopFactoryMerchantMap = shopFactoryMerchantMapList.get(0);
                     if (!shopFactoryMerchantMap.getValid().equals(valid)) {
                         shopFactoryMerchantMap.setValid(valid);
@@ -567,13 +572,8 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     private QueryRespVO<ShopInfoRespVO> getShopBindInfoByMerchant(ProductBO<QueryReqVO> req) {
         QueryRespVO<ShopInfoRespVO> res = new QueryRespVO<>();
         MerchantInfo merchantInfo = super.merchantRoleService.getMerchantInfoByUser(req.getCreatorInfo());
-        FactoryMerchantMap factoryMerchantMapEx = FactoryMerchantMap.builder().merchantId(merchantInfo.getId())
-                .valid(DataSourceCommonConstant.DATABASE_COMMON_VALID).build();
-        if (req.getFactoryId() != null) {
-            factoryMerchantMapEx = factoryMerchantMapEx.toBuilder().factoryId(req.getFactoryId()).build();
-        }
         List<FactoryMerchantMap> factoryMerchantMapList =
-                factoryMerchantMapDao.getFactoryMerchantMapSelective(factoryMerchantMapEx);
+                super.getFactoryMerchantMapListByMerchantIdAndFactoryId(merchantInfo.getId(), req.getFactoryId());
         List<Integer> factoryMerchantMapIdList =
                 (List<Integer>) ReflectionUtil.getFieldList(factoryMerchantMapList, "id");
         if (factoryMerchantMapIdList == null || 0 == factoryMerchantMapIdList.size()) {

@@ -20,11 +20,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class UploadShopInfoVO extends UploadReqVO {
-    @ApiModelProperty("唯一标识码")
+    @ApiModelProperty("客户编码")
     private String code;
-    @ApiModelProperty("药店名称")
+    @ApiModelProperty("客户名称")
     private String title;
-    @ApiModelProperty("药店备注")
+    @ApiModelProperty("客户备注(地址)")
     private String comment;
 
 }

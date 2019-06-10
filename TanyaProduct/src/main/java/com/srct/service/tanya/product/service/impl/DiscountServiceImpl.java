@@ -29,6 +29,7 @@ import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.DateUtils;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -46,47 +47,7 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         List<FactoryInfo> factoryInfoList = super.getFactoryInfoList(discount);
         List<Integer> factoryMerchantMapIdList = super.buildFactoryMerchantMapIdList(discount, factoryInfoList);
         DiscountInfoExample discountExample = buildDiscountInfoExample(discount, factoryMerchantMapIdList);
-        if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(discount.getApproved())) {
-            discountExample.getOredCriteria().get(0).andConfirmAtIsNull();
-        } else if (discount.getApproved() != null) {
-            discountExample.getOredCriteria().get(0).andConfirmStatusEqualTo(discount.getApproved());
-        }
         return buildResByExample(discount, discountExample);
-    }
-
-    private DiscountInfoExample buildDiscountInfoExample(ProductBO<?> discount,
-            List<Integer> factoryMerchantMapIdList) {
-        DiscountInfoExample discountExample = super.makeQueryExample(discount, DiscountInfoExample.class);
-        DiscountInfoExample.Criteria discountCriteria = discountExample.getOredCriteria().get(0);
-        if (factoryMerchantMapIdList.size() == 0) {
-            factoryMerchantMapIdList.add(0);
-        }
-        discountCriteria.andFactoryMetchatMapIdIn(factoryMerchantMapIdList);
-        if (discount.getProductId() != null) {
-            discountCriteria.andIdEqualTo(discount.getProductId());
-        }
-
-        if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(discount.getApproved())) {
-            discountCriteria.andConfirmAtIsNull();
-        } else if (discount.getApproved() != null) {
-            discountCriteria.andConfirmStatusEqualTo(discount.getApproved());
-        }
-
-        return discountExample;
-    }
-
-    private QueryRespVO<DiscountInfoRespVO> buildResByExample(ProductBO<QueryReqVO> discount,
-            DiscountInfoExample discountExample) {
-        PageInfo<?> pageInfo = super.buildPage(discount);
-        PageInfo<DiscountInfo> discountInfoList = discountInfoDao.getDiscountInfoByExample(discountExample, pageInfo);
-
-        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
-        super.buildRespByReq(res, discount);
-        res.setPageSize(discountInfoList.getPages());
-        res.setTotalSize(discountInfoList.getTotal());
-
-        discountInfoList.getList().forEach(discountInfo -> res.getInfo().add(buildDiscountInfoRespVO(discountInfo)));
-        return res;
     }
 
     @Override
@@ -120,28 +81,6 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
 
         return res;
 
-    }
-
-    private DiscountInfoRespVO buildDiscountInfoRespVO(DiscountInfo discountInfo) {
-        DiscountInfoVO discountInfoVO = new DiscountInfoVO();
-        BeanUtil.copyProperties(discountInfo, discountInfoVO);
-
-        DiscountInfoRespVO res = new DiscountInfoRespVO();
-        BeanUtil.copyProperties(discountInfo, res);
-
-        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVOById(discountInfo.getGoodsId());
-        FactoryMerchantMap map = factoryMerchantMapDao.getFactoryMerchantMapById(discountInfo.getFactoryMetchatMapId());
-        FactoryMerchantMap factoryMerchantMap = factoryMerchantMapDao.getFactoryMerchantMapById(map.getId());
-        RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
-        RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
-        RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(discountInfo.getConfirmBy(), "merchant");
-        res.setDiscountInfoVO(discountInfoVO);
-        res.setFactoryInfoVO(factoryInfoVO);
-        res.setGoodsInfoVO(goodsInfoVO);
-        res.setMerchantInfoVO(merchantInfoVO);
-        res.setDiscountInfoVO(discountInfoVO);
-        res.setConfirmRoleInfoVO(confirmRoleInfoVO);
-        return res;
     }
 
     @Override
@@ -262,6 +201,67 @@ public class DiscountServiceImpl extends ProductServiceBaseImpl implements Disco
         if (roleType.equals("salesman")) {
             throw new ServiceException("dont allow to query discount by role " + roleType);
         }
+    }
+
+    private DiscountInfoExample buildDiscountInfoExample(ProductBO<?> discount,
+            List<Integer> factoryMerchantMapIdList) {
+        DiscountInfoExample discountExample = super.makeQueryExample(discount, DiscountInfoExample.class);
+        DiscountInfoExample.Criteria discountCriteria = discountExample.getOredCriteria().get(0);
+        if (factoryMerchantMapIdList.size() == 0) {
+            factoryMerchantMapIdList.add(0);
+        }
+        discountCriteria.andFactoryMetchatMapIdIn(factoryMerchantMapIdList);
+        if (discount.getProductId() != null) {
+            discountCriteria.andIdEqualTo(discount.getProductId());
+        }
+
+        if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(discount.getApproved())) {
+            discountCriteria.andConfirmAtIsNull();
+        } else if (discount.getApproved() != null) {
+            discountCriteria.andConfirmStatusEqualTo(discount.getApproved());
+        }
+
+        if (StringUtils.isNotBlank(discount.getTitle())) {
+            discountCriteria.andTitleLike("%" + discount.getTitle() + "%");
+        }
+
+        return discountExample;
+    }
+
+    private QueryRespVO<DiscountInfoRespVO> buildResByExample(ProductBO<QueryReqVO> discount,
+            DiscountInfoExample discountExample) {
+        PageInfo<?> pageInfo = super.buildPage(discount);
+        PageInfo<DiscountInfo> discountInfoList = discountInfoDao.getDiscountInfoByExample(discountExample, pageInfo);
+
+        QueryRespVO<DiscountInfoRespVO> res = new QueryRespVO<>();
+        super.buildRespByReq(res, discount);
+        res.setTotalPages(discountInfoList.getPages());
+        res.setTotalSize(discountInfoList.getTotal());
+
+        discountInfoList.getList().forEach(discountInfo -> res.getInfo().add(buildDiscountInfoRespVO(discountInfo)));
+        return res;
+    }
+
+    private DiscountInfoRespVO buildDiscountInfoRespVO(DiscountInfo discountInfo) {
+        DiscountInfoVO discountInfoVO = new DiscountInfoVO();
+        BeanUtil.copyProperties(discountInfo, discountInfoVO);
+
+        DiscountInfoRespVO res = new DiscountInfoRespVO();
+        BeanUtil.copyProperties(discountInfo, res);
+
+        GoodsInfoVO goodsInfoVO = super.getGoodsInfoVOById(discountInfo.getGoodsId());
+        FactoryMerchantMap map = factoryMerchantMapDao.getFactoryMerchantMapById(discountInfo.getFactoryMetchatMapId());
+        FactoryMerchantMap factoryMerchantMap = factoryMerchantMapDao.getFactoryMerchantMapById(map.getId());
+        RoleInfoVO merchantInfoVO = super.getRoleInfoVO(factoryMerchantMap.getMerchantId(), "merchant");
+        RoleInfoVO factoryInfoVO = super.getRoleInfoVO(factoryMerchantMap.getFactoryId(), "factory");
+        RoleInfoVO confirmRoleInfoVO = super.getRoleInfoVO(discountInfo.getConfirmBy(), "merchant");
+        res.setDiscountInfoVO(discountInfoVO);
+        res.setFactoryInfoVO(factoryInfoVO);
+        res.setGoodsInfoVO(goodsInfoVO);
+        res.setMerchantInfoVO(merchantInfoVO);
+        res.setDiscountInfoVO(discountInfoVO);
+        res.setConfirmRoleInfoVO(confirmRoleInfoVO);
+        return res;
     }
 
 }

@@ -35,6 +35,7 @@ import com.srct.service.utils.DateUtils;
 import com.srct.service.utils.MathUtil;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -219,10 +220,11 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             } catch (Exception e) {
                 throw new ServiceException("cant update the order id " + order.getReq().getOrder().getId());
             }
-            if (orderExsited.getFactoryConfirmAt() != null || orderExsited.getMerchantConfirmAt() != null) {
-                throw new ServiceException(
-                        "already confirmed order by factory " + DF.format(orderExsited.getFactoryConfirmAt())
-                                + " by merchant" + DF.format(orderExsited.getMerchantConfirmAt()));
+            if (orderExsited.getMerchantConfirmAt() != null) {
+                throw new ServiceException("已经被渠道商确认" + DF.format(orderExsited.getMerchantConfirmAt()));
+            }
+            if (orderExsited.getFactoryConfirmAt() != null) {
+                throw new ServiceException("已经被产品经理确认" + DF.format(orderExsited.getFactoryConfirmAt()));
             }
         }
     }
@@ -250,6 +252,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         orderCriteria.andTraderFactoryMerchantIdIn(traderFactoryMerchantMapIdList);
         if (order.getProductId() != null) {
             orderCriteria.andIdEqualTo(order.getProductId());
+        }
+        if (StringUtils.isNotBlank(order.getTitle())) {
+            orderCriteria.andTitleLike("%" + order.getTitle() + "%");
         }
 
         orderExample.setOrderByClause("update_at DESC");

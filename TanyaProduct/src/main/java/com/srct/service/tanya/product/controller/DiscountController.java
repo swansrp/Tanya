@@ -77,15 +77,17 @@ public class DiscountController {
     @ApiOperation(value = "获取折扣活动", notes = "获取折扣活动详情,无id则返回渠道折扣活动列表")
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "discountid", value = "折扣活动id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "factoryid", value = "药厂id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "goodsid", value = "商品id"),
-            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 null全部 -1未操作")})
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "discountid", value = "折扣活动id"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "factoryid", value = "药厂id"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "goodsid", value = "商品id"),
+            @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 null全部 -1未操作"),
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "title", value = "订单标题")})
     public ResponseEntity<CommonResponse<QueryRespVO<DiscountInfoRespVO>>.Resp> getDiscount(@RequestBody QueryReqVO req,
             @RequestParam(value = "discountid", required = false) Integer discountId,
             @RequestParam(value = "factoryid", required = false) Integer factoryId,
-            @RequestParam(value = "factoryid", required = false) Integer goodsId,
-            @RequestParam(value = "confirmed", required = false) Byte confirmed) {
+            @RequestParam(value = "goodsid", required = false) Integer goodsId,
+            @RequestParam(value = "confirmed", required = false) Byte confirmed,
+            @RequestParam(value = "title", required = false) String title) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***getDiscount***");
@@ -100,6 +102,7 @@ public class DiscountController {
         discount.setProductId(discountId);
         discount.setGoodsId(goodsId);
         discount.setApproved(confirmed);
+        discount.setTitle(title);
         QueryRespVO<DiscountInfoRespVO> discountInfoVOList = discountService.getDiscountInfo(discount);
 
         return TanyaExceptionHandler.generateResponse(discountInfoVOList);

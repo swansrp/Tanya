@@ -20,7 +20,8 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class GoodsInfoReqVO extends QueryReqVO {
-    List<Integer> bindIdList;
-    List<Integer> unbindIdList;
+    private List<Integer> bindIdList;
+    private List<Integer> unbindIdList;
+    private Integer targetId;
     private GoodsInfoVO goods;
 }

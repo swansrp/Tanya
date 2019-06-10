@@ -9,6 +9,7 @@
 package com.srct.service.tanya.product.service;
 
 import com.srct.service.tanya.product.bo.ProductBO;
+import com.srct.service.tanya.product.bo.UploadProductBO;
 import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
 import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
 import com.srct.service.vo.QueryReqVO;
@@ -30,4 +31,6 @@ public interface GoodsService {
     QueryRespVO<GoodsInfoRespVO> bindGoodsInfo(ProductBO<GoodsInfoReqVO> req);
 
     QueryRespVO<GoodsInfoRespVO> getGoodsBindInfo(ProductBO<QueryReqVO> req);
+
+    void uploadGoodsInfoVO(UploadProductBO req);
 }

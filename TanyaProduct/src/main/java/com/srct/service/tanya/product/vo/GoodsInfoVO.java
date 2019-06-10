@@ -23,6 +23,9 @@ public class GoodsInfoVO {
     @ApiModelProperty(value = "药品Id")
     private Integer id;
 
+    @ApiModelProperty(value = "药品偏码")
+    private String code;
+
     @ApiModelProperty(value = "药品名称")
     private String title;
 

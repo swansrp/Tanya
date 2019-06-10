@@ -42,6 +42,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.srct.service.config.annotation.Auth.AuthType.USER;
 
@@ -57,7 +58,7 @@ public class ShopController {
 
     private final static String productType = "药店";
 
-    private final static String TEMPLATE_FILE_NAME = "shop_template.xls";
+    private final static String TEMPLATE_FILE_NAME = "药店上传模板.xls";
 
     @Autowired
     private HttpServletRequest request;
@@ -178,9 +179,9 @@ public class ShopController {
         shop.setCreatorInfo(info);
         shop.setCreatorRole(role);
         shop.setProductId(shopId);
-        QueryRespVO<ShopInfoRespVO> shopInfoVOList = shopService.delShopInfo(shop);
+        QueryRespVO<ShopInfoRespVO> shopInfoVO = shopService.delShopInfo(shop);
 
-        return TanyaExceptionHandler.generateResponse(shopInfoVOList);
+        return TanyaExceptionHandler.generateResponse(shopInfoVO);
     }
 
 
@@ -189,7 +190,8 @@ public class ShopController {
             @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "override", value = "是否覆盖", required = true),
             @ApiImplicitParam(paramType = "query", dataType = "int", name = "merchantid", value = "绑定商业渠道id", required = true)})
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public void upload(MultipartFile file, @RequestParam(value = "override") Boolean override,
+    public ResponseEntity<CommonResponse<String>.Resp> upload(MultipartFile file,
+            @RequestParam(value = "override") Boolean override,
             @RequestParam(value = "merchantid") Integer merchantId) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
@@ -201,6 +203,7 @@ public class ShopController {
         bo.setFile(file);
         bo.setOverride(override);
         shopService.uploadShopInfoVO(bo);
+        return TanyaExceptionHandler.generateResponse("success");
     }
 
     @ApiOperation(value = "获取药店上传模板", notes = "")
@@ -212,7 +215,8 @@ public class ShopController {
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         try {
-            response.setContentType("application/octet-stream;charset=utf-8");
+            response.setContentType("application/ms-excel");
+            response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
             // 设置文件名在不同主流浏览器上的编码
             HttpUtil.contentDisposition(TEMPLATE_FILE_NAME, request, response);
             ServletOutputStream stream = response.getOutputStream();
