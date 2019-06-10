@@ -23,6 +23,9 @@ public class ShopInfo {
     @ApiModelProperty(value = "")
     private Integer id;
 
+    @ApiModelProperty(value = "药店编码")
+    private String code;
+
     @ApiModelProperty(value = "药店名称")
     private String title;
 

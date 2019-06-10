@@ -23,6 +23,9 @@ public class GoodsInfo {
     @ApiModelProperty(value = "")
     private Integer id;
 
+    @ApiModelProperty(value = "药品编码")
+    private String code;
+
     @ApiModelProperty(value = "产品名称")
     private String title;
 
