@@ -597,3 +597,10 @@ ALTER TABLE `campaign_info`
 -- 2019-5-12 删除用户信息email唯一值校验
 ALTER TABLE `user_info`
 	DROP INDEX `email`;
+-- 2019-6-4 药品药店添加编码field
+ALTER TABLE `shop_info`
+	ADD COLUMN `code` VARCHAR(20) NULL DEFAULT NULL COMMENT '药店编码' AFTER `id`,
+	ADD UNIQUE INDEX `code_merchant_id` (`code`, `merchant_id`);
+ALTER TABLE `goods_info`
+	ADD COLUMN `code` VARCHAR(20) NULL DEFAULT NULL COMMENT '药品编码' AFTER `id`,
+	ADD UNIQUE INDEX `code_merchant_id` (`code`, `merchant_id`);
