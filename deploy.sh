@@ -1,18 +1,21 @@
 basepath=$(cd "$(dirname "$0")"; pwd)  
 
-RestartCmd='tanya/start.sh restart'
-StatusCmd='tanya/start.sh status'
-TraceCmd='tail -f -n 1000 tanya/spring.log'
-APICmd='tail -f -n 1000 log/sys.log'
+RestartCmd='start.sh restart'
+StatusCmd='start.sh status'
+TraceCmd='tail -f -n 1000 spring.log'
+APICmd='tail -f -n 1000'
 ServerNum=1
 
 DevPath=$basepath/TanyaPortal/target/TanyaPortal-0.0.1-SNAPSHOT-exec.jar
 DevTargetPath="~/tanya/TanyaPortal-0.0.1-SNAPSHOT.jar"
+TestTargetPath="~/test/TanyaPortal-0.0.1-SNAPSHOT.jar"
 DevSSH=tanya
 
-ServerPathArray=($DevPath)
-ServerTargetPath=($DevTargetPath)
-ServerSSH=($DevSSH)
+ServerPathArray=($DevPath $DevPath)
+ServerTargetPath=($DevTargetPath $TestTargetPath)
+ServerSSH=($DevSSH $DevSSH)
+config=("tanya/" "test/")
+logconfig=("log/sys.log" "log/test/sys.log")
 
 
 upload(){
@@ -24,15 +27,16 @@ enter() {
 	return 0
 }
 restart() {
-	ssh ${ServerSSH[$1]} $RestartCmd
+	ssh ${ServerSSH[$1]} ${config[$1]}$RestartCmd
 	return 0
 }
 trace() {
-	ssh ${ServerSSH[$1]} $TraceCmd
+	ssh ${ServerSSH[$1]} ${config[$1]}$TraceCmd
 	return 0
 }
 api() {
-	ssh ${ServerSSH[$1]} $APICmd
+    echo $APICmd ${logconfig[$1]}
+	ssh ${ServerSSH[$1]} $APICmd ${logconfig[$1]}
 	return 0
 }
 deploy() {
@@ -46,7 +50,7 @@ deploy() {
 	return 0
 }
 status() {
-	ssh ${ServerSSH[$1]} $StatusCmd
+	ssh ${ServerSSH[$1]} ${config[$1]}$StatusCmd
 	return 0
 }
 allstatus() {
@@ -60,7 +64,7 @@ allstatus() {
 	return 0
 }
 log() {
-	scp ${ServerSSH[$1]}:~/log/sys.log $basepath/log
+	scp ${ServerSSH[$1]}:~/${logconfig[$1]} $basepath/${logconfig[$1]}
 }
 
 deployAll() {
@@ -78,7 +82,7 @@ deployAll() {
 
 echo "┌------------------------------┐"
 echo "|----0. DEV Server-------------|"
-#echo "|----1. Portal Server----------|"
+echo "|----1. test Server------------|"
 #echo "|----2. Plan Server------------|"
 #echo "|----3. Report Server----------|"
 #echo "|----4. Worker Server----------|"

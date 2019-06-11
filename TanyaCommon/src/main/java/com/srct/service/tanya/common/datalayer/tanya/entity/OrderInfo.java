@@ -9,16 +9,16 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 /**
- * 实体类
- * 根据需要删减无效参数
- *
- * @author: sharuopeng
- **/
+* 实体类
+* 根据需要删减无效参数
+*
+* @author: sharuopeng
+**/
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class OrderInfo {
+public class OrderInfo{
 
     @ApiModelProperty(value = "")
     private Integer id;
@@ -31,6 +31,12 @@ public class OrderInfo {
 
     @ApiModelProperty(value = "流通渠道id")
     private Integer traderFactoryMerchantId;
+
+    @ApiModelProperty(value = "营销员id")
+    private Integer traderId;
+
+    @ApiModelProperty(value = "厂商渠道id")
+    private Integer factoryMerchantId;
 
     @ApiModelProperty(value = "目标药店")
     private Integer shopId;

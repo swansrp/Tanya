@@ -1,6 +1,6 @@
 /**
  * Title: TomcatConfig.java Description: Copyright: Copyright (c) 2019 Company: Sharp
- * 
+ *
  * @Project Name: TanyaCommon
  * @Package: com.srct.service.tanya.common.config
  * @author sharuopeng
@@ -8,6 +8,7 @@
  */
 package com.srct.service.tanya.common.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
@@ -19,14 +20,14 @@ import org.springframework.context.annotation.Profile;
 
 /**
  * @author sharuopeng
- *
  */
+@Slf4j
 @Configuration
 @Profile(value = {"prod"})
 public class TomcatConfig {
     /**
      * http重定向到https
-     * 
+     *
      * @return
      */
     @Bean

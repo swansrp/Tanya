@@ -1,6 +1,6 @@
 /**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.config.db
  * @author: sharuopeng
@@ -8,31 +8,30 @@
  */
 package com.srct.service.tanya.common.config.db;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
+import com.srct.service.config.db.DataSourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
-import com.srct.service.config.db.DataSourceConfig;
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class DataSourceLifecycle implements SmartLifecycle {
 
     public static final Logger log = LoggerFactory.getLogger(SmartLifecycle.class);
-
-    private boolean isRunning = false;
-
     @Autowired
     DataSourceConfig dsc;
-
+    private boolean isRunning = false;
     @Autowired
     private DataBaseConfig dataBaseConfig;
+
+    @Value("${my.db.config.masterdb}")
+    private String dbName;
 
     /**
      * 1. 我们主要在该方法中启动任务或者其他异步服务，比如开启MQ接收消息<br/>
@@ -42,7 +41,7 @@ public class DataSourceLifecycle implements SmartLifecycle {
     @Override
     public void start() {
         Map<String, DataSource> dataSourceMap = new HashMap<>();
-        dataSourceMap.put("tanya", dataBaseConfig.TanyaConfigDataSource());
+        dataSourceMap.put(dbName, dataBaseConfig.TanyaConfigDataSource());
         dsc.addDynamicDataSource(dataSourceMap);
         isRunning = true;
     }

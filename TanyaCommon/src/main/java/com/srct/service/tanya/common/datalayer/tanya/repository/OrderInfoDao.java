@@ -4,10 +4,9 @@
  * @Project Name: Tanya
  * @Package: com.srct.service.tanya.common.datalayer.tanya.repository
  * @author: sharuopeng
- * @date: 2019/04/21
+ * @date: 2019/06/10
  */
 package com.srct.service.tanya.common.datalayer.tanya.repository;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
@@ -29,23 +28,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+
 @Repository("tanyaOrderInfoDao")
 public class OrderInfoDao {
 
     @Autowired
-    OrderInfoMapper orderInfoMapper;
+	private OrderInfoMapper orderInfoMapper;
 
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public OrderInfo updateOrderInfo(OrderInfo orderInfo) {
         int res = 0;
-        if (orderInfo.getId() == null) {
-            orderInfo.setCreateAt(new Date());
+        if (orderInfo.getId() == null){
+	        orderInfo.setCreateAt(new Date());
             res = orderInfoMapper.insertSelective(orderInfo);
-        } else {
-            orderInfo.setUpdateAt(new Date());
+        } else{
+	        orderInfo.setUpdateAt(new Date());
             res = orderInfoMapper.updateByPrimaryKeySelective(orderInfo);
-        }
-        if (res == 0) {
+        } if (res == 0) {
             throw new ServiceException("update OrderInfo error");
         }
         return orderInfo;
@@ -54,14 +53,13 @@ public class OrderInfoDao {
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public OrderInfo updateOrderInfoStrict(OrderInfo orderInfo) {
         int res = 0;
-        if (orderInfo.getId() == null) {
-            orderInfo.setCreateAt(new Date());
+        if (orderInfo.getId() == null){
+	        orderInfo.setCreateAt(new Date());
             res = orderInfoMapper.insert(orderInfo);
-        } else {
-            orderInfo.setUpdateAt(new Date());
+        } else{
+	        orderInfo.setUpdateAt(new Date());
             res = orderInfoMapper.updateByPrimaryKey(orderInfo);
-        }
-        if (res == 0) {
+        } if (res == 0) {
             throw new ServiceException("update OrderInfo error");
         }
         return orderInfo;
@@ -79,24 +77,24 @@ public class OrderInfoDao {
 
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public Integer delOrderInfo(OrderInfo orderInfo) {
-        OrderInfoExample example = getOrderInfoExample(orderInfo);
-        orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        return orderInfoMapper.updateByExampleSelective(orderInfo, example);
+		OrderInfoExample example = getOrderInfoExample(orderInfo);
+	    orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+	    return orderInfoMapper.updateByExampleSelective(orderInfo, example);
     }
 
     @CacheEvict(value = "OrderInfo", allEntries = true)
     public Integer delOrderInfoByExample(OrderInfoExample example) {
-        Integer res = 0;
-        List<OrderInfo> orderInfoList = getOrderInfoByExample(example);
-        for (OrderInfo orderInfo : orderInfoList) {
-            orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+	    Integer res = 0;
+	    List<OrderInfo> orderInfoList = getOrderInfoByExample(example);
+	    for (OrderInfo orderInfo :orderInfoList){
+	        orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
             res += orderInfoMapper.updateByPrimaryKey(orderInfo);
         }
-        return res;
+	    return res;
     }
 
     public Long countOrderInfo(OrderInfo orderInfo) {
-        OrderInfoExample example = getOrderInfoExample(orderInfo);
+		OrderInfoExample example = getOrderInfoExample(orderInfo);
         return orderInfoMapper.countByExample(example);
     }
 
@@ -107,8 +105,8 @@ public class OrderInfoDao {
     @Cacheable(value = "OrderInfo", key = "'valid_' + #valid")
     @CacheExpire(expire = 3600L)
     public List<OrderInfo> getAllOrderInfoList(Byte valid) {
-        OrderInfoExample example = new OrderInfoExample();
-        OrderInfoExample.Criteria criteria = example.createCriteria();
+		OrderInfoExample example = new OrderInfoExample();
+		OrderInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
@@ -119,14 +117,13 @@ public class OrderInfoDao {
     @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public PageInfo<OrderInfo> getAllOrderInfoList(Byte valid, PageInfo<?> pageInfo) {
-        OrderInfoExample example = new OrderInfoExample();
-        OrderInfoExample.Criteria criteria = example.createCriteria();
+		OrderInfoExample example = new OrderInfoExample();
+		OrderInfoExample.Criteria criteria = example.createCriteria();
         if (!valid.equals(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID)) {
             criteria.andValidEqualTo(valid);
         }
         PageHelper.startPage(pageInfo);
-        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        return new PageInfo<OrderInfo>(res);
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example); return new PageInfo<OrderInfo>(res);
     }
 
     @Cacheable(value = "OrderInfo", key = "'id_' + #id")
@@ -138,34 +135,30 @@ public class OrderInfoDao {
     @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public PageInfo<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo, PageInfo<?> pageInfo) {
-        OrderInfoExample example = getOrderInfoExample(orderInfo);
+		OrderInfoExample example = getOrderInfoExample(orderInfo);
         PageHelper.startPage(pageInfo);
-        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        return new PageInfo<OrderInfo>(res);
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example); return new PageInfo<OrderInfo>(res);
     }
 
     @Cacheable(value = "OrderInfo", keyGenerator = "CacheKeyByParam")
     @CacheExpire(expire = 3600L)
     public List<OrderInfo> getOrderInfoSelective(OrderInfo orderInfo) {
-        OrderInfoExample example = getOrderInfoExample(orderInfo);
-        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        return res;
+		OrderInfoExample example = getOrderInfoExample(orderInfo);
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example); return res;
     }
 
     public PageInfo<OrderInfo> getOrderInfoByExample(OrderInfoExample example, PageInfo<?> pageInfo) {
         PageHelper.startPage(pageInfo);
-        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        return new PageInfo<OrderInfo>(res);
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example); return new PageInfo<OrderInfo>(res);
     }
 
     public List<OrderInfo> getOrderInfoByExample(OrderInfoExample example) {
-        List<OrderInfo> res = orderInfoMapper.selectByExample(example);
-        return res;
+        List<OrderInfo> res = orderInfoMapper.selectByExample(example); return res;
     }
 
     private OrderInfoExample getOrderInfoExample(OrderInfo orderInfo) {
-        OrderInfoExample example = new OrderInfoExample();
-        OrderInfoExample.Criteria criteria = example.createCriteria();
+		OrderInfoExample example = new OrderInfoExample();
+		OrderInfoExample.Criteria criteria = example.createCriteria();
         HashMap<String, Object> valueMap = ReflectionUtil.getHashMap(orderInfo);
         ReflectionUtil.getFields(orderInfo).forEach((field) -> {
             if (valueMap.get(field.getName()) != null) {
