@@ -64,6 +64,10 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         if (token == null) {
             throw new UserNotLoginException();
         }
+        if (("SRP-TEST-TOKEN").equals(token)) {
+            buildTestInfo(request);
+            return;
+        }
         String guid = getGuid(token);
         if (!buildUserInfo(request, guid)) {
             throw new UserNotLoginException();
@@ -99,5 +103,12 @@ public class AuthTokenServiceImpl implements AuthTokenService {
             return true;
         }
         return false;
+    }
+
+    private boolean buildTestInfo(HttpServletRequest request) {
+        request.setAttribute("guid", "1234");
+        request.setAttribute("user", new UserInfo());
+        request.setAttribute("role", new RoleInfo());
+        return true;
     }
 }

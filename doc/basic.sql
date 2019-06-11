@@ -604,3 +604,17 @@ ALTER TABLE `shop_info`
 ALTER TABLE `goods_info`
 	ADD COLUMN `code` VARCHAR(20) NULL DEFAULT NULL COMMENT '药品编码' AFTER `id`,
 	ADD UNIQUE INDEX `code_merchant_id` (`code`, `merchant_id`);
+-- 2019-6-10 factory可以自行添加订单
+ALTER TABLE `order_info`
+	ADD COLUMN `trader_id` INT(10) UNSIGNED NOT NULL COMMENT '营销员id' AFTER `trader_factory_merchant_id`,
+	ADD COLUMN `factory_merchant_id` INT(10) UNSIGNED NULL COMMENT '厂商渠道id' AFTER `trader_id`;
+ALTER TABLE `order_info`
+	ALTER `trader_factory_merchant_id` DROP DEFAULT;
+ALTER TABLE `order_info`
+	CHANGE COLUMN `trader_factory_merchant_id` `trader_factory_merchant_id` INT(10) UNSIGNED NULL COMMENT '流通渠道id' AFTER `comment`;
+UPDATE 
+    order_info oi 
+    inner join trader_factory_merchant_map tfmm on tfmm.id = oi.trader_factory_merchant_id
+SET 
+    oi.trader_id = tfmm.trader_id, 
+    oi.factory_merchant_id = tfmm.factory_merchant_map_id
