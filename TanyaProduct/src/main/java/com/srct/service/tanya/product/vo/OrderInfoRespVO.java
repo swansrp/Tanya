@@ -61,4 +61,7 @@ public class OrderInfoRespVO {
 
     @ApiModelProperty(value = "销售员信息")
     private RoleInfoVO traderInfoVO;
+
+    @ApiModelProperty(value = "创建人信息")
+    private RoleInfoVO creatorInfoVO;
 }

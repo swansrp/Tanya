@@ -97,8 +97,6 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
                 FactoryMerchantMap factoryMerchantMap =
                         super.getFactoryMerchantMapByMerchantIdAndFactoryId(null, factoryInfo.getId());
                 orderInfo.setFactoryMerchantId(factoryMerchantMap.getId());
-                orderInfo.setFactoryConfirmBy(factoryInfo.getId());
-                orderInfo.setFactoryConfirmAt(new Date());
                 break;
             default:
                 break;
@@ -281,7 +279,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     @Override
     protected void validateConfirm(ProductBO<?> req) {
         String roleType = req.getCreatorRole().getRole();
-        if (roleType.equals("salesman") || roleType.equals("trader")) {
+        if (("salesman").equals(roleType) || ("trader").equals(roleType)) {
             throw new ServiceException("dont allow to confirm order by role " + roleType);
         }
         if (req.getApproved() == null) {
@@ -380,6 +378,11 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         RoleInfoVO traderInfoVO = super.getRoleInfoVO(orderInfo.getTraderId(), "trader");
         RoleInfoVO merchantConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getMerchantConfirmBy(), "merchant");
         RoleInfoVO factoryConfirmRoleInfoVO = super.getRoleInfoVO(orderInfo.getFactoryConfirmBy(), "factory");
+        if (orderInfo.getTraderFactoryMerchantId() != null) {
+            res.setCreatorInfoVO(traderInfoVO);
+        } else {
+            res.setCreatorInfoVO(factoryInfoVO);
+        }
         res.setDiscountInfoVO(discountInfoVO);
         res.setFactoryInfoVO(factoryInfoVO);
         res.setGoodsInfoVO(goodsInfoVO);

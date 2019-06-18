@@ -11,15 +11,14 @@ package com.srct.service.tanya.cron.service.impl;
 
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfoExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.cron.service.OrderCronTaskService;
 import com.srct.service.tanya.cron.vo.OrderInfoVO;
 import com.srct.service.utils.DateUtils;
@@ -37,21 +36,14 @@ public class OrderCronTaskServiceImpl extends CronTaskBaseSerivceImpl implements
     @Override
     public List<OrderInfoVO> getOrderListByFactoryId(Integer factoryId) {
         List<OrderInfoVO> resList = new ArrayList<>();
-        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
-                getTraderFactoryMerchantListByFactoryId(factoryId);
-        if (CollectionUtils.isEmpty(traderFactoryMerchantMapList)) {
+        List<FactoryMerchantMap> factoryMerchantMapList = getFactoryMerchantListByFactoryId(factoryId);
+        if (CollectionUtils.isEmpty(factoryMerchantMapList)) {
             return null;
         }
-        traderFactoryMerchantMapList.forEach(map -> {
-            FactoryMerchantMap factoryMerchantMap =
-                    factoryMerchantMapDao.getFactoryMerchantMapById(map.getFactoryMerchantMapId());
+        factoryMerchantMapList.forEach(factoryMerchantMap -> {
             MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(factoryMerchantMap.getMerchantId());
-            TraderInfo traderInfo = traderInfoDao.getTraderInfoById(map.getTraderId());
-            if (traderInfo.getUserId() == null) {
-                return;
-            }
-            UserInfo userInfo = userInfoDao.getUserInfoById(traderInfo.getUserId());
-            List<OrderInfo> orderInfos = getOrderInfoListByTraderFactoryMerchantId(map.getId());
+            FactoryInfo factoryInfo = factoryInfoDao.getFactoryInfoById(factoryMerchantMap.getFactoryId());
+            List<OrderInfo> orderInfos = getOrderInfoListByFactoryMerchantId(factoryMerchantMap.getId());
             if (CollectionUtils.isEmpty(orderInfos)) {
                 return;
             }
@@ -69,7 +61,21 @@ public class OrderCronTaskServiceImpl extends CronTaskBaseSerivceImpl implements
                     res.setGoodsNumber(orderInfo.getGoodsNumber());
                 }
                 ShopInfo shopInfo = shopInfoDao.getShopInfoById(orderInfo.getShopId());
-                buildRes(res, orderInfo, merchantInfo, userInfo, traderInfo, goodsInfo, shopInfo);
+                String creatorUserName = null;
+                String creatorTitle;
+                if (orderInfo.getTraderId() != null) {
+                    TraderInfo traderInfo = traderInfoDao.getTraderInfoById(orderInfo.getTraderId());
+                    creatorTitle = traderInfo.getTitle();
+                    if (traderInfo.getUserId() != null) {
+                        creatorUserName = userInfoDao.getUserInfoById(traderInfo.getUserId()).getName();
+                    }
+                } else {
+                    creatorTitle = factoryInfo.getTitle();
+                    if (factoryInfo.getUserId() != null) {
+                        creatorUserName = userInfoDao.getUserInfoById(factoryInfo.getUserId()).getName();
+                    }
+                }
+                buildRes(res, orderInfo, merchantInfo, creatorUserName, creatorTitle, goodsInfo, shopInfo);
                 resList.add(res);
             });
         });
@@ -82,13 +88,13 @@ public class OrderCronTaskServiceImpl extends CronTaskBaseSerivceImpl implements
         return null;
     }
 
-    private void buildRes(OrderInfoVO res, OrderInfo orderInfo, MerchantInfo merchantInfo, UserInfo userInfo,
-            TraderInfo traderInfo, GoodsInfo goodsInfo, ShopInfo shopInfo) {
-        String orderId = DateUtils.dateToString(orderInfo.getCreateAt()) + traderInfo.getId() + orderInfo.getId();
+    private void buildRes(OrderInfoVO res, OrderInfo orderInfo, MerchantInfo merchantInfo, String creatorName,
+            String creatorTitle, GoodsInfo goodsInfo, ShopInfo shopInfo) {
+        String orderId = DateUtils.dateToString(orderInfo.getCreateAt()) + orderInfo.getId();
         res.setOrderId(orderId);
         res.setStartAt(orderInfo.getStartAt());
-        res.setTraderTitle(traderInfo.getTitle());
-        res.setTraderUserName(userInfo.getName());
+        res.setCreatorTitle(creatorTitle);
+        res.setCreatorUserName(creatorName);
         res.setShopTitle(shopInfo.getTitle());
         res.setGoodsProduct(goodsInfo.getProduction());
         res.setGoodsSpec(goodsInfo.getSpec());
@@ -106,6 +112,18 @@ public class OrderCronTaskServiceImpl extends CronTaskBaseSerivceImpl implements
         OrderInfoExample example = new OrderInfoExample();
         OrderInfoExample.Criteria criteria = example.createCriteria();
         criteria.andTraderFactoryMerchantIdEqualTo(id);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        criteria.andUpdateAtGreaterThanOrEqualTo(yesterdayBeginTime);
+        criteria.andUpdateAtLessThanOrEqualTo(yesterdayEndTime);
+        return orderInfoDao.getOrderInfoByExample(example);
+    }
+
+    private List<OrderInfo> getOrderInfoListByFactoryMerchantId(Integer id) {
+        Date yesterdayBeginTime = DateUtils.yesterdayBeginTime();
+        Date yesterdayEndTime = DateUtils.yesterdayEndTime();
+        OrderInfoExample example = new OrderInfoExample();
+        OrderInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andFactoryMerchantIdEqualTo(id);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         criteria.andUpdateAtGreaterThanOrEqualTo(yesterdayBeginTime);
         criteria.andUpdateAtLessThanOrEqualTo(yesterdayEndTime);

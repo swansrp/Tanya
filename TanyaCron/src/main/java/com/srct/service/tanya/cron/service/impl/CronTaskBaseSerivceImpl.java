@@ -10,6 +10,8 @@
 package com.srct.service.tanya.cron.service.impl;
 
 import com.srct.service.config.db.DataSourceCommonConstant;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
+import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.repository.CampaignHistoryDao;
@@ -71,6 +73,17 @@ public class CronTaskBaseSerivceImpl {
         criteria.andEndAtGreaterThanOrEqualTo(now);
         criteria.andStartAtLessThanOrEqualTo(now);
         return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example);
+    }
+
+    protected List<FactoryMerchantMap> getFactoryMerchantListByFactoryId(Integer factoryId) {
+        Date now = new Date();
+        FactoryMerchantMapExample example = new FactoryMerchantMapExample();
+        FactoryMerchantMapExample.Criteria criteria = example.createCriteria();
+        criteria.andFactoryIdEqualTo(factoryId);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        criteria.andEndAtGreaterThanOrEqualTo(now);
+        criteria.andStartAtLessThanOrEqualTo(now);
+        return factoryMerchantMapDao.getFactoryMerchantMapByExample(example);
     }
 
     protected String getConfirmStatus(Byte valid) {

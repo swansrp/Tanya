@@ -606,8 +606,8 @@ ALTER TABLE `goods_info`
 	ADD UNIQUE INDEX `code_merchant_id` (`code`, `merchant_id`);
 -- 2019-6-10 factory可以自行添加订单
 ALTER TABLE `order_info`
-	ADD COLUMN `trader_id` INT(10) UNSIGNED NOT NULL COMMENT '营销员id' AFTER `trader_factory_merchant_id`,
-	ADD COLUMN `factory_merchant_id` INT(10) UNSIGNED NULL COMMENT '厂商渠道id' AFTER `trader_id`;
+	ADD COLUMN `trader_id` INT(10) UNSIGNED NULL COMMENT '营销员id' AFTER `trader_factory_merchant_id`,
+	ADD COLUMN `factory_merchant_id` INT(10) UNSIGNED NOT NULL COMMENT '厂商渠道id' AFTER `trader_id`;
 ALTER TABLE `order_info`
 	ALTER `trader_factory_merchant_id` DROP DEFAULT;
 ALTER TABLE `order_info`

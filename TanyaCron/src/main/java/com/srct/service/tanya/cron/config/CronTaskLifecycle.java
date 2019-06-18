@@ -16,10 +16,12 @@ import com.srct.service.tanya.cron.job.OrderInfoJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@Profile(value = {"prod"})
 public class CronTaskLifecycle implements SmartLifecycle {
 
     private boolean isRunning = false;
@@ -35,10 +37,6 @@ public class CronTaskLifecycle implements SmartLifecycle {
      */
     @Override
     public void start() {
-
-        // quartzJobService.addJob(OrderInfoJob.class.getName(), "GROUP-1", "10/10 * * * * ? ");
-        // quartzJobService.addJob(CampaignHistoryJob.class.getName(), "GROUP-1", "10/10 * * * * ? ");
-
         quartzJobService.addJob(OrderInfoJob.class.getName(), "GROUP-1", "0 30 1 * * ? ");
         quartzJobService.addJob(CampaignHistoryJob.class.getName(), "GROUP-1", "0 30 1 * * ? ");
         isRunning = true;
