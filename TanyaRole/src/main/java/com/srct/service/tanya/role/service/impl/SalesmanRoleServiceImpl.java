@@ -38,6 +38,7 @@ import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryRespVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -102,44 +103,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         return res;
     }
 
-    private void makeSalesmanTraderRelationship(TraderInfo traderInfo, SalesmanInfo salesmanInfo) {
-        Date now = new Date();
-        SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
-        salesmanTraderMap.setSalesmanId(salesmanInfo.getId());
-        salesmanTraderMap.setTraderId(traderInfo.getId());
-        salesmanTraderMap.setStartAt(now);
-        salesmanTraderMap.setEndAt(getDefaultPeriod(now, DEFAULT_PERIOD_TYPE, DEFAULT_PERIOD_VALUE));
-        salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        salesmanTraderMapDao.updateSalesmanTraderMap(salesmanTraderMap);
-    }
-
-    private SalesmanInfo makeSalesmanInfo(CreateRoleBO bo) {
-        SalesmanInfo salesmanInfo = new SalesmanInfo();
-        BeanUtil.copyProperties(bo, salesmanInfo);
-        salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        salesmanInfo = salesmanInfoDao.updateSalesmanInfo(salesmanInfo);
-        return salesmanInfo;
-    }
-
-    private TraderInfo getTraderInfoByCreator(UserInfo creator) {
-        TraderInfo traderInfo;
-        TraderInfoExample example = new TraderInfoExample();
-        TraderInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(creator.getId());
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            traderInfo = traderInfoDao.getTraderInfoByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException("");
-        }
-        return traderInfo;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.srct.service.tanya.role.service.RoleService#getSubordinate(java.lang.String)
-     */
     @Override
     public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
         UserInfo userInfo = req.getUserInfo();
@@ -161,7 +124,7 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         List<SalesmanTraderMap> salesmanTraderMapList =
                 salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMapEx);
         List<Integer> salesmanIdList = (List<Integer>) ReflectionUtil.getFieldList(salesmanTraderMapList, "salesmanId");
-        if (salesmanIdList.size() == 0) {
+        if (CollectionUtils.isEmpty(salesmanIdList)) {
             salesmanIdList.add(0);
         }
         SalesmanInfoExample example = new SalesmanInfoExample();
@@ -228,22 +191,6 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         Integer id = getRoleIdByUser(userInfo);
         SalesmanInfo salesmanInfo = salesmanInfoDao.getSalesmanInfoById(id);
         return makeRoleInfoBO(salesmanInfo);
-    }
-
-    private QueryRespVO<RoleInfoBO> getAllSalesman(QuerySubordinateBO req) {
-        PageInfo pageInfo = buildPageInfo(req);
-        PageInfo<SalesmanInfo> salesmanInfoList =
-                salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
-        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(salesmanInfoList);
-
-        for (SalesmanInfo salesman : salesmanInfoList.getList()) {
-            RoleInfoBO bo = new RoleInfoBO();
-            BeanUtil.copyProperties(salesman, bo);
-            bo.setRoleType(getRoleType());
-            res.getInfo().add(bo);
-        }
-        return res;
     }
 
     @Override
@@ -393,6 +340,55 @@ public class SalesmanRoleServiceImpl implements RoleService, SalesmanRoleService
         }
         salesmanInfoDao.delSalesmanInfo(salesmanInfo);
         return makeRoleInfoBO(salesmanInfo);
+    }
+
+    private void makeSalesmanTraderRelationship(TraderInfo traderInfo, SalesmanInfo salesmanInfo) {
+        Date now = new Date();
+        SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
+        salesmanTraderMap.setSalesmanId(salesmanInfo.getId());
+        salesmanTraderMap.setTraderId(traderInfo.getId());
+        salesmanTraderMap.setStartAt(now);
+        salesmanTraderMap.setEndAt(getDefaultPeriod(now, DEFAULT_PERIOD_TYPE, DEFAULT_PERIOD_VALUE));
+        salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        salesmanTraderMapDao.updateSalesmanTraderMap(salesmanTraderMap);
+    }
+
+    private SalesmanInfo makeSalesmanInfo(CreateRoleBO bo) {
+        SalesmanInfo salesmanInfo = new SalesmanInfo();
+        BeanUtil.copyProperties(bo, salesmanInfo);
+        salesmanInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        salesmanInfo = salesmanInfoDao.updateSalesmanInfo(salesmanInfo);
+        return salesmanInfo;
+    }
+
+    private TraderInfo getTraderInfoByCreator(UserInfo creator) {
+        TraderInfo traderInfo;
+        TraderInfoExample example = new TraderInfoExample();
+        TraderInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(creator.getId());
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            traderInfo = traderInfoDao.getTraderInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("");
+        }
+        return traderInfo;
+    }
+
+    private QueryRespVO<RoleInfoBO> getAllSalesman(QuerySubordinateBO req) {
+        PageInfo pageInfo = buildPageInfo(req);
+        PageInfo<SalesmanInfo> salesmanInfoList =
+                salesmanInfoDao.getAllSalesmanInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.buildPageInfo(salesmanInfoList);
+
+        for (SalesmanInfo salesman : salesmanInfoList.getList()) {
+            RoleInfoBO bo = new RoleInfoBO();
+            BeanUtil.copyProperties(salesman, bo);
+            bo.setRoleType(getRoleType());
+            res.getInfo().add(bo);
+        }
+        return res;
     }
 
     private RoleInfoBO makeRoleInfoBO(SalesmanInfo salesmanInfo) {

@@ -143,6 +143,8 @@ public abstract class ProductServiceBaseImpl {
                     factoryInfoList.addAll(factoryRoleService.getFactoryInfoListByMerchantInfo(merchantInfo));
                 }
                 break;
+            default:
+                break;
         }
         if (0 == factoryInfoList.size()) {
             throw new ServiceException(

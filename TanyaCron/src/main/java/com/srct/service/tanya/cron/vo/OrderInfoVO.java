@@ -29,11 +29,11 @@ public class OrderInfoVO {
     @ApiModelProperty(value = "订单日期")
     private Date startAt;
 
-    @ApiModelProperty(value = "角色名称")
-    private String traderTitle;
+    @ApiModelProperty(value = "发起人角色名称")
+    private String creatorTitle;
 
-    @ApiModelProperty(value = "业务员姓名")
-    private String traderUserName;
+    @ApiModelProperty(value = "发起人姓名")
+    private String creatorUserName;
 
     @ApiModelProperty(value = "客户名称")
     private String shopTitle;

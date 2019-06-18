@@ -6,7 +6,6 @@
  * @author: sharuopeng
  */
 package com.srct.service.tanya.portal.controller.admin.tanya;
-
 import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.config.response.CommonResponse;
@@ -41,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderInfoController {
 
     @Autowired
-    OrderInfoDao orderInfoDao;
+    private OrderInfoDao orderInfoDao;
 
     @ApiOperation(value = "更新OrderInfo", notes = "传入OrderInfo值,Id为空时为插入,不为空时为更新。")
     @ApiImplicitParams({
@@ -50,8 +49,7 @@ public class OrderInfoController {
             @ApiResponse(code = 403, message = "权限不足")})
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<CommonResponse<Integer>.Resp> updateOrderInfo(@RequestBody OrderInfoEntityVO vo) {
-        OrderInfo orderInfo = new OrderInfo();
-        BeanUtil.copyProperties(vo, orderInfo);
+	OrderInfo orderInfo =new OrderInfo(); BeanUtil.copyProperties(vo, orderInfo);
         Integer id = orderInfoDao.updateOrderInfo(orderInfo).getId();
         return TanyaExceptionHandler.generateResponse(id);
     }
@@ -65,10 +63,10 @@ public class OrderInfoController {
     public ResponseEntity<CommonResponse<QueryRespVO<OrderInfo>>.Resp> getOrderInfoSelective(
             @RequestBody OrderInfoEntityVO vo) {
         QueryRespVO<OrderInfo> res = new QueryRespVO<>();
-        OrderInfo orderInfo = new OrderInfo();
-        BeanUtil.copyProperties(vo, orderInfo);
+	OrderInfo orderInfo =new OrderInfo(); BeanUtil.copyProperties(vo, orderInfo);
         PageInfo pageInfo = DBUtil.buildPageInfo(vo);
-        PageInfo<OrderInfo> orderInfoList = orderInfoDao.getOrderInfoSelective(orderInfo, pageInfo);
+        PageInfo<OrderInfo> orderInfoList =
+				orderInfoDao.getOrderInfoSelective(orderInfo, pageInfo);
         res.getInfo().addAll(orderInfoList.getList());
         res.buildPageInfo(orderInfoList);
         return TanyaExceptionHandler.generateResponse(res);
@@ -86,17 +84,15 @@ public class OrderInfoController {
             @RequestParam(value = "currentPage", required = false) Integer currentPage,
             @RequestParam(value = "pageSize", required = false) Integer pageSize,
             @RequestParam(value = "id", required = false) Integer id) {
-        QueryRespVO<OrderInfo> res = new QueryRespVO<>();
-        if (id == null) {
+        QueryRespVO<OrderInfo> res = new QueryRespVO<>(); if (id == null) {
             PageInfo pageInfo = DBUtil.buildPageInfo(currentPage, pageSize);
             PageInfo<OrderInfo> orderInfoList =
-                    orderInfoDao.getAllOrderInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID, pageInfo);
-            res.getInfo().addAll(orderInfoList.getList());
+					orderInfoDao.getAllOrderInfoList(DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID,
+                            pageInfo); res.getInfo().addAll(orderInfoList.getList());
             res.buildPageInfo(orderInfoList);
         } else {
             res.getInfo().add(orderInfoDao.getOrderInfoById(id));
-        }
-        return TanyaExceptionHandler.generateResponse(res);
+        } return TanyaExceptionHandler.generateResponse(res);
     }
 
     @ApiOperation(value = "软删除OrderInfo", notes = "软删除主键为id的OrderInfo")
@@ -106,9 +102,9 @@ public class OrderInfoController {
             @ApiResponse(code = 403, message = "权限不足")})
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity<CommonResponse<Integer>.Resp> delOrderInfo(@RequestParam(value = "id") Integer id) {
-        OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setId(id);
-        orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+	OrderInfo orderInfo =new OrderInfo();
+	orderInfo.setId(id);
+	orderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
         Integer delId = orderInfoDao.updateOrderInfo(orderInfo).getId();
         return TanyaExceptionHandler.generateResponse(delId);
     }

@@ -455,6 +455,126 @@ public class OrderInfoExample {
             return (Criteria) this;
         }
 
+        public Criteria andTraderIdIsNull() {
+            addCriterion("trader_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdIsNotNull() {
+            addCriterion("trader_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdEqualTo(Integer value) {
+            addCriterion("trader_id =", value, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdNotEqualTo(Integer value) {
+            addCriterion("trader_id <>", value, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdGreaterThan(Integer value) {
+            addCriterion("trader_id >", value, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("trader_id >=", value, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdLessThan(Integer value) {
+            addCriterion("trader_id <", value, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdLessThanOrEqualTo(Integer value) {
+            addCriterion("trader_id <=", value, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdIn(List<Integer> values) {
+            addCriterion("trader_id in", values, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdNotIn(List<Integer> values) {
+            addCriterion("trader_id not in", values, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdBetween(Integer value1, Integer value2) {
+            addCriterion("trader_id between", value1, value2, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andTraderIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("trader_id not between", value1, value2, "traderId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdIsNull() {
+            addCriterion("factory_merchant_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdIsNotNull() {
+            addCriterion("factory_merchant_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdEqualTo(Integer value) {
+            addCriterion("factory_merchant_id =", value, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdNotEqualTo(Integer value) {
+            addCriterion("factory_merchant_id <>", value, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdGreaterThan(Integer value) {
+            addCriterion("factory_merchant_id >", value, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("factory_merchant_id >=", value, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdLessThan(Integer value) {
+            addCriterion("factory_merchant_id <", value, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdLessThanOrEqualTo(Integer value) {
+            addCriterion("factory_merchant_id <=", value, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdIn(List<Integer> values) {
+            addCriterion("factory_merchant_id in", values, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdNotIn(List<Integer> values) {
+            addCriterion("factory_merchant_id not in", values, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdBetween(Integer value1, Integer value2) {
+            addCriterion("factory_merchant_id between", value1, value2, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
+        public Criteria andFactoryMerchantIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("factory_merchant_id not between", value1, value2, "factoryMerchantId");
+            return (Criteria) this;
+        }
+
         public Criteria andShopIdIsNull() {
             addCriterion("shop_id is null");
             return (Criteria) this;
