@@ -212,7 +212,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             default:
                 break;
         }
-        criteria.andIdEqualTo(order.getReq().getOrder().getId());
+        criteria.andIdEqualTo(order.getProductId());
         OrderInfo orderExisted;
         try {
             orderExisted = orderInfoDao.getOrderInfoByExample(orderExample).get(0);

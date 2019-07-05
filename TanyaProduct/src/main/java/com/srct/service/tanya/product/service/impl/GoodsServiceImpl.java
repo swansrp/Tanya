@@ -46,6 +46,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -192,11 +193,9 @@ public class GoodsServiceImpl extends ProductServiceBaseImpl implements GoodsSer
             BeanUtil.copyProperties(uploadGoods, goodsInfo);
             goodsInfo.setMerchantId(merchantInfo.getId());
             goodsInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            try {
-                goodsInfoDao.updateGoodsInfo(goodsInfo);
-            } catch (DuplicateKeyException e) {
-
-            }
+            BigDecimal amount = new BigDecimal(goodsInfo.getAmount());
+            goodsInfo.setAmount(amount.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            goodsInfoDao.updateGoodsInfo(goodsInfo);
         });
     }
 

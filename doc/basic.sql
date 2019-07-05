@@ -13,8 +13,8 @@
 
 
 -- 导出 tanya 的数据库结构
-CREATE DATABASE IF NOT EXISTS `tanya_test` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `tanya_test`;
+CREATE DATABASE IF NOT EXISTS `tanya` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `tanya`;
 
 -- 导出  表 tanya.admin_info 结构
 CREATE TABLE IF NOT EXISTS `admin_info` (
