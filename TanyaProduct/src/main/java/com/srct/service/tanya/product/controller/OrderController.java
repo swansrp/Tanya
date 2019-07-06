@@ -149,4 +149,24 @@ public class OrderController {
 
         return TanyaExceptionHandler.generateResponse(orderInfoVOList);
     }
+
+    @ApiOperation(value = "汇总订单", notes = "汇总指定月分份订单总额")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "查询参数", required = true)})
+    @RequestMapping(value = "", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<Double>.Resp> summary(@RequestBody QueryReqVO req) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***SummaryOrder***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<QueryReqVO> order = new ProductBO<>();
+        order.setProductType(productType);
+        order.setCreatorInfo(info);
+        order.setCreatorRole(role);
+        Double summary = orderService.summaryOrderInfo(order);
+
+        return TanyaExceptionHandler.generateResponse(summary);
+    }
+
 }

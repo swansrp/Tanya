@@ -27,4 +27,5 @@ public interface OrderService {
 
     QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order);
 
+    Double summaryOrderInfo(ProductBO<QueryReqVO> req);
 }

@@ -7,18 +7,16 @@
  */
 package com.srct.service.tanya.common.service;
 
-import java.util.List;
-
-import org.springframework.validation.annotation.Validated;
-
 import com.srct.service.tanya.common.bo.user.UserLoginRespBO;
 import com.srct.service.tanya.common.bo.user.UserRegReqBO;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
 
 /**
  * @author Sharp
- *
  */
 @Validated
 public interface UserService {
@@ -39,7 +37,7 @@ public interface UserService {
 
     UserInfo getUserbyGuid(String guid);
 
-    UserInfo getUserbyEmail(String email);
+    UserInfo getUserByEmail(String email);
 
     UserInfo getUserbyUserId(Integer userId);
 

@@ -105,10 +105,12 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         return false;
     }
 
-    private boolean buildTestInfo(HttpServletRequest request) {
-        request.setAttribute("guid", "1234");
-        request.setAttribute("user", new UserInfo());
-        request.setAttribute("role", new RoleInfo());
-        return true;
+    private void buildTestInfo(HttpServletRequest request) {
+        UserInfo userInfo = userService.getUserByEmail("56093273@qq.com");
+        if (userInfo != null) {
+            String guid = userInfo.getGuid();
+            buildUserInfo(request, guid);
+            buildRoleInfo(request, guid);
+        }
     }
 }

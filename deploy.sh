@@ -8,13 +8,14 @@ ServerNum=1
 
 DevPath=$basepath/TanyaPortal/target/TanyaPortal-0.0.1-SNAPSHOT-exec.jar
 DevTargetPath="~/tanya/TanyaPortal-0.0.1-SNAPSHOT.jar"
-TestTargetPath="~/test/TanyaPortal-0.0.1-SNAPSHOT.jar"
+TestTargetPath="~/tanya/TanyaPortal-0.0.1-SNAPSHOT.jar"
 DevSSH=tanya
+TestSSH=tanya_test
 
 ServerPathArray=($DevPath $DevPath)
 ServerTargetPath=($DevTargetPath $TestTargetPath)
-ServerSSH=($DevSSH $DevSSH)
-config=("tanya/" "test/")
+ServerSSH=($DevSSH $TestSSH)
+config=("tanya/" "tanya/")
 logconfig=("log/sys.log" "log/test/sys.log")
 
 

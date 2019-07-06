@@ -75,15 +75,6 @@ public class UserServiceImpl implements UserService {
         return userInfo;
     }
 
-    private UserInfo createUser(UserRegReqBO bo) {
-        UserInfo userInfo = new UserInfo();
-        BeanUtil.copyProperties(bo, userInfo);
-        userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
-        userInfoDao.updateUserInfo(userInfo);
-        return userInfo;
-    }
-
     @Override
     public UserLoginRespBO reg(String wechatCode) {
 
@@ -185,43 +176,6 @@ public class UserServiceImpl implements UserService {
         return getRoleInfo(userInfo);
     }
 
-    private UserLoginRespBO getRoleInfo(UserInfo userInfo) {
-        UserLoginRespBO res = new UserLoginRespBO();
-        res.setGuid(userInfo.getGuid());
-        // res.setSn(String.format("%08d", userInfo.getId()));
-        res.setWechatOpenId(userInfo.getWechatId());
-        res.setRole(new ArrayList<>());
-        res.setName(userInfo.getName());
-        Integer userId = userInfo.getId();
-        if (userId == null) {
-            try {
-                userId = userInfoDao.getUserInfoSelective(userInfo).get(0).getId();
-            } catch (Exception e) {
-                Log.w("no such user");
-                throw new NoSuchUserException(JSONUtil.toJSONString(userInfo));
-            }
-        }
-        UserRoleMap userRoleMap = new UserRoleMap();
-        userRoleMap.setUserId(userId);
-        userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<UserRoleMap> userRoleList = userRoleMapDao.getUserRoleMapSelective(userRoleMap);
-
-        if (userRoleList == null || userRoleList.size() == 0) {
-            Log.i("No Role for user {}", userInfo.getGuid());
-        } else {
-            userRoleList.forEach(userRole -> {
-                if (userRole.getRoleId() != null) {
-                    RoleInfo roleInfo = roleInfoDao.getRoleInfoById(userRole.getRoleId());
-                    if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
-                        res.getRole().add(roleInfo);
-                    }
-                }
-            });
-        }
-
-        return res;
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -254,7 +208,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfo getUserbyEmail(String email) {
+    public UserInfo getUserByEmail(String email) {
         UserInfo userInfoEx = new UserInfo();
         userInfoEx.setEmail(email);
         userInfoEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
@@ -372,6 +326,52 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new ServiceException("非法登录二维码,请刷新后重新扫码登录");
         }
+    }
+
+    private UserInfo createUser(UserRegReqBO bo) {
+        UserInfo userInfo = new UserInfo();
+        BeanUtil.copyProperties(bo, userInfo);
+        userInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        userInfoDao.updateUserInfo(userInfo);
+        return userInfo;
+    }
+
+    private UserLoginRespBO getRoleInfo(UserInfo userInfo) {
+        UserLoginRespBO res = new UserLoginRespBO();
+        res.setGuid(userInfo.getGuid());
+        // res.setSn(String.format("%08d", userInfo.getId()));
+        res.setWechatOpenId(userInfo.getWechatId());
+        res.setRole(new ArrayList<>());
+        res.setName(userInfo.getName());
+        Integer userId = userInfo.getId();
+        if (userId == null) {
+            try {
+                userId = userInfoDao.getUserInfoSelective(userInfo).get(0).getId();
+            } catch (Exception e) {
+                Log.w("no such user");
+                throw new NoSuchUserException(JSONUtil.toJSONString(userInfo));
+            }
+        }
+        UserRoleMap userRoleMap = new UserRoleMap();
+        userRoleMap.setUserId(userId);
+        userRoleMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<UserRoleMap> userRoleList = userRoleMapDao.getUserRoleMapSelective(userRoleMap);
+
+        if (userRoleList == null || userRoleList.size() == 0) {
+            Log.i("No Role for user {}", userInfo.getGuid());
+        } else {
+            userRoleList.forEach(userRole -> {
+                if (userRole.getRoleId() != null) {
+                    RoleInfo roleInfo = roleInfoDao.getRoleInfoById(userRole.getRoleId());
+                    if (roleInfo.getValid().equals(DataSourceCommonConstant.DATABASE_COMMON_VALID)) {
+                        res.getRole().add(roleInfo);
+                    }
+                }
+            });
+        }
+
+        return res;
     }
 
 }

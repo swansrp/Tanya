@@ -61,11 +61,11 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         String roleType = order.getCreatorRole().getRole();
         switch (roleType) {
             case "merchant":
-                return getOrderInfoByMerchant(order);
+                return buildResByExample(order, getOrderInfoExampleByMerchant(order));
             case "factory":
-                return getOrderInfoByFactory(order);
+                return buildResByExample(order, getOrderInfoExampleByFactory(order));
             case "trader":
-                return getOrderInfoByTrader(order);
+                return buildResByExample(order, getOrderInfoExampleByTrader(order));
             default:
                 throw new ServiceException("不允许[" + roleType + "]角色查询订单");
         }
@@ -189,6 +189,35 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     }
 
     @Override
+    public Double summaryOrderInfo(ProductBO<QueryReqVO> order) {
+        validateQuery(order);
+
+        String roleType = order.getCreatorRole().getRole();
+        OrderInfoExample example;
+        switch (roleType) {
+            case "merchant":
+                example = getOrderInfoExampleByMerchant(order);
+                break;
+            case "factory":
+                example = getOrderInfoExampleByFactory(order);
+                break;
+            case "trader":
+                example = getOrderInfoExampleByTrader(order);
+                break;
+            default:
+                throw new ServiceException("不允许[" + roleType + "]角色查询订单");
+        }
+        example.getOredCriteria().get(0)
+                .andMerchantConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<OrderInfo> orderInfoList = super.orderInfoDao.getOrderInfoByExample(example);
+        Double total = 0.0;
+        for (OrderInfo info : orderInfoList) {
+            total += info.getAmount();
+        }
+        return total;
+    }
+
+    @Override
     protected void validateDelete(ProductBO<?> req) {
         String roleType = req.getCreatorRole().getRole();
         if ("salesman".equals(roleType) || "merchant".equals(roleType)) {
@@ -287,7 +316,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         }
     }
 
-    private QueryRespVO<OrderInfoRespVO> getOrderInfoByMerchant(ProductBO<QueryReqVO> order) {
+    private OrderInfoExample getOrderInfoExampleByMerchant(ProductBO<QueryReqVO> order) {
         MerchantInfo merchantInfo = merchantRoleService.getMerchantInfoByUser(order.getCreatorInfo());
         List<FactoryMerchantMap> factoryMerchantMapList =
                 super.getFactoryMerchantMapListByMerchantIdAndFactoryId(merchantInfo.getId(), null);
@@ -305,10 +334,10 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             orderCriteria.andMerchantConfirmStatusEqualTo(order.getApproved());
         }
         orderCriteria.andFactoryMerchantIdIn(factoryMerchantMapIdList);
-        return buildResByExample(order, orderExample);
+        return orderExample;
     }
 
-    private QueryRespVO<OrderInfoRespVO> getOrderInfoByFactory(ProductBO<QueryReqVO> order) {
+    private OrderInfoExample getOrderInfoExampleByFactory(ProductBO<QueryReqVO> order) {
         OrderInfoExample orderExample = buildOrderInfoExample(order);
         OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
         if (DataSourceCommonConstant.DATABASE_COMMON_IGNORE_VALID.equals(order.getApproved())) {
@@ -320,10 +349,10 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         FactoryMerchantMap factoryMerchantMap =
                 super.getFactoryMerchantMapByMerchantIdAndFactoryId(null, factoryInfo.getId());
         orderCriteria.andFactoryMerchantIdEqualTo(factoryMerchantMap.getId());
-        return buildResByExample(order, orderExample);
+        return orderExample;
     }
 
-    private QueryRespVO<OrderInfoRespVO> getOrderInfoByTrader(ProductBO<QueryReqVO> order) {
+    private OrderInfoExample getOrderInfoExampleByTrader(ProductBO<QueryReqVO> order) {
         TraderInfo traderInfo = traderRoleService.getTraderInfoByUser(order.getCreatorInfo());
         OrderInfoExample orderExample = buildOrderInfoExample(order);
         OrderInfoExample.Criteria orderCriteria = orderExample.getOredCriteria().get(0);
@@ -333,7 +362,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
             orderCriteria.andFactoryConfirmStatusEqualTo(order.getApproved());
         }
         orderCriteria.andTraderIdEqualTo(traderInfo.getId());
-        return buildResByExample(order, orderExample);
+        return orderExample;
     }
 
     private OrderInfoExample buildOrderInfoExample(ProductBO<?> order) {
