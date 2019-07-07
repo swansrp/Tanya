@@ -11,6 +11,7 @@ package com.srct.service.tanya.product.controller;
 import com.srct.service.config.annotation.Auth;
 import com.srct.service.config.response.CommonResponse;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
+import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.product.bo.ProductBO;
@@ -26,14 +27,11 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.List;
 
 import static com.srct.service.config.annotation.Auth.AuthType.USER;
 
@@ -48,6 +46,8 @@ import static com.srct.service.config.annotation.Auth.AuthType.USER;
 public class OrderController {
 
     private final static String productType = "订单";
+    private final static String SUMMARY_TYPE_AMOUNT = "amount";
+    private final static String SUMMARY_TYPE_NUMBER = "number";
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -80,10 +80,10 @@ public class OrderController {
             @ApiImplicitParam(paramType = "query", dataType = "Byte", name = "confirmed", value = "0拒绝 1同意 null全部 -1未操作"),
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "title", value = "订单标题")})
     public ResponseEntity<CommonResponse<QueryRespVO<OrderInfoRespVO>>.Resp> getOrder(@RequestBody QueryReqVO req,
-            @RequestParam(value = "orderid", required = false) Integer orderId,
-            @RequestParam(value = "factoryid", required = false) Integer factoryId,
-            @RequestParam(value = "confirmed", required = false) Byte confirmed,
-            @RequestParam(value = "title", required = false) String title) {
+                                                                                      @RequestParam(value = "orderid", required = false) Integer orderId,
+                                                                                      @RequestParam(value = "factoryid", required = false) Integer factoryId,
+                                                                                      @RequestParam(value = "confirmed", required = false) Byte confirmed,
+                                                                                      @RequestParam(value = "title", required = false) String title) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***getOrder***");
@@ -152,9 +152,11 @@ public class OrderController {
 
     @ApiOperation(value = "汇总订单", notes = "汇总指定月分份订单总额")
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "查询参数", required = true)})
-    @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<Double>.Resp> summary(@RequestBody QueryReqVO req) {
+            @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "查询参数", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "type", value = "汇总类型 amount:总额, number:订单数", required = true)})
+    @RequestMapping(value = "/summary", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<String>.Resp> summary(
+            @RequestBody QueryReqVO req, @RequestParam(value = "type") String summaryType) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
         Log.i("***SummaryOrder***");
@@ -162,11 +164,27 @@ public class OrderController {
 
         ProductBO<QueryReqVO> order = new ProductBO<>();
         order.setProductType(productType);
+        order.setReq(req);
         order.setCreatorInfo(info);
         order.setCreatorRole(role);
-        Double summary = orderService.summaryOrderInfo(order);
-
-        return TanyaExceptionHandler.generateResponse(summary);
+        List<OrderInfo> orderInfoList = orderService.summaryOrderInfo(order);
+        String res;
+        switch (summaryType.toLowerCase()) {
+            case SUMMARY_TYPE_AMOUNT:
+                Double total = 0.0;
+                for (OrderInfo orderInfo : orderInfoList) {
+                    total += orderInfo.getAmount();
+                }
+                BigDecimal amount = new BigDecimal(total);
+                res = amount.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+                break;
+            case SUMMARY_TYPE_NUMBER:
+                res = String.valueOf(orderInfoList.size());
+                break;
+            default:
+                res = "";
+        }
+        return TanyaExceptionHandler.generateResponse(res);
     }
 
 }

@@ -12,24 +12,10 @@ import com.github.pagehelper.PageInfo;
 import com.srct.service.config.db.DataSourceCommonConstant;
 import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.config.FeatureConstant;
-import com.srct.service.tanya.common.datalayer.tanya.entity.DiscountInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.FactoryMerchantMap;
-import com.srct.service.tanya.common.datalayer.tanya.entity.GoodsInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.MerchantInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfoExample;
-import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
-import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
-import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.datalayer.tanya.entity.*;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.service.OrderService;
-import com.srct.service.tanya.product.vo.DiscountInfoVO;
-import com.srct.service.tanya.product.vo.GoodsInfoVO;
-import com.srct.service.tanya.product.vo.OrderInfoReqVO;
-import com.srct.service.tanya.product.vo.OrderInfoRespVO;
-import com.srct.service.tanya.product.vo.OrderInfoVO;
-import com.srct.service.tanya.product.vo.ShopInfoVO;
+import com.srct.service.tanya.product.vo.*;
 import com.srct.service.tanya.role.vo.RoleInfoVO;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.DateUtils;
@@ -41,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -189,7 +176,7 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
     }
 
     @Override
-    public Double summaryOrderInfo(ProductBO<QueryReqVO> order) {
+    public List<OrderInfo> summaryOrderInfo(ProductBO<QueryReqVO> order) {
         validateQuery(order);
 
         String roleType = order.getCreatorRole().getRole();
@@ -209,12 +196,9 @@ public class OrderServiceImpl extends ProductServiceBaseImpl implements OrderSer
         }
         example.getOredCriteria().get(0)
                 .andMerchantConfirmStatusEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<OrderInfo> orderInfoList = super.orderInfoDao.getOrderInfoByExample(example);
-        Double total = 0.0;
-        for (OrderInfo info : orderInfoList) {
-            total += info.getAmount();
-        }
-        return total;
+        example.getOredCriteria().get(0)
+                .andMerchantConfirmAtBetween(order.getReq().getQueryStartAt(), order.getReq().getQueryEndAt());
+        return super.orderInfoDao.getOrderInfoByExample(example);
     }
 
     @Override
