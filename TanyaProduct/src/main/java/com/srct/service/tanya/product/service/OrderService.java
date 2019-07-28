@@ -8,11 +8,14 @@
  */
 package com.srct.service.tanya.product.service;
 
+import com.srct.service.tanya.common.datalayer.tanya.entity.OrderInfo;
 import com.srct.service.tanya.product.bo.ProductBO;
 import com.srct.service.tanya.product.vo.OrderInfoReqVO;
 import com.srct.service.tanya.product.vo.OrderInfoRespVO;
 import com.srct.service.vo.QueryReqVO;
 import com.srct.service.vo.QueryRespVO;
+
+import java.util.List;
 
 /**
  * @author sharuopeng
@@ -27,5 +30,5 @@ public interface OrderService {
 
     QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order);
 
-    Double summaryOrderInfo(ProductBO<QueryReqVO> req);
+    List<OrderInfo> summaryOrderInfo(ProductBO<QueryReqVO> req);
 }

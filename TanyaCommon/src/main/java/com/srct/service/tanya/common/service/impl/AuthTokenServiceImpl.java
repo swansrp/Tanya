@@ -33,6 +33,8 @@ public class AuthTokenServiceImpl implements AuthTokenService {
     @Autowired
     private SessionService tokenService;
 
+    private static final String TEST_TOEKN_PREFIX = "TEST-TOKEN=";
+
     @Override
     public void validate(HttpServletRequest request, HttpServletResponse response, Auth.AuthType authType) {
         response.setHeader("Access-Control-Allow-Origin", "*");
@@ -64,11 +66,13 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         if (token == null) {
             throw new UserNotLoginException();
         }
-        if (("SRP-TEST-TOKEN").equals(token)) {
-            buildTestInfo(request);
-            return;
+        String guid;
+        if (token.startsWith(TEST_TOEKN_PREFIX)) {
+            guid = token.substring(TEST_TOEKN_PREFIX.length());
+        } else {
+            guid = getGuid(token);
         }
-        String guid = getGuid(token);
+
         if (!buildUserInfo(request, guid)) {
             throw new UserNotLoginException();
         }
@@ -105,12 +109,9 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         return false;
     }
 
-    private void buildTestInfo(HttpServletRequest request) {
-        UserInfo userInfo = userService.getUserByEmail("56093273@qq.com");
-        if (userInfo != null) {
-            String guid = userInfo.getGuid();
-            buildUserInfo(request, guid);
-            buildRoleInfo(request, guid);
-        }
+    private void buildTestInfo(HttpServletRequest request, String guid) {
+        buildUserInfo(request, guid);
+        buildRoleInfo(request, guid);
+
     }
 }
