@@ -1,22 +1,22 @@
-/**   
+/**
  * Copyright ?2018 SRC-TJ Service TG. All rights reserved.
- * 
+ *
  * @Project Name: Tanya
- * @Package: com.srct.service.tanya.role 
- * @author: srct   
+ * @Package: com.srct.service.tanya.role
+ * @author: srct
  * @date: 2019/01/29
  */
 package com.srct.service.tanya.role;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
+import tk.mybatis.spring.annotation.MapperScan;
 
 /**
- * @ClassName: RoleStartApplication 
- * @Description: Start Application for Tanya - Role 
+ * @ClassName: RoleStartApplication
+ * @Description: Start Application for Tanya - Role
  */
 
 @ComponentScan(basePackages = "com.srct.service")
