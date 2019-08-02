@@ -85,16 +85,6 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
     private RoleInfoDao roleInfoDao;
 
     @Override
-    public String getRoleType() {
-        return "trader";
-    }
-
-    @Override
-    public String getSubordinateRoleType() {
-        return "salesman";
-    }
-
-    @Override
     public RoleInfoBO create(CreateRoleBO bo) {
 
         FactoryInfo factoryInfo;
@@ -124,57 +114,15 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
     }
 
     @Override
-    public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
-        UserInfo userInfo = req.getUserInfo();
-        if (userInfo == null) {
-            return getAllTrader(req);
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        TraderInfo traderInfo = traderInfoDao.getTraderInfoById(bo.getId());
+        if (traderInfo.getUserId() != null) {
+            throw new ServiceException(
+                    "Dont allow to del role " + traderInfo.getId() + " without kickout the user " + traderInfo
+                            .getUserId());
         }
-
-        FactoryInfo factoryInfo;
-        try {
-            factoryInfo = getFactoryInfoByCreator(userInfo);
-        } catch (Exception e) {
-            Log.e("dont find the user id {} for {}", userInfo.getId(), "factory");
-            throw new ServiceException("dont find the user id " + userInfo.getId() + " for factory");
-        }
-
-        FactoryMerchantMap factoryMerchantMap = getFactoryMerchantMapByFactoryInfo(factoryInfo);
-        PageInfo pageInfo = buildPageInfo(req);
-        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
-                getTraderFactoryMerchantMapByFactoryMerchantMap(factoryMerchantMap);
-        List<Integer> traderIdList =
-                (List<Integer>) ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "traderId");
-        if (traderIdList.size() == 0) {
-            traderIdList.add(0);
-        }
-        TraderInfoExample example = new TraderInfoExample();
-        TraderInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andIdIn(traderIdList);
-        if (req.getTargetIsExisted() != null) {
-            if (req.getTargetIsExisted()) {
-                criteria.andUserIdIsNotNull();
-            } else {
-                criteria.andUserIdIsNull();
-            }
-        }
-        if (req.getTitle() != null) {
-            criteria.andTitleLike("%" + req.getTitle() + "%");
-        }
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
-        PageInfo<TraderInfo> traderInfoList = traderInfoDao.getTraderInfoByExample(example, pageInfo);
-
-        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(traderInfoList);
-        if (traderInfoList != null && traderInfoList.getList().size() > 0) {
-            for (TraderInfo traderInfo : traderInfoList.getList()) {
-                RoleInfoBO bo = new RoleInfoBO();
-                BeanUtil.copyProperties(traderInfo, bo);
-                bo.setRoleType(getRoleType());
-                res.getInfo().add(bo);
-            }
-        }
-        return res;
+        traderInfoDao.delTraderInfo(traderInfo);
+        return makeRoleInfoBO(traderInfo);
     }
 
     @Override
@@ -213,6 +161,62 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
     }
 
     @Override
+    public FactoryInfo getFactoryInfoByTraderInfo(TraderInfo traderInfo) {
+        Date now = new Date();
+
+        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
+        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
+        criteria.andEndAtGreaterThanOrEqualTo(now);
+        criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andTraderIdEqualTo(traderInfo.getId());
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            Integer factoryId =
+                    traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0).getFactoryId();
+            return factoryInfoDao.getFactoryInfoById(factoryId);
+        } catch (Exception e) {
+            throw new ServiceException(
+                    "no valid Factory Merchant relationship for the trader " + traderInfo.getTitle());
+        }
+
+    }
+
+    @Override
+    public FactoryInfo getFactoryInfoByUser(UserInfo userInfo) {
+        Integer factoryId = getTraderFactoryMerchantMap(userInfo).getFactoryId();
+        return factoryInfoDao.getFactoryInfoById(factoryId);
+    }
+
+    @Override
+    public Integer getRoleIdByUser(UserInfo userInfo) {
+        return getTraderInfoByUser(userInfo).getId();
+    }
+
+    @Override
+    public String getRoleType() {
+        return "trader";
+    }
+
+    @Override
+    public List<SalesmanInfo> getSalesmanInfoListByTraderInfo(UserInfo userInfo) {
+        TraderInfo traderInfo = getTraderInfoByUser(userInfo);
+        return getSalesmanInfoListByTraderInfo(traderInfo);
+    }
+
+    @Override
+    public List<SalesmanInfo> getSalesmanInfoListByTraderInfo(TraderInfo traderInfo) {
+        SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
+        salesmanTraderMap.setTraderId(traderInfo.getId());
+        salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        List<SalesmanTraderMap> salesmanTraderMapList =
+                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMap);
+
+        List<SalesmanInfo> res = new ArrayList<>();
+        salesmanTraderMapList.forEach(map -> res.add(salesmanInfoDao.getSalesmanInfoById(map.getSalesmanId())));
+        return res;
+    }
+
+    @Override
     public RoleInfoBO getSelfDetails(UserInfo userInfo) {
         Integer id = getRoleIdByUser(userInfo);
         TraderInfo traderInfo = traderInfoDao.getTraderInfoById(id);
@@ -227,6 +231,162 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
             throw new ServiceException("没有找到上级商业渠道");
         }
         return makeRoleInfoBO(traderInfo, factoryMerchantMapList.get(0));
+    }
+
+    @Override
+    public QueryRespVO<RoleInfoBO> getSubordinate(QuerySubordinateBO req) {
+        UserInfo userInfo = req.getUserInfo();
+        if (userInfo == null) {
+            return getAllTrader(req);
+        }
+
+        FactoryInfo factoryInfo;
+        if (req.getFactoryId() != null) {
+            factoryInfo = factoryInfoDao.getFactoryInfoById(req.getFactoryId());
+        } else {
+            try {
+                factoryInfo = getFactoryInfoByCreator(userInfo);
+            } catch (Exception e) {
+                Log.e("dont find the user id {} for {}", userInfo.getId(), "factory");
+                throw new ServiceException("dont find the user id " + userInfo.getId() + " for factory");
+            }
+        }
+        FactoryMerchantMap factoryMerchantMap = getFactoryMerchantMapByFactoryInfo(factoryInfo);
+        PageInfo pageInfo = buildPageInfo(req);
+        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
+                getTraderFactoryMerchantMapByFactoryMerchantMap(factoryMerchantMap);
+        List<Integer> traderIdList =
+                ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "traderId", Integer.class);
+        if (traderIdList.size() == 0) {
+            traderIdList.add(0);
+        }
+        TraderInfoExample example = new TraderInfoExample();
+        TraderInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdIn(traderIdList);
+        if (req.getTargetIsExisted() != null) {
+            if (req.getTargetIsExisted()) {
+                criteria.andUserIdIsNotNull();
+            } else {
+                criteria.andUserIdIsNull();
+            }
+        }
+        if (req.getTitle() != null) {
+            criteria.andTitleLike("%" + req.getTitle() + "%");
+        }
+        if (req.getQueryEndAt() != null && req.getQueryStartAt() != null) {
+            criteria.andCreateAtBetween(req.getQueryStartAt(), req.getQueryEndAt());
+        }
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        PageInfo<TraderInfo> traderInfoList = traderInfoDao.getTraderInfoByExample(example, pageInfo);
+
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.buildPageInfo(traderInfoList);
+        if (traderInfoList != null && traderInfoList.getList().size() > 0) {
+            for (TraderInfo traderInfo : traderInfoList.getList()) {
+                RoleInfoBO bo = new RoleInfoBO();
+                BeanUtil.copyProperties(traderInfo, bo);
+                bo.setRoleType(getRoleType());
+                res.getInfo().add(bo);
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public String getSubordinateRoleType() {
+        return "salesman";
+    }
+
+    @Override
+    public TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo) {
+        Date now = new Date();
+        Integer traderId = getRoleIdByUser(userInfo);
+
+        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
+        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
+        criteria.andEndAtGreaterThanOrEqualTo(now);
+        criteria.andTraderIdEqualTo(traderId);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException(
+                    "no valid Trader Factory Merchant relationship for the user " + userInfo.getName());
+        }
+    }
+
+    @Override
+    public TraderFactoryMerchantMap getTraderFactoryMerchantMap(TraderInfo traderInfo) {
+        Date now = new Date();
+        Integer traderId = traderInfo.getId();
+
+        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
+        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
+        criteria.andEndAtGreaterThanOrEqualTo(now);
+        criteria.andTraderIdEqualTo(traderId);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException(
+                    "no valid Trader Factory Merchant relationship for the trader " + traderInfo.getId());
+        }
+    }
+
+    @Override
+    public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMap(FactoryInfo factoryInfo) {
+        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList = new ArrayList<>();
+        List<TraderInfo> traderInfoList = getTraderInfoList(factoryInfo);
+        traderInfoList.forEach(traderInfo -> traderFactoryMerchantMapList.add(getTraderFactoryMerchantMap(traderInfo)));
+        return traderFactoryMerchantMapList;
+    }
+
+    @Override
+    public TraderInfo getTraderInfoByUser(UserInfo userInfo) {
+        TraderInfoExample example = new TraderInfoExample();
+        TraderInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            return traderInfoDao.getTraderInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no trader have the user " + userInfo.getName());
+        }
+    }
+
+    @Override
+    public List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo) {
+        return getTraderListByFactoryId(factoryInfo.getId());
+    }
+
+    @Override
+    public RoleInfoBO invite(ModifyRoleBO bo) {
+        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
+        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
+
+        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
+            throw new ServiceException(
+                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+        }
+
+        TraderInfo traderInfo = traderInfoDao.getTraderInfoById(bo.getId());
+        traderInfo.setId(bo.getId());
+        traderInfo.setUserId(targetUserInfo.getId());
+        traderInfo.setContact(targetUserInfo.getPhone());
+        traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        TraderInfo target = traderInfoDao.updateTraderInfo(traderInfo);
+
+        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
     }
 
     @Override
@@ -255,33 +415,6 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         traderInfoDao.updateTraderInfoStrict(target);
 
         userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
-
-        RoleInfoBO resBO = new RoleInfoBO();
-        resBO.setRoleType(getRoleType());
-        BeanUtil.copyProperties(target, resBO);
-
-        return resBO;
-    }
-
-    @Override
-    public RoleInfoBO invite(ModifyRoleBO bo) {
-        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
-        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
-
-        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
-            throw new ServiceException(
-                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
-        }
-
-        TraderInfo traderInfo = traderInfoDao.getTraderInfoById(bo.getId());
-        traderInfo.setId(bo.getId());
-        traderInfo.setUserId(targetUserInfo.getId());
-        traderInfo.setContact(targetUserInfo.getPhone());
-        traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
-        TraderInfo target = traderInfoDao.updateTraderInfo(traderInfo);
-
-        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
 
         RoleInfoBO resBO = new RoleInfoBO();
         resBO.setRoleType(getRoleType());
@@ -353,130 +486,18 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         return resBO;
     }
 
-    @Override
-    public Integer getRoleIdByUser(UserInfo userInfo) {
-        return getTraderInfoByUser(userInfo).getId();
-    }
-
-    @Override
-    public FactoryInfo getFactoryInfoByUser(UserInfo userInfo) {
-        Integer factoryId = getTraderFactoryMerchantMap(userInfo).getFactoryId();
-        return factoryInfoDao.getFactoryInfoById(factoryId);
-    }
-
-    @Override
-    public TraderFactoryMerchantMap getTraderFactoryMerchantMap(UserInfo userInfo) {
-        Date now = new Date();
-        Integer traderId = getRoleIdByUser(userInfo);
-
-        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
-        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
-        criteria.andEndAtGreaterThanOrEqualTo(now);
-        criteria.andTraderIdEqualTo(traderId);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException(
-                    "no valid Trader Factory Merchant relationship for the user " + userInfo.getName());
+    private QueryRespVO<RoleInfoBO> getAllTrader(QuerySubordinateBO req) {
+        PageInfo pageInfo = buildPageInfo(req);
+        PageInfo<TraderInfo> tradeInfoList =
+                traderInfoDao.getAllTraderInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
+        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
+        res.buildPageInfo(tradeInfoList);
+        for (TraderInfo trade : tradeInfoList.getList()) {
+            RoleInfoBO bo = new RoleInfoBO();
+            BeanUtil.copyProperties(trade, bo);
+            bo.setRoleType(getRoleType());
+            res.getInfo().add(bo);
         }
-    }
-
-    @Override
-    public TraderFactoryMerchantMap getTraderFactoryMerchantMap(TraderInfo traderInfo) {
-        Date now = new Date();
-        Integer traderId = traderInfo.getId();
-
-        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
-        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
-        criteria.andEndAtGreaterThanOrEqualTo(now);
-        criteria.andTraderIdEqualTo(traderId);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException(
-                    "no valid Trader Factory Merchant relationship for the trader " + traderInfo.getId());
-        }
-    }
-
-    @Override
-    public List<TraderFactoryMerchantMap> getTraderFactoryMerchantMap(FactoryInfo factoryInfo) {
-        List<TraderFactoryMerchantMap> traderFactoryMerchantMapList = new ArrayList<>();
-        List<TraderInfo> traderInfoList = getTraderInfoList(factoryInfo);
-        traderInfoList.forEach(traderInfo -> traderFactoryMerchantMapList.add(getTraderFactoryMerchantMap(traderInfo)));
-        return traderFactoryMerchantMapList;
-    }
-
-    @Override
-    public TraderInfo getTraderInfoByUser(UserInfo userInfo) {
-        TraderInfoExample example = new TraderInfoExample();
-        TraderInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userInfo.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            return traderInfoDao.getTraderInfoByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException("no trader have the user " + userInfo.getName());
-        }
-    }
-
-    @Override
-    public FactoryInfo getFactoryInfoByTraderInfo(TraderInfo traderInfo) {
-        Date now = new Date();
-
-        TraderFactoryMerchantMapExample example = new TraderFactoryMerchantMapExample();
-        TraderFactoryMerchantMapExample.Criteria criteria = example.createCriteria();
-        criteria.andEndAtGreaterThanOrEqualTo(now);
-        criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andTraderIdEqualTo(traderInfo.getId());
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            Integer factoryId =
-                    traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0).getFactoryId();
-            return factoryInfoDao.getFactoryInfoById(factoryId);
-        } catch (Exception e) {
-            throw new ServiceException(
-                    "no valid Factory Merchant relationship for the trader " + traderInfo.getTitle());
-        }
-
-    }
-
-    @Override
-    public RoleInfoBO del(ModifyRoleBO bo) {
-        TraderInfo traderInfo = traderInfoDao.getTraderInfoById(bo.getId());
-        if (traderInfo.getUserId() != null) {
-            throw new ServiceException(
-                    "Dont allow to del role " + traderInfo.getId() + " without kickout the user " + traderInfo
-                            .getUserId());
-        }
-        traderInfoDao.delTraderInfo(traderInfo);
-        return makeRoleInfoBO(traderInfo);
-    }
-
-    @Override
-    public List<TraderInfo> getTraderInfoList(FactoryInfo factoryInfo) {
-        return getTraderListByFactoryId(factoryInfo.getId());
-    }
-
-    @Override
-    public List<SalesmanInfo> getSalesmanInfoListByTraderInfo(UserInfo userInfo) {
-        TraderInfo traderInfo = getTraderInfoByUser(userInfo);
-        return getSalesmanInfoListByTraderInfo(traderInfo);
-    }
-
-    @Override
-    public List<SalesmanInfo> getSalesmanInfoListByTraderInfo(TraderInfo traderInfo) {
-        SalesmanTraderMap salesmanTraderMap = new SalesmanTraderMap();
-        salesmanTraderMap.setTraderId(traderInfo.getId());
-        salesmanTraderMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        List<SalesmanTraderMap> salesmanTraderMapList =
-                salesmanTraderMapDao.getSalesmanTraderMapSelective(salesmanTraderMap);
-
-        List<SalesmanInfo> res = new ArrayList<>();
-        salesmanTraderMapList.forEach(map -> res.add(salesmanInfoDao.getSalesmanInfoById(map.getSalesmanId())));
         return res;
     }
 
@@ -490,12 +511,35 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapByExample(example).get(0);
     }
 
-    private void updateValidPeriod(UpdateRoleInfoBO bo, TraderFactoryMerchantMap traderFactoryMerchantMap) {
-        if (bo.getStartAt() != null) {
-            traderFactoryMerchantMap.setStartAt(bo.getStartAt());
+    private FactoryInfo getFactoryInfoByCreator(UserInfo creator) {
+        //Date now = new Date();
+
+        FactoryInfoExample example = new FactoryInfoExample();
+        FactoryInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(creator.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            return factoryInfoDao.getFactoryInfoByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("");
         }
-        if (bo.getEndAt() != null) {
-            traderFactoryMerchantMap.setEndAt(bo.getEndAt());
+    }
+
+    private FactoryMerchantMap getFactoryMerchantMapByFactoryInfo(FactoryInfo factoryInfo) {
+        //Date now = new Date();
+
+        FactoryMerchantMapExample example = new FactoryMerchantMapExample();
+        FactoryMerchantMapExample.Criteria criteria = example.createCriteria();
+        criteria.andFactoryIdEqualTo(factoryInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            return factoryMerchantMapDao.getFactoryMerchantMapByExample(example).get(0);
+        } catch (Exception e) {
+            throw new ServiceException("no such Merchant for factory " + factoryInfo.getTitle());
         }
     }
 
@@ -517,60 +561,6 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         return traderFactoryMerchantMap;
     }
 
-    private void makeTraderFactoryRelationship(FactoryInfo factoryInfo, FactoryMerchantMap factoryMerchantMap,
-            TraderInfo traderInfo) {
-        Date now = new Date();
-        TraderFactoryMerchantMap traderFactoryMerchantMap = new TraderFactoryMerchantMap();
-        traderFactoryMerchantMap.setFactoryId(factoryInfo.getId());
-        traderFactoryMerchantMap.setTraderId(traderInfo.getId());
-        traderFactoryMerchantMap.setFactoryMerchantMapId(factoryMerchantMap.getId());
-        traderFactoryMerchantMap.setStartAt(now);
-        traderFactoryMerchantMap.setEndAt(factoryMerchantMap.getEndAt());
-        traderFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        traderFactoryMerchantMapDao.updateTraderFactoryMerchantMap(traderFactoryMerchantMap);
-    }
-
-    private TraderInfo makeTraderInfo(CreateRoleBO bo) {
-        TraderInfo traderInfo = new TraderInfo();
-        BeanUtil.copyProperties(bo, traderInfo);
-        traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        traderInfo = traderInfoDao.updateTraderInfo(traderInfo);
-        return traderInfo;
-
-    }
-
-    private FactoryMerchantMap getFactoryMerchantMapByFactoryInfo(FactoryInfo factoryInfo) {
-        //Date now = new Date();
-
-        FactoryMerchantMapExample example = new FactoryMerchantMapExample();
-        FactoryMerchantMapExample.Criteria criteria = example.createCriteria();
-        criteria.andFactoryIdEqualTo(factoryInfo.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            return factoryMerchantMapDao.getFactoryMerchantMapByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException("no such Merchant for factory " + factoryInfo.getTitle());
-        }
-    }
-
-    private FactoryInfo getFactoryInfoByCreator(UserInfo creator) {
-        //Date now = new Date();
-
-        FactoryInfoExample example = new FactoryInfoExample();
-        FactoryInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(creator.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            return factoryInfoDao.getFactoryInfoByExample(example).get(0);
-        } catch (Exception e) {
-            throw new ServiceException("");
-        }
-    }
-
     private List<TraderFactoryMerchantMap> getTraderFactoryMerchantMapByFactoryMerchantMap(
             FactoryMerchantMap factoryMerchantMap) {
 
@@ -589,21 +579,6 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         traderFactoryMerchantMapEx.setFactoryMerchantMapId(factoryMerchantMap.getId());
         traderFactoryMerchantMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         return traderFactoryMerchantMapDao.getTraderFactoryMerchantMapSelective(traderFactoryMerchantMapEx, pageInfo);
-    }
-
-    private QueryRespVO<RoleInfoBO> getAllTrader(QuerySubordinateBO req) {
-        PageInfo pageInfo = buildPageInfo(req);
-        PageInfo<TraderInfo> tradeInfoList =
-                traderInfoDao.getAllTraderInfoList(DataSourceCommonConstant.DATABASE_COMMON_VALID, pageInfo);
-        QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
-        res.buildPageInfo(tradeInfoList);
-        for (TraderInfo trade : tradeInfoList.getList()) {
-            RoleInfoBO bo = new RoleInfoBO();
-            BeanUtil.copyProperties(trade, bo);
-            bo.setRoleType(getRoleType());
-            res.getInfo().add(bo);
-        }
-        return res;
     }
 
     private List<TraderInfo> getTraderListByFactoryId(Integer id) {
@@ -635,6 +610,37 @@ public class TraderRoleServiceImpl implements RoleService, TraderRoleService {
         BeanUtil.copyProperties(map, permissionDetailsBO);
         res.setPermissionDetails(permissionDetailsBO);
         return res;
+    }
+
+    private void makeTraderFactoryRelationship(FactoryInfo factoryInfo, FactoryMerchantMap factoryMerchantMap,
+            TraderInfo traderInfo) {
+        Date now = new Date();
+        TraderFactoryMerchantMap traderFactoryMerchantMap = new TraderFactoryMerchantMap();
+        traderFactoryMerchantMap.setFactoryId(factoryInfo.getId());
+        traderFactoryMerchantMap.setTraderId(traderInfo.getId());
+        traderFactoryMerchantMap.setFactoryMerchantMapId(factoryMerchantMap.getId());
+        traderFactoryMerchantMap.setStartAt(now);
+        traderFactoryMerchantMap.setEndAt(factoryMerchantMap.getEndAt());
+        traderFactoryMerchantMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        traderFactoryMerchantMapDao.updateTraderFactoryMerchantMap(traderFactoryMerchantMap);
+    }
+
+    private TraderInfo makeTraderInfo(CreateRoleBO bo) {
+        TraderInfo traderInfo = new TraderInfo();
+        BeanUtil.copyProperties(bo, traderInfo);
+        traderInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        traderInfo = traderInfoDao.updateTraderInfo(traderInfo);
+        return traderInfo;
+
+    }
+
+    private void updateValidPeriod(UpdateRoleInfoBO bo, TraderFactoryMerchantMap traderFactoryMerchantMap) {
+        if (bo.getStartAt() != null) {
+            traderFactoryMerchantMap.setStartAt(bo.getStartAt());
+        }
+        if (bo.getEndAt() != null) {
+            traderFactoryMerchantMap.setEndAt(bo.getEndAt());
+        }
     }
 
 }

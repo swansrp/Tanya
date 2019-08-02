@@ -31,7 +31,7 @@ public class FeatureServiceImpl implements FeatureService {
     @Override
     public List<String> getFeatureList() {
         List<Feature> featureList = featureDao.getAllFeatureList(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        return (List<String>) ReflectionUtil.getFieldList(featureList, "key");
+        return ReflectionUtil.getFieldList(featureList, "key", String.class);
     }
 
     @Override

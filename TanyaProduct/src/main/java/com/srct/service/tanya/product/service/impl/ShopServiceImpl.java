@@ -23,6 +23,7 @@ import com.srct.service.tanya.common.datalayer.tanya.entity.ShopTraderFactoryMer
 import com.srct.service.tanya.common.datalayer.tanya.entity.ShopTraderFactoryMerchantMapExample;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderFactoryMerchantMap;
 import com.srct.service.tanya.common.datalayer.tanya.entity.TraderInfo;
+import com.srct.service.tanya.common.datalayer.tanya.mapper.ShopInfoMapper;
 import com.srct.service.tanya.common.datalayer.tanya.repository.ShopFactoryMerchantMapDao;
 import com.srct.service.tanya.common.datalayer.tanya.repository.ShopTraderFactoryMerchantMapDao;
 import com.srct.service.tanya.common.service.FeatureService;
@@ -61,6 +62,8 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
     private ShopTraderFactoryMerchantMapDao shopTraderFactoryMerchantMapDao;
     @Autowired
     private FeatureService featureService;
+    @Autowired
+    private ShopInfoMapper shopInfoMapper;
 
     @Override
     public QueryRespVO<ShopInfoRespVO> updateShopInfo(ProductBO<ShopInfoReqVO> req) {
@@ -175,11 +178,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
             BeanUtil.copyProperties(uploadShop, shopInfo);
             shopInfo.setMerchantId(merchantInfo.getId());
             shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-            try {
-                shopInfoDao.updateShopInfo(shopInfo);
-            } catch (DuplicateKeyException e) {
-
-            }
+            saveShopInfo(shopInfo);
         });
     }
 
@@ -229,7 +228,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         MerchantInfo merchantInfo = super.merchantRoleService.getMerchantInfoByUser(req.getCreatorInfo());
         shopInfo.setMerchantId(merchantInfo.getId());
         shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        shopInfoDao.updateShopInfo(shopInfo);
+        saveShopInfo(shopInfo);
         return shopInfo;
     }
 
@@ -241,7 +240,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         BeanUtil.copyProperties(req.getReq().getShop(), shopInfo);
         shopInfo.setMerchantId(factoryMerchantMap.getMerchantId());
         shopInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        shopInfoDao.updateShopInfo(shopInfo);
+        saveShopInfo(shopInfo);
         if (req.getReq().getShop().getId() == null) {
             makeShopFactoryMerchantMapRelationShip(shopInfo, factoryMerchantMap);
         }
@@ -291,12 +290,12 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         if (featureService.getFeatureExpected(FeatureConstant.SHOP_BIND_FACTORY_MERCHANT_FEATURE, "1")) {
             List<ShopFactoryMerchantMap> shopFactoryMerchantMapList =
                     getShopFactoryMerchantMapList(factoryMerchantMap, req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopFactoryMerchantMapList, "shopId");
+            shopIdList = ReflectionUtil.getFieldList(shopFactoryMerchantMapList, "shopId", Integer.class);
         } else {
             List<ShopInfo> shopInfoList =
                     getShopInfoListByMerchant(merchantInfoDao.getMerchantInfoById(factoryMerchantMap.getMerchantId()),
                             req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopInfoList, "id");
+            shopIdList = ReflectionUtil.getFieldList(shopInfoList, "id", Integer.class);
         }
         if (shopIdList == null || shopIdList.size() == 0) {
             return res;
@@ -321,7 +320,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         List<ShopTraderFactoryMerchantMap> shopTraderFactoryMerchantMapList =
                 getShopTraderFactoryMerchantMap(traderInfo, traderFactoryMerchantMap, req.getProductId());
         List<Integer> shopIdList =
-                (List<Integer>) ReflectionUtil.getFieldList(shopTraderFactoryMerchantMapList, "shopId");
+                ReflectionUtil.getFieldList(shopTraderFactoryMerchantMapList, "shopId", Integer.class);
         if (shopIdList == null || shopIdList.size() == 0) {
             return res;
         } else {
@@ -358,12 +357,12 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         if (featureService.getFeatureExpected(FeatureConstant.SHOP_BIND_FACTORY_MERCHANT_FEATURE, "1")) {
             List<ShopFactoryMerchantMap> shopFactoryMerchantMapList =
                     getShopFactoryMerchantMapList(factoryMerchantMap, req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopFactoryMerchantMapList, "shopId");
+            shopIdList = ReflectionUtil.getFieldList(shopFactoryMerchantMapList, "shopId", Integer.class);
         } else {
             List<ShopInfo> shopInfoList =
                     getShopInfoListByMerchant(merchantInfoDao.getMerchantInfoById(factoryMerchantMap.getMerchantId()),
                             req.getProductId());
-            shopIdList = (List<Integer>) ReflectionUtil.getFieldList(shopInfoList, "id");
+            shopIdList = ReflectionUtil.getFieldList(shopInfoList, "id", Integer.class);
         }
         if (shopIdList == null || shopIdList.size() == 0) {
             return res;
@@ -432,6 +431,21 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         res.setTotalSize(shopInfoList.getTotal());
         shopInfoList.getList().forEach(shopInfo -> res.getInfo().add(buildShopInfoRespVO(shopInfo)));
         return res;
+    }
+
+    private void saveShopInfo(ShopInfo shopInfo) {
+        try {
+            shopInfoDao.updateShopInfo(shopInfo);
+        } catch (DuplicateKeyException e) {
+            handleShopInfoDuplicate(shopInfo);
+        }
+    }
+
+    private void handleShopInfoDuplicate(ShopInfo shopInfo) {
+        ShopInfo duplicateShopInfo = ShopInfo.builder().merchantId(shopInfo.getMerchantId()).code(shopInfo.getCode())
+                .valid(shopInfo.getValid()).build();
+        shopInfoMapper.deleteByPrimaryKey(super.shopInfoDao.getShopInfoSelective(duplicateShopInfo).get(0).getId());
+        shopInfoDao.updateShopInfo(shopInfo);
     }
 
     private void bindShopTraderRelationship(ProductBO<ShopInfoReqVO> req, List<Integer> traderIdList, Byte valid) {
@@ -548,7 +562,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         List<TraderFactoryMerchantMap> traderFactoryMerchantMapList =
                 super.traderFactoryMerchantMapDao.getTraderFactoryMerchantMapSelective(TraderFactoryMerchantMapEx);
         List<Integer> traderFactoryMerchantMapIdList =
-                (List<Integer>) ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "id");
+                ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "id", Integer.class);
         if (traderFactoryMerchantMapIdList == null || traderFactoryMerchantMapIdList.size() == 0) {
             return res;
         }
@@ -575,7 +589,7 @@ public class ShopServiceImpl extends ProductServiceBaseImpl implements ShopServi
         List<FactoryMerchantMap> factoryMerchantMapList =
                 super.getFactoryMerchantMapListByMerchantIdAndFactoryId(merchantInfo.getId(), req.getFactoryId());
         List<Integer> factoryMerchantMapIdList =
-                (List<Integer>) ReflectionUtil.getFieldList(factoryMerchantMapList, "id");
+                ReflectionUtil.getFieldList(factoryMerchantMapList, "id", Integer.class);
         if (factoryMerchantMapIdList == null || 0 == factoryMerchantMapIdList.size()) {
             return res;
         }

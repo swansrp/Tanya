@@ -18,6 +18,7 @@ import lombok.Data;
 public class ProductBO<T extends QueryReqVO> extends BaseBO {
     private String productType;
     private T req;
+    private Integer merchantId;
     private Integer factoryId;
     private Integer traderId;
     private Integer salesmanId;

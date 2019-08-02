@@ -41,7 +41,7 @@ public class CampaignHistoryCronTaskServiceImpl extends CronTaskBaseSerivceImpl
             return null;
         }
         List<Integer> traderInfoIdList =
-                (List<Integer>) ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "traderId");
+                ReflectionUtil.getFieldList(traderFactoryMerchantMapList, "traderId", Integer.class);
         traderInfoIdList.forEach(traderInfoId -> {
             TraderInfo traderInfo = traderInfoDao.getTraderInfoById(traderInfoId);
             if (traderInfo.getUserId() == null) {
@@ -49,7 +49,7 @@ public class CampaignHistoryCronTaskServiceImpl extends CronTaskBaseSerivceImpl
             }
             UserInfo traderUserInfo = userInfoDao.getUserInfoById(traderInfo.getUserId());
             List<CampaignInfo> campaignInfoList = getCampaignInfoListByTraderInfoId(traderInfoId);
-            List<Integer> campaignInfoIdList = (List<Integer>) ReflectionUtil.getFieldList(campaignInfoList, "id");
+            List<Integer> campaignInfoIdList = ReflectionUtil.getFieldList(campaignInfoList, "id", Integer.class);
             if (CollectionUtils.isEmpty(campaignInfoIdList)) {
                 return;
             }

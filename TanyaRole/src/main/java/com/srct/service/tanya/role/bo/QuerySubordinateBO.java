@@ -20,4 +20,8 @@ public class QuerySubordinateBO extends QueryReqVO {
     private UserInfo userInfo;
     private Boolean targetIsExisted;
     private String title;
+    private Integer adminId;
+    private Integer merchantId;
+    private Integer factoryId;
+    private Integer traderId;
 }

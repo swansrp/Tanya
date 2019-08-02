@@ -33,8 +33,6 @@ public class AuthTokenServiceImpl implements AuthTokenService {
     @Autowired
     private SessionService tokenService;
 
-    private static final String TEST_TOEKN_PREFIX = "TEST-TOKEN=";
-
     @Override
     public void validate(HttpServletRequest request, HttpServletResponse response, Auth.AuthType authType) {
         response.setHeader("Access-Control-Allow-Origin", "*");
@@ -61,43 +59,6 @@ public class AuthTokenServiceImpl implements AuthTokenService {
 
     }
 
-    private void validate(HttpServletRequest request, HttpServletResponse response) {
-        String token = request.getHeader("x-access-token");
-        if (token == null) {
-            throw new UserNotLoginException();
-        }
-        String guid;
-        if (token.startsWith(TEST_TOEKN_PREFIX)) {
-            guid = token.substring(TEST_TOEKN_PREFIX.length());
-        } else {
-            guid = getGuid(token);
-        }
-
-        if (!buildUserInfo(request, guid)) {
-            throw new UserNotLoginException();
-        }
-        if (!buildRoleInfo(request, guid)) {
-            throw new UserNotInRoleException();
-        }
-
-    }
-
-    private String getGuid(String token) {
-        String guid = tokenService.getGuidByToken(token);
-        Log.i("token: {} -- guid: {} ", token, guid);
-        return guid;
-    }
-
-    private boolean buildUserInfo(HttpServletRequest request, String guid) {
-        if (guid != null) {
-            UserInfo info = userService.getUserbyGuid(guid);
-            request.setAttribute("guid", guid);
-            request.setAttribute("user", info);
-            return true;
-        }
-        return false;
-    }
-
     private boolean buildRoleInfo(HttpServletRequest request, String guid) {
         UserInfo userInfo = new UserInfo();
         userInfo.setGuid(guid);
@@ -110,8 +71,45 @@ public class AuthTokenServiceImpl implements AuthTokenService {
     }
 
     private void buildTestInfo(HttpServletRequest request, String guid) {
-        buildUserInfo(request, guid);
-        buildRoleInfo(request, guid);
+        UserInfo userInfo = userService.getUserbyGuid(guid);
+        if (userInfo != null) {
+            buildUserInfo(request, guid);
+            buildRoleInfo(request, guid);
+        }
+    }
+
+    private boolean buildUserInfo(HttpServletRequest request, String guid) {
+        if (guid != null) {
+            UserInfo info = userService.getUserbyGuid(guid);
+            request.setAttribute("guid", guid);
+            request.setAttribute("user", info);
+            return true;
+        }
+        return false;
+    }
+
+    private String getGuid(String token) {
+        String guid = tokenService.getGuidByToken(token);
+        Log.i("token: {} -- guid: {} ", token, guid);
+        return guid;
+    }
+
+    private void validate(HttpServletRequest request, HttpServletResponse response) {
+        String token = request.getHeader("x-access-token");
+        if (token == null) {
+            throw new UserNotLoginException();
+        }
+        if ((token).startsWith("TEST-TOKEN")) {
+            buildTestInfo(request, token.substring(token.indexOf(':') + 1));
+            return;
+        }
+        String guid = getGuid(token);
+        if (!buildUserInfo(request, guid)) {
+            throw new UserNotLoginException();
+        }
+        if (!buildRoleInfo(request, guid)) {
+            throw new UserNotInRoleException();
+        }
 
     }
 }

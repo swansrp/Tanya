@@ -57,16 +57,6 @@ public class AdminRoleServiceImpl implements RoleService {
     private UserService userService;
 
     @Override
-    public String getRoleType() {
-        return "admin";
-    }
-
-    @Override
-    public String getSubordinateRoleType() {
-        return "merchant";
-    }
-
-    @Override
     public RoleInfoBO create(CreateRoleBO bo) {
 
         AdminInfo adminInfo = makeAdminInfo(bo);
@@ -78,17 +68,51 @@ public class AdminRoleServiceImpl implements RoleService {
         return res;
     }
 
-    private AdminInfo makeAdminInfo(CreateRoleBO bo) {
-        Date now = new Date();
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getId());
+        if (adminInfo.getUserId() != null) {
+            throw new ServiceException(
+                    "Dont allow to del role " + adminInfo.getId() + " without kickout the user " + adminInfo
+                            .getUserId());
+        }
+        adminInfoDao.delAdminInfo(adminInfo);
+        return makeRoleInfoBO(adminInfo);
+    }
 
-        AdminInfo adminInfo = new AdminInfo();
-        BeanUtil.copyProperties(bo, adminInfo);
-        adminInfo.setStartAt(now);
-        adminInfo.setEndAt(getDefaultPeriod(now, DEFAULT_PERIOD_TYPE, DEFAULT_PERIOD_VALUE));
-        adminInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+    @Override
+    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getId());
+        return makeRoleInfoBO(adminInfo);
+    }
 
-        adminInfoDao.updateAdminInfo(adminInfo);
-        return adminInfo;
+    @Override
+    public Integer getRoleIdByUser(UserInfo userInfo) {
+        AdminInfoExample example = new AdminInfoExample();
+        AdminInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
+        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        try {
+            AdminInfo adminInfo = adminInfoDao.getAdminInfoByExample(example).get(0);
+            return adminInfo.getId();
+        } catch (Exception e) {
+            throw new ServiceException("no admin have the user " + userInfo.getName());
+        }
+
+    }
+
+    @Override
+    public String getRoleType() {
+        return "admin";
+    }
+
+    @Override
+    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
+        Integer id = getRoleIdByUser(userInfo);
+        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(id);
+        return makeRoleInfoBO(adminInfo);
     }
 
     @Override
@@ -109,9 +133,34 @@ public class AdminRoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
-        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getId());
-        return makeRoleInfoBO(adminInfo);
+    public String getSubordinateRoleType() {
+        return "merchant";
+    }
+
+    @Override
+    public RoleInfoBO invite(ModifyRoleBO bo) {
+        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
+        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
+
+        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
+            throw new ServiceException(
+                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
+        }
+
+        AdminInfo admin = adminInfoDao.getAdminInfoById(bo.getId());
+        admin.setUserId(targetUserInfo.getId());
+        admin.setContact(targetUserInfo.getPhone());
+        admin.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        AdminInfo target = adminInfoDao.updateAdminInfo(admin);
+
+        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
     }
 
     @Override
@@ -149,32 +198,6 @@ public class AdminRoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleInfoBO invite(ModifyRoleBO bo) {
-        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
-        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
-
-        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
-            throw new ServiceException(
-                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
-        }
-
-        AdminInfo admin = adminInfoDao.getAdminInfoById(bo.getId());
-        admin.setUserId(targetUserInfo.getId());
-        admin.setContact(targetUserInfo.getPhone());
-        admin.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
-        AdminInfo target = adminInfoDao.updateAdminInfo(admin);
-
-        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
-
-        RoleInfoBO resBO = new RoleInfoBO();
-        resBO.setRoleType(getRoleType());
-        BeanUtil.copyProperties(target, resBO);
-
-        return resBO;
-    }
-
-    @Override
     public RoleInfoBO update(UpdateRoleInfoBO bo) {
         AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getTargetId());
         BeanUtil.copyProperties(bo, adminInfo);
@@ -188,40 +211,17 @@ public class AdminRoleServiceImpl implements RoleService {
         return resBO;
     }
 
-    @Override
-    public Integer getRoleIdByUser(UserInfo userInfo) {
-        AdminInfoExample example = new AdminInfoExample();
-        AdminInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userInfo.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
-        criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        try {
-            AdminInfo adminInfo = adminInfoDao.getAdminInfoByExample(example).get(0);
-            return adminInfo.getId();
-        } catch (Exception e) {
-            throw new ServiceException("no admin have the user " + userInfo.getName());
-        }
+    private AdminInfo makeAdminInfo(CreateRoleBO bo) {
+        Date now = new Date();
 
-    }
+        AdminInfo adminInfo = new AdminInfo();
+        BeanUtil.copyProperties(bo, adminInfo);
+        adminInfo.setStartAt(now);
+        adminInfo.setEndAt(getDefaultPeriod(now, DEFAULT_PERIOD_TYPE, DEFAULT_PERIOD_VALUE));
+        adminInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
-    @Override
-    public RoleInfoBO del(ModifyRoleBO bo) {
-        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(bo.getId());
-        if (adminInfo.getUserId() != null) {
-            throw new ServiceException(
-                    "Dont allow to del role " + adminInfo.getId() + " without kickout the user " + adminInfo
-                            .getUserId());
-        }
-        adminInfoDao.delAdminInfo(adminInfo);
-        return makeRoleInfoBO(adminInfo);
-    }
-
-    @Override
-    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
-        Integer id = getRoleIdByUser(userInfo);
-        AdminInfo adminInfo = adminInfoDao.getAdminInfoById(id);
-        return makeRoleInfoBO(adminInfo);
+        adminInfoDao.updateAdminInfo(adminInfo);
+        return adminInfo;
     }
 
     private RoleInfoBO makeRoleInfoBO(AdminInfo adminInfo) {

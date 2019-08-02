@@ -17,6 +17,7 @@ import com.srct.service.tanya.product.bo.UploadProductBO;
 import com.srct.service.tanya.product.service.GoodsService;
 import com.srct.service.tanya.product.vo.GoodsInfoReqVO;
 import com.srct.service.tanya.product.vo.GoodsInfoRespVO;
+import com.srct.service.tanya.product.vo.GoodsSummaryVO;
 import com.srct.service.tanya.product.vo.upload.UploadGoodsInfoVO;
 import com.srct.service.utils.ExcelUtils;
 import com.srct.service.utils.HttpUtil;
@@ -65,13 +66,13 @@ public class GoodsController {
     @Autowired
     private GoodsService goodsService;
 
-    @ApiOperation(value = "新增/更新药品", notes = "只有factory、trader等级可以添加药品 若传入id则为更新")
-    @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> modifyGoods(
+    @ApiOperation(value = "绑定药品", notes = "只有merchant/factory等级可以绑定药品")
+    @RequestMapping(value = "/bind", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> bindGoods(
             @RequestBody GoodsInfoReqVO req) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
-        Log.i("***modifyGoods***");
+        Log.i("***bindGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<GoodsInfoReqVO> goods = new ProductBO<>();
@@ -79,7 +80,30 @@ public class GoodsController {
         goods.setReq(req);
         goods.setCreatorInfo(info);
         goods.setCreatorRole(role);
-        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.updateGoodsInfo(goods);
+        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = null;
+        if (req.getUnbindIdList() != null || req.getBindIdList() != null) {
+            goodsInfoVOList = goodsService.bindGoodsInfo(goods);
+        }
+        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
+    }
+
+    @ApiOperation(value = "删除商品", notes = "非salesman等级可以删除商品")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "goodsid", value = "商品id", required = true)})
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> del(
+            @RequestParam(value = "goodsid") Integer goodsId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***DelGoods***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        ProductBO<GoodsInfoReqVO> goods = new ProductBO<>();
+        goods.setProductType(productType);
+        goods.setCreatorInfo(info);
+        goods.setCreatorRole(role);
+        goods.setProductId(goodsId);
+        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.delGoodsInfo(goods);
 
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
@@ -119,27 +143,6 @@ public class GoodsController {
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 
-    @ApiOperation(value = "绑定药品", notes = "只有merchant/factory等级可以绑定药品")
-    @RequestMapping(value = "/bind", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> bindGoods(
-            @RequestBody GoodsInfoReqVO req) {
-        UserInfo info = (UserInfo) request.getAttribute("user");
-        RoleInfo role = (RoleInfo) request.getAttribute("role");
-        Log.i("***bindGoods***");
-        Log.i("guid {} role {}", info.getGuid(), role.getRole());
-
-        ProductBO<GoodsInfoReqVO> goods = new ProductBO<>();
-        goods.setProductType(productType);
-        goods.setReq(req);
-        goods.setCreatorInfo(info);
-        goods.setCreatorRole(role);
-        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = null;
-        if (req.getUnbindIdList() != null || req.getBindIdList() != null) {
-            goodsInfoVOList = goodsService.bindGoodsInfo(goods);
-        }
-        return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
-    }
-
     @ApiOperation(value = "获取绑定药品信息", notes = "只有merchant/factory等级可以获取绑定药品信息")
     @ApiImplicitParams({@ApiImplicitParam(paramType = "query", dataType = "int", name = "factoryId", value = "查询药厂Id"),
             @ApiImplicitParam(paramType = "query", dataType = "int", name = "traderId", value = "查询销售员Id"),
@@ -171,46 +174,45 @@ public class GoodsController {
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 
-    @ApiOperation(value = "删除商品", notes = "非salesman等级可以删除商品")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "goodsid", value = "商品id", required = true)})
-    @RequestMapping(value = "", method = RequestMethod.DELETE)
-    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> del(
-            @RequestParam(value = "goodsid") Integer goodsId) {
+    @ApiOperation(value = "新增/更新药品", notes = "只有factory、trader等级可以添加药品 若传入id则为更新")
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<QueryRespVO<GoodsInfoRespVO>>.Resp> modifyGoods(
+            @RequestBody GoodsInfoReqVO req) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
-        Log.i("***DelGoods***");
+        Log.i("***modifyGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
         ProductBO<GoodsInfoReqVO> goods = new ProductBO<>();
         goods.setProductType(productType);
+        goods.setReq(req);
         goods.setCreatorInfo(info);
         goods.setCreatorRole(role);
-        goods.setProductId(goodsId);
-        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.delGoodsInfo(goods);
+        QueryRespVO<GoodsInfoRespVO> goodsInfoVOList = goodsService.updateGoodsInfo(goods);
 
         return TanyaExceptionHandler.generateResponse(goodsInfoVOList);
     }
 
-    @ApiOperation(value = "上传药品", notes = "只有merchant可以上传药品信息")
+    @ApiOperation(value = "获取药品", notes = "获取药品详情,无id则返回渠道药品列表")
+    @RequestMapping(value = "/summary", method = RequestMethod.POST)
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "override", value = "是否覆盖", required = true),
-            @ApiImplicitParam(paramType = "query", dataType = "int", name = "merchantid", value = "绑定商业渠道id", required = true)})
-    @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public ResponseEntity<CommonResponse<String>.Resp> upload(MultipartFile file,
-            @RequestParam(value = "override") Boolean override,
-            @RequestParam(value = "merchantid") Integer merchantId) {
+            @ApiImplicitParam(paramType = "body", dataType = "QueryReqVO", name = "req", value = "基本请求", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "merchantId", value = "商业渠道id", required = true)})
+    public ResponseEntity<CommonResponse<GoodsSummaryVO>.Resp> summaryGoods(@RequestBody QueryReqVO req,
+            @RequestParam(value = "merchantId") Integer merchantId) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
-        Log.i("***uploadGoods***");
+        Log.i("***summaryGoods***");
         Log.i("guid {} role {}", info.getGuid(), role.getRole());
 
-        UploadProductBO bo = new UploadProductBO();
-        bo.setMerchantId(merchantId);
-        bo.setFile(file);
-        bo.setOverride(override);
-        goodsService.uploadGoodsInfoVO(bo);
-        return TanyaExceptionHandler.generateResponse("success");
+        ProductBO<QueryReqVO> goods = new ProductBO<>();
+        goods.setMerchantId(merchantId);
+        goods.setReq(req);
+        goods.setCreatorInfo(info);
+        goods.setCreatorRole(role);
+
+        GoodsSummaryVO summary = goodsService.summaryGoodsInfo(goods);
+        return TanyaExceptionHandler.generateResponse(summary);
     }
 
     @ApiOperation(value = "获取药品上传模板", notes = "")
@@ -235,5 +237,26 @@ public class GoodsController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @ApiOperation(value = "上传药品", notes = "只有merchant可以上传药品信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "Boolean", name = "override", value = "是否覆盖", required = true),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "merchantid", value = "绑定商业渠道id", required = true)})
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public ResponseEntity<CommonResponse<String>.Resp> upload(MultipartFile file,
+            @RequestParam(value = "override") Boolean override,
+            @RequestParam(value = "merchantid") Integer merchantId) {
+        UserInfo info = (UserInfo) request.getAttribute("user");
+        RoleInfo role = (RoleInfo) request.getAttribute("role");
+        Log.i("***uploadGoods***");
+        Log.i("guid {} role {}", info.getGuid(), role.getRole());
+
+        UploadProductBO bo = new UploadProductBO();
+        bo.setMerchantId(merchantId);
+        bo.setFile(file);
+        bo.setOverride(override);
+        goodsService.uploadGoodsInfoVO(bo);
+        return TanyaExceptionHandler.generateResponse("success");
     }
 }

@@ -22,13 +22,13 @@ import java.util.List;
  */
 public interface OrderService {
 
-    QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order);
-
-    QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
-
     QueryRespVO<OrderInfoRespVO> confirmOrderInfo(ProductBO<QueryReqVO> order);
 
     QueryRespVO<OrderInfoRespVO> delOrderInfo(ProductBO<OrderInfoReqVO> order);
 
+    QueryRespVO<OrderInfoRespVO> getOrderInfo(ProductBO<QueryReqVO> order);
+
     List<OrderInfo> summaryOrderInfo(ProductBO<QueryReqVO> req);
+
+    QueryRespVO<OrderInfoRespVO> updateOrderInfo(ProductBO<OrderInfoReqVO> order);
 }

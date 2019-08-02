@@ -77,16 +77,6 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
     private FeatureService featureService;
 
     @Override
-    public String getRoleType() {
-        return "merchant";
-    }
-
-    @Override
-    public String getSubordinateRoleType() {
-        return "factory";
-    }
-
-    @Override
     public RoleInfoBO create(CreateRoleBO bo) {
 
         AdminInfo adminInfo;
@@ -106,41 +96,59 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         return res;
     }
 
-    private void makeMerchantAdminRelationship(AdminInfo adminInfo, MerchantInfo merchantInfo) {
-        MerchantAdminMap merchantAdminMap = new MerchantAdminMap();
-        merchantAdminMap.setAdminId(adminInfo.getId());
-        merchantAdminMap.setMerchantId(merchantInfo.getId());
-        merchantAdminMap.setFactoryNumber(2);
-        merchantAdminMap.setSign(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
-        merchantAdminMap.setStartAt(merchantInfo.getStartAt());
-        merchantAdminMap.setEndAt(merchantInfo.getEndAt());
-        merchantAdminMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        merchantAdminMapDao.updateMerchantAdminMap(merchantAdminMap);
+    @Override
+    public RoleInfoBO del(ModifyRoleBO bo) {
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getId());
+        if (merchantInfo.getUserId() != null) {
+            throw new ServiceException(
+                    "Dont allow to del role " + merchantInfo.getId() + " without kickout the user " + merchantInfo
+                            .getUserId());
+        }
+        merchantInfoDao.delMerchantInfo(merchantInfo);
+        return makeRoleInfoBO(merchantInfo);
     }
 
-    private AdminInfo getAdminInfoByCreator(UserInfo creator) {
-        AdminInfoExample example = new AdminInfoExample();
-        AdminInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(creator.getId());
+    @Override
+    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getId());
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(merchantInfo, res);
+        res.setRoleType(getRoleType());
+        return res;
+    }
+
+    @Override
+    public MerchantInfo getMerchantInfoByUser(UserInfo userInfo) {
+        MerchantInfo merchantInfo;
+        MerchantInfoExample example = new MerchantInfoExample();
+        MerchantInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(userInfo.getId());
+        // criteria.andEndAtGreaterThanOrEqualTo(now);
+        // criteria.andStartAtLessThanOrEqualTo(now);
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            return adminInfoDao.getAdminInfoByExample(example).get(0);
+            merchantInfo = merchantInfoDao.getMerchantInfoByExample(example).get(0);
         } catch (Exception e) {
-            throw new ServiceException(e.getMessage());
+            throw new ServiceException("no merchant have the user " + userInfo.getName());
         }
+        return merchantInfo;
     }
 
-    private MerchantInfo makeMerchantInfo(CreateRoleBO bo) {
-        Date now = new Date();
+    @Override
+    public Integer getRoleIdByUser(UserInfo userInfo) {
+        return getMerchantInfoByUser(userInfo).getId();
+    }
 
-        MerchantInfo merchantInfo = new MerchantInfo();
-        BeanUtil.copyProperties(bo, merchantInfo);
-        merchantInfo.setStartAt(now);
-        merchantInfo.setEndAt(DateUtils.addMonth(now, 1));
-        merchantInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+    @Override
+    public String getRoleType() {
+        return "merchant";
+    }
 
-        merchantInfoDao.updateMerchantInfo(merchantInfo);
-        return merchantInfo;
+    @Override
+    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
+        Integer id = getRoleIdByUser(userInfo);
+        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(id);
+        return makeRoleInfoBO(merchantInfo);
     }
 
     @Override
@@ -154,16 +162,20 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         }
 
         AdminInfo adminInfo;
-        try {
-            adminInfo = getAdminInfoByCreator(userInfo);
-        } catch (Exception e) {
-            throw new ServiceException("不允许用户[" + userInfo.getId() + "]获取渠道下属" + getRoleType());
+        if (req.getAdminId() != null) {
+            adminInfo = adminInfoDao.getAdminInfoById(req.getAdminId());
+        } else {
+            try {
+                adminInfo = getAdminInfoByCreator(userInfo);
+            } catch (Exception e) {
+                throw new ServiceException("不允许用户[" + userInfo.getId() + "]获取渠道下属" + getRoleType());
+            }
         }
 
         QueryRespVO<RoleInfoBO> res = new QueryRespVO<>();
         PageInfo pageInfo = buildPageInfo(req);
         List<MerchantAdminMap> merchantAdminMapList = getMerchantAdminMapsListByAdminInfo(adminInfo);
-        List<Integer> merchantIdList = (List<Integer>) ReflectionUtil.getFieldList(merchantAdminMapList, "merchantId");
+        List<Integer> merchantIdList = ReflectionUtil.getFieldList(merchantAdminMapList, "merchantId", Integer.class);
         if (merchantIdList.size() == 0) {
             merchantIdList.add(0);
         }
@@ -180,6 +192,9 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         if (req.getTitle() != null) {
             criteria.andTitleLike("%" + req.getTitle() + "%");
         }
+        if (req.getQueryEndAt() != null && req.getQueryStartAt() != null) {
+            criteria.andCreateAtBetween(req.getQueryStartAt(), req.getQueryEndAt());
+        }
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
         PageInfo<MerchantInfo> merchantInfoList = merchantInfoDao.getMerchantInfoByExample(example, pageInfo);
@@ -191,44 +206,35 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         return res;
     }
 
-    private List<MerchantAdminMap> getMerchantAdminMapsListByAdminInfo(AdminInfo adminInfo) {
-        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
-        merchantAdminMapEx.setAdminId(adminInfo.getId());
-        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        return merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx);
+    @Override
+    public String getSubordinateRoleType() {
+        return "factory";
     }
 
-    private List<MerchantAdminMap> getMerchantAdminMapsListByAdminInfoAndMerchantInfo(AdminInfo adminInfo,
-            MerchantInfo merchantInfo) {
-        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
-        merchantAdminMapEx.setAdminId(adminInfo.getId());
-        merchantAdminMapEx.setMerchantId(merchantInfo.getId());
-        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-        return merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx);
-    }
+    @Override
+    public RoleInfoBO invite(ModifyRoleBO bo) {
+        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
+        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
 
-    private PermissionDetailsBO buildPermissionDetailsBO(MerchantAdminMap merchantAdminMap) {
-        PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
-        if (merchantAdminMap != null) {
-            BeanUtil.copyProperties(merchantAdminMap, permissionDetailsBO);
+        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
+            throw new ServiceException(
+                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
         }
-        return permissionDetailsBO;
-    }
 
-    @Override
-    public RoleInfoBO getDetails(GetRoleDetailsBO bo) {
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getId());
-        RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(merchantInfo, res);
-        res.setRoleType(getRoleType());
-        return res;
-    }
+        MerchantInfo merchant = merchantInfoDao.getMerchantInfoById(bo.getId());
+        merchant.setUserId(targetUserInfo.getId());
+        merchant.setContact(targetUserInfo.getPhone());
+        merchant.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
 
-    @Override
-    public RoleInfoBO getSelfDetails(UserInfo userInfo) {
-        Integer id = getRoleIdByUser(userInfo);
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(id);
-        return makeRoleInfoBO(merchantInfo);
+        MerchantInfo target = merchantInfoDao.updateMerchantInfo(merchant);
+
+        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
+
+        RoleInfoBO resBO = new RoleInfoBO();
+        resBO.setRoleType(getRoleType());
+        BeanUtil.copyProperties(target, resBO);
+
+        return resBO;
     }
 
     @Override
@@ -257,32 +263,6 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         merchantInfoDao.updateMerchantInfoStrict(target);
 
         userService.removeRole(targetUserInfo, getRoleInfo(roleInfoDao));
-
-        RoleInfoBO resBO = new RoleInfoBO();
-        resBO.setRoleType(getRoleType());
-        BeanUtil.copyProperties(target, resBO);
-
-        return resBO;
-    }
-
-    @Override
-    public RoleInfoBO invite(ModifyRoleBO bo) {
-        UserInfo targetUserInfo = userService.getUserbyGuid(bo.getTargetGuid());
-        List<RoleInfo> targetRoleInfoList = userService.getRole(targetUserInfo);
-
-        if (targetRoleInfoList != null && targetRoleInfoList.size() > 0) {
-            throw new ServiceException(
-                    "guid " + bo.getTargetGuid() + " already have a role " + targetRoleInfoList.get(0).getRole());
-        }
-
-        MerchantInfo merchant = merchantInfoDao.getMerchantInfoById(bo.getId());
-        merchant.setUserId(targetUserInfo.getId());
-        merchant.setContact(targetUserInfo.getPhone());
-        merchant.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
-
-        MerchantInfo target = merchantInfoDao.updateMerchantInfo(merchant);
-
-        userService.addRole(targetUserInfo, getRoleInfo(roleInfoDao));
 
         RoleInfoBO resBO = new RoleInfoBO();
         resBO.setRoleType(getRoleType());
@@ -323,6 +303,14 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         return buildRoleInfoBO(adminInfo, merchantInfo);
     }
 
+    private PermissionDetailsBO buildPermissionDetailsBO(MerchantAdminMap merchantAdminMap) {
+        PermissionDetailsBO permissionDetailsBO = new PermissionDetailsBO();
+        if (merchantAdminMap != null) {
+            BeanUtil.copyProperties(merchantAdminMap, permissionDetailsBO);
+        }
+        return permissionDetailsBO;
+    }
+
     private RoleInfoBO buildRoleInfoBO(AdminInfo adminInfo, MerchantInfo merchantInfo) {
         RoleInfoBO resBO = new RoleInfoBO();
         BeanUtil.copyProperties(merchantInfo, resBO);
@@ -334,45 +322,16 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
         return resBO;
     }
 
-    @Override
-    public Integer getRoleIdByUser(UserInfo userInfo) {
-        return getMerchantInfoByUser(userInfo).getId();
-    }
-
-    @Override
-    public MerchantInfo getMerchantInfoByUser(UserInfo userInfo) {
-        MerchantInfo merchantInfo;
-        MerchantInfoExample example = new MerchantInfoExample();
-        MerchantInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userInfo.getId());
-        // criteria.andEndAtGreaterThanOrEqualTo(now);
-        // criteria.andStartAtLessThanOrEqualTo(now);
+    private AdminInfo getAdminInfoByCreator(UserInfo creator) {
+        AdminInfoExample example = new AdminInfoExample();
+        AdminInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andUserIdEqualTo(creator.getId());
         criteria.andValidEqualTo(DataSourceCommonConstant.DATABASE_COMMON_VALID);
         try {
-            merchantInfo = merchantInfoDao.getMerchantInfoByExample(example).get(0);
+            return adminInfoDao.getAdminInfoByExample(example).get(0);
         } catch (Exception e) {
-            throw new ServiceException("no merchant have the user " + userInfo.getName());
+            throw new ServiceException(e.getMessage());
         }
-        return merchantInfo;
-    }
-
-    @Override
-    public RoleInfoBO del(ModifyRoleBO bo) {
-        MerchantInfo merchantInfo = merchantInfoDao.getMerchantInfoById(bo.getId());
-        if (merchantInfo.getUserId() != null) {
-            throw new ServiceException(
-                    "Dont allow to del role " + merchantInfo.getId() + " without kickout the user " + merchantInfo
-                            .getUserId());
-        }
-        merchantInfoDao.delMerchantInfo(merchantInfo);
-        return makeRoleInfoBO(merchantInfo);
-    }
-
-    private RoleInfoBO makeRoleInfoBO(MerchantInfo merchantInfo) {
-        RoleInfoBO res = new RoleInfoBO();
-        BeanUtil.copyProperties(merchantInfo, res);
-        res.setRoleType(getRoleType());
-        return res;
     }
 
     private QueryRespVO<RoleInfoBO> getAllMerchant(QuerySubordinateBO req) {
@@ -387,6 +346,54 @@ public class MerchantRoleServiceImpl implements RoleService, MerchantRoleService
             bo.setRoleType(getRoleType());
             res.getInfo().add(bo);
         }
+        return res;
+    }
+
+    private List<MerchantAdminMap> getMerchantAdminMapsListByAdminInfo(AdminInfo adminInfo) {
+        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
+        merchantAdminMapEx.setAdminId(adminInfo.getId());
+        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx);
+    }
+
+    private List<MerchantAdminMap> getMerchantAdminMapsListByAdminInfoAndMerchantInfo(AdminInfo adminInfo,
+            MerchantInfo merchantInfo) {
+        MerchantAdminMap merchantAdminMapEx = new MerchantAdminMap();
+        merchantAdminMapEx.setAdminId(adminInfo.getId());
+        merchantAdminMapEx.setMerchantId(merchantInfo.getId());
+        merchantAdminMapEx.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        return merchantAdminMapDao.getMerchantAdminMapSelective(merchantAdminMapEx);
+    }
+
+    private void makeMerchantAdminRelationship(AdminInfo adminInfo, MerchantInfo merchantInfo) {
+        MerchantAdminMap merchantAdminMap = new MerchantAdminMap();
+        merchantAdminMap.setAdminId(adminInfo.getId());
+        merchantAdminMap.setMerchantId(merchantInfo.getId());
+        merchantAdminMap.setFactoryNumber(2);
+        merchantAdminMap.setSign(DataSourceCommonConstant.DATABASE_COMMON_INVALID);
+        merchantAdminMap.setStartAt(merchantInfo.getStartAt());
+        merchantAdminMap.setEndAt(merchantInfo.getEndAt());
+        merchantAdminMap.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+        merchantAdminMapDao.updateMerchantAdminMap(merchantAdminMap);
+    }
+
+    private MerchantInfo makeMerchantInfo(CreateRoleBO bo) {
+        Date now = new Date();
+
+        MerchantInfo merchantInfo = new MerchantInfo();
+        BeanUtil.copyProperties(bo, merchantInfo);
+        merchantInfo.setStartAt(now);
+        merchantInfo.setEndAt(DateUtils.addMonth(now, 1));
+        merchantInfo.setValid(DataSourceCommonConstant.DATABASE_COMMON_VALID);
+
+        merchantInfoDao.updateMerchantInfo(merchantInfo);
+        return merchantInfo;
+    }
+
+    private RoleInfoBO makeRoleInfoBO(MerchantInfo merchantInfo) {
+        RoleInfoBO res = new RoleInfoBO();
+        BeanUtil.copyProperties(merchantInfo, res);
+        res.setRoleType(getRoleType());
         return res;
     }
 

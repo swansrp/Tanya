@@ -42,24 +42,16 @@ public class MenuServiceImpl implements MenuService {
         return makeMenuTree(permissionInfoList);
     }
 
-    private List<QueryMenuVO> makeMenuTree(List<PermissionInfo> permissionInfoList) {
-        List<QueryMenuVO> res = new ArrayList<>();
-        List<PermissionInfo> parentMenuList =
-                permissionInfoList.stream().filter(info -> info.getParentId() == null).collect(Collectors.toList());
-        parentMenuList.forEach(parentMenu -> res.add(buildMenuVO(parentMenu, permissionInfoList)));
-        return res;
-    }
-
     private QueryMenuVO buildMenuVO(PermissionInfo parentMenu, List<PermissionInfo> permissionInfoList) {
-        QueryMenuVO QueryMenuVO = new QueryMenuVO();
+        QueryMenuVO queryMenuVO = new QueryMenuVO();
         MenuVO menuVO = new MenuVO();
         BeanUtil.copyProperties(parentMenu, menuVO);
-        QueryMenuVO.setMenu(menuVO);
+        queryMenuVO.setMenu(menuVO);
         List<PermissionInfo> menuList =
                 permissionInfoList.stream().filter(info -> parentMenu.getId().equals(info.getParentId()))
                         .collect(Collectors.toList());
-        menuList.forEach(subMenu -> QueryMenuVO.getSubMenu().add(buildMenuVO(subMenu, permissionInfoList)));
-        return QueryMenuVO;
+        menuList.forEach(subMenu -> queryMenuVO.getSubMenu().add(buildMenuVO(subMenu, permissionInfoList)));
+        return queryMenuVO;
     }
 
     private List<PermissionInfo> getPermissionList(RoleInfo role) {
@@ -69,9 +61,17 @@ public class MenuServiceImpl implements MenuService {
         List<RolePermissionMap> rolePermissionMapList =
                 rolePermissionMapDao.getRolePermissionMapSelective(rolePermissionMapEx);
         List<Integer> permissionInfoIdList =
-                (List<Integer>) ReflectionUtil.getFieldList(rolePermissionMapList, "perimissionId");
+                ReflectionUtil.getFieldList(rolePermissionMapList, "perimissionId", Integer.class);
         List<PermissionInfo> permissionInfoList = new ArrayList<>();
         permissionInfoIdList.forEach(id -> permissionInfoList.add(permissionInfoDao.getPermissionInfoById(id)));
         return permissionInfoList;
+    }
+
+    private List<QueryMenuVO> makeMenuTree(List<PermissionInfo> permissionInfoList) {
+        List<QueryMenuVO> res = new ArrayList<>();
+        List<PermissionInfo> parentMenuList =
+                permissionInfoList.stream().filter(info -> info.getParentId() == null).collect(Collectors.toList());
+        parentMenuList.forEach(parentMenu -> res.add(buildMenuVO(parentMenu, permissionInfoList)));
+        return res;
     }
 }
