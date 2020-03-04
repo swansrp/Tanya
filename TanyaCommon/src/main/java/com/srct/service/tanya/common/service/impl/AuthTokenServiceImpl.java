@@ -11,10 +11,10 @@ package com.srct.service.tanya.common.service.impl;
 
 import com.srct.service.config.annotation.Auth;
 import com.srct.service.exception.UserNotLoginException;
-import com.srct.service.service.AuthTokenService;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
 import com.srct.service.tanya.common.exception.UserNotInRoleException;
+import com.srct.service.tanya.common.service.AuthTokenService;
 import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
 import com.srct.service.utils.log.Log;
