@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Profile;
  * @author sharuopeng
  */
 @Slf4j
-@Configuration
 @Profile(value = {"prod"})
 public class TomcatConfig {
     /**
