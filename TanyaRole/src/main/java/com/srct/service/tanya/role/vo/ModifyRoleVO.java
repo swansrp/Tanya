@@ -3,7 +3,7 @@
  * Description:
  * Copyright: Copyright (c) 2019
  * Company: Sharp
- * 
+ *
  * @Project Name: TanyaRole
  * @Package: com.srct.service.tanya.role.vo
  * @author Sharp
@@ -26,5 +26,8 @@ public class ModifyRoleVO {
 
     @ApiModelProperty(value = "邀请角色id")
     private Integer id;
+
+    @ApiModelProperty(value = "邀请人员id")
+    private Integer userId;
 
 }

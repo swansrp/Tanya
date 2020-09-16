@@ -13,20 +13,11 @@ import com.srct.service.exception.ServiceException;
 import com.srct.service.tanya.common.config.response.TanyaExceptionHandler;
 import com.srct.service.tanya.common.datalayer.tanya.entity.RoleInfo;
 import com.srct.service.tanya.common.datalayer.tanya.entity.UserInfo;
+import com.srct.service.tanya.common.service.SessionService;
 import com.srct.service.tanya.common.service.UserService;
-import com.srct.service.tanya.role.bo.CreateRoleBO;
-import com.srct.service.tanya.role.bo.GetRoleDetailsBO;
-import com.srct.service.tanya.role.bo.ModifyRoleBO;
-import com.srct.service.tanya.role.bo.PermissionDetailsBO;
-import com.srct.service.tanya.role.bo.QuerySubordinateBO;
-import com.srct.service.tanya.role.bo.RoleInfoBO;
-import com.srct.service.tanya.role.bo.UpdateRoleInfoBO;
+import com.srct.service.tanya.role.bo.*;
 import com.srct.service.tanya.role.service.RoleService;
-import com.srct.service.tanya.role.vo.CreateRoleVO;
-import com.srct.service.tanya.role.vo.ModifyRoleVO;
-import com.srct.service.tanya.role.vo.PermissionDetailsVO;
-import com.srct.service.tanya.role.vo.RoleDetailsVO;
-import com.srct.service.tanya.role.vo.RoleInfoVO;
+import com.srct.service.tanya.role.vo.*;
 import com.srct.service.utils.BeanUtil;
 import com.srct.service.utils.log.Log;
 import com.srct.service.vo.QueryRespVO;
@@ -39,12 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -64,6 +50,8 @@ public class RoleController {
     private HttpServletRequest request;
     @Autowired
     private UserService userService;
+    @Autowired
+    private SessionService sessionService;
 
     @ApiOperation(value = "创建新角色", notes = "根据传入人员角色创建角色。")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -87,6 +75,51 @@ public class RoleController {
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
 
         return TanyaExceptionHandler.generateResponse(resVO);
+    }
+
+    private String getTargetRoleType(String roleType, RoleInfo role) {
+        String targetRoleType;
+        switch (role.getRole()) {
+            case "superAdmin":
+                targetRoleType = roleType;
+                break;
+            case "admin":
+                targetRoleType = "merchant";
+                break;
+            case "merchant":
+                targetRoleType = "factory";
+                break;
+            case "factory":
+                targetRoleType = "trader";
+                break;
+            case "trader":
+                targetRoleType = "salesman";
+                break;
+            case "salesman":
+            default:
+                throw new ServiceException("Dont find the target Role Type for " + role.getRole());
+        }
+        if (roleType != null && !roleType.equals(targetRoleType)) {
+            throw new ServiceException("invalid role type " + roleType + " is chosen");
+        }
+        return targetRoleType;
+    }
+
+    private RoleInfoVO convertRoleInfoVO(RoleInfoBO resBO) {
+        RoleInfoVO resVO = new RoleInfoVO();
+        BeanUtil.copyProperties(resBO, resVO);
+        if (resBO.getPermissionDetails() != null) {
+            PermissionDetailsVO permissionDetailsVO = new PermissionDetailsVO();
+            BeanUtil.copyProperties(resBO.getPermissionDetails(), permissionDetailsVO);
+            resVO.setPermissionDetailsVO(permissionDetailsVO);
+        }
+        if (resVO.getUserId() != null) {
+            UserInfo user = userService.getUserbyUserId(resVO.getUserId());
+            resVO.setUserName(user.getName());
+            resVO.setContact(user.getPhone());
+            resVO.setUserComment(user.getComment());
+        }
+        return resVO;
     }
 
     @ApiOperation(value = "删除下属角色", notes = "将某个下属空角色删除")
@@ -194,7 +227,7 @@ public class RoleController {
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "roleType", value = "查看目标角色类型 {admin, merchant, factory, trader, salesman}", required = true),
             @ApiImplicitParam(paramType = "query", dataType = "int", name = "id", value = "查看目标 上级角色Id", required = true)})
     public ResponseEntity<CommonResponse<Integer>.Resp> getSubordinateSummary(ReqBaseVO req,
-            @RequestParam(value = "roleType") String targetRoleType, @RequestParam(value = "id") Integer id) {
+                                                                              @RequestParam(value = "roleType") String targetRoleType, @RequestParam(value = "id") Integer id) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
 
@@ -225,12 +258,32 @@ public class RoleController {
         return TanyaExceptionHandler.generateResponse(res);
     }
 
+    private void setSuperiorRoleId(@RequestParam("roleType") String targetRoleType, @RequestParam("id") Integer id,
+                                   QuerySubordinateBO bo) {
+        switch (targetRoleType) {
+            case "merchant":
+                bo.setAdminId(id);
+                break;
+            case "factory":
+                bo.setMerchantId(id);
+                break;
+            case "trader":
+                bo.setFactoryId(id);
+                break;
+            case "salesman":
+                bo.setTraderId(id);
+                break;
+            default:
+                throw new ServiceException("错误的查询角色");
+        }
+    }
+
     @ApiOperation(value = "邀请成为下属", notes = "通过扫描对方二维码邀请成为下属")
     @RequestMapping(value = "/invite", method = RequestMethod.POST)
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "target", value = "邀请对象guid，从二维码获取", required = true)})
     public ResponseEntity<CommonResponse<RoleInfoVO>.Resp> invite(@RequestBody ModifyRoleVO vo,
-            @RequestParam(value = "target") String targetGuid) {
+                                                                  @RequestParam(value = "target") String targetGuid) {
         UserInfo info = (UserInfo) request.getAttribute("user");
         RoleInfo role = (RoleInfo) request.getAttribute("role");
 
@@ -247,7 +300,8 @@ public class RoleController {
         RoleInfoBO resBO = roleService.invite(bo);
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
-
+        // 目标人员变更角色,强迫其小程序重新登录
+        sessionService.genWechatToken(targetGuid);
         return TanyaExceptionHandler.generateResponse(resVO);
     }
 
@@ -270,6 +324,13 @@ public class RoleController {
 
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
 
+        // 目标人员变更角色,强迫其小程序重新登录
+        if (vo.getUserId() != null) {
+            UserInfo targetUserInfo = userService.getUserbyUserId(vo.getUserId());
+            if (targetUserInfo != null) {
+                sessionService.genWechatToken(targetUserInfo.getGuid());
+            }
+        }
         return TanyaExceptionHandler.generateResponse(resVO);
     }
 
@@ -322,70 +383,5 @@ public class RoleController {
         RoleInfoVO resVO = convertRoleInfoVO(resBO);
 
         return TanyaExceptionHandler.generateResponse(resVO);
-    }
-
-    private RoleInfoVO convertRoleInfoVO(RoleInfoBO resBO) {
-        RoleInfoVO resVO = new RoleInfoVO();
-        BeanUtil.copyProperties(resBO, resVO);
-        if (resBO.getPermissionDetails() != null) {
-            PermissionDetailsVO permissionDetailsVO = new PermissionDetailsVO();
-            BeanUtil.copyProperties(resBO.getPermissionDetails(), permissionDetailsVO);
-            resVO.setPermissionDetailsVO(permissionDetailsVO);
-        }
-        if (resVO.getUserId() != null) {
-            UserInfo user = userService.getUserbyUserId(resVO.getUserId());
-            resVO.setUserName(user.getName());
-            resVO.setContact(user.getPhone());
-            resVO.setUserComment(user.getComment());
-        }
-        return resVO;
-    }
-
-    private String getTargetRoleType(String roleType, RoleInfo role) {
-        String targetRoleType;
-        switch (role.getRole()) {
-            case "superAdmin":
-                targetRoleType = roleType;
-                break;
-            case "admin":
-                targetRoleType = "merchant";
-                break;
-            case "merchant":
-                targetRoleType = "factory";
-                break;
-            case "factory":
-                targetRoleType = "trader";
-                break;
-            case "trader":
-                targetRoleType = "salesman";
-                break;
-            case "salesman":
-            default:
-                throw new ServiceException("Dont find the target Role Type for " + role.getRole());
-        }
-        if (roleType != null && !roleType.equals(targetRoleType)) {
-            throw new ServiceException("invalid role type " + roleType + " is chosen");
-        }
-        return targetRoleType;
-    }
-
-    private void setSuperiorRoleId(@RequestParam("roleType") String targetRoleType, @RequestParam("id") Integer id,
-            QuerySubordinateBO bo) {
-        switch (targetRoleType) {
-            case "merchant":
-                bo.setAdminId(id);
-                break;
-            case "factory":
-                bo.setMerchantId(id);
-                break;
-            case "trader":
-                bo.setFactoryId(id);
-                break;
-            case "salesman":
-                bo.setTraderId(id);
-                break;
-            default:
-                throw new ServiceException("错误的查询角色");
-        }
     }
 }
